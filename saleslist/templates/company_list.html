@@ -97,10 +97,22 @@
 
     <table>
         <tr>
-            <th><a href="?sort=name&order={% if sort_column == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">店舗名</a></th>
-            <th><a href="?sort=phone&order={% if sort_column == 'phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">店舗電話番号</a></th>
+            <th>
+                <a href="?sort=name&order={% if sort_column == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    店舗名 {% if sort_column == "name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=phone&order={% if sort_column == 'phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
             <th class="address"><a href="?sort=address&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">店舗住所</a></th>
-            <th><a href="?sort=corporation_name&order={% if sort_column == 'corporation_name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">法人名</a></th>
+            <th>
+                <a href="?sort=corporation_name&order={% if sort_column == 'corporation_name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    法人名 {% if sort_column == "corporation_name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
             <th><a href="?sort=corporation_address&order={% if sort_column == 'corporation_address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">法人所在地</a></th>
             <th><a href="?sort=activity_date&order={% if sort_column == 'activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">活動日</a></th>
             <th><a href="?sort=sales_person&order={% if sort_column == 'sales_person' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">営業担当者</a></th>

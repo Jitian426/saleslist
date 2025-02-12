@@ -98,7 +98,7 @@ from django.shortcuts import render
 from .models import Company
 
 def company_list(request):
-    print(request.GET)
+    print("リクエストパラメータ:", request.GET)  # 🔍 ここでURLパラメータを確認 デバッグ用
 
     # 🔹 検索条件の取得
     query = request.GET.get("query", "")
@@ -170,8 +170,13 @@ def company_list(request):
     sort_order = request.GET.get("order", "asc")
 
     # 並び順の適用
-    if order == 'desc':
-        sort = f'-{sort}'  # 降順の場合はマイナスをつける
+    if sort_order == 'desc':
+        sort_column = f"-{sort_column}"  # 降順の場合は `-` をつける
+
+    # ソート可能なカラムのリスト
+    valid_columns = ["name", "phone", "corporation_name", "corporation_address", "activity_date", "sales_person", "result", "next_action_date"]
+    if sort_column.lstrip("-") not in valid_columns:
+        sort_column = "id"  # 不正な値が来た場合はデフォルト値にする
 
     companies = Company.objects.all().order_by(sort_column)
 
@@ -189,8 +194,8 @@ def company_list(request):
     return render(request, "company_list.html", {
         "companies": companies,
         "query": query,
-        "sort_column": request.GET.get("sort", ""),
-        "sort_order": request.GET.get("order", ""),
+        "sort_column": sort_column.lstrip("-"),  # マイナス記号を削除して渡す
+        "sort_order": sort_order,
     })
 
 
