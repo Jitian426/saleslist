@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <!-- Bootstrap 5 のCDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダッシュボード</title>
+</head>
+<body>
+    <h1>📊 ダッシュボード</h1>
+
+    <h2>📅 今日の営業予定</h2>
+    <ul>
+        {% for activity in today_sales %}
+            <li>{{ activity.company.name }} - {{ activity.next_action_date|date:"Y-m-d H:i" }}</li>
+        {% empty %}
+            <li>今日の予定はありません。</li>
+        {% endfor %}
+    </ul>
+
+    <h2>⚠ 期限超過の営業予定</h2>
+    <ul>
+        {% for activity in overdue_sales %}
+            <li>{{ activity.company.name }} - {{ activity.next_action_date|date:"Y-m-d H:i" }}</li>
+        {% empty %}
+            <li>期限超過の予定はありません。</li>
+        {% endfor %}
+    </ul>
+
+    <h2>📆 今週の営業予定</h2>
+    <ul>
+        {% for activity in upcoming_sales %}
+            <li>{{ activity.company.name }} - {{ activity.next_action_date|date:"Y-m-d H:i" }}</li>
+        {% empty %}
+            <li>今週の予定はありません。</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{% url 'saleslist:company_list' %}">企業リストに戻る</a></p>
+</body>
+</html>
