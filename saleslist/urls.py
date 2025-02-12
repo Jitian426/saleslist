@@ -1,5 +1,6 @@
 app_name = "saleslist"  # ✅ 名前空間を定義
 from django.urls import path
+from .views import company_detail
 from django.contrib.auth import views as auth_views
 from .views import (
     upload_csv, company_list, sales_activity_list, company_detail,
