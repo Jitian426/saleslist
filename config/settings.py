@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # 追加
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -91,15 +93,12 @@ if not DATABASE_URL:
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DATABASE_NAME", "saleslist_db"),
-        'USER': os.getenv("DATABASE_USER", "saleslist_db_user"),
-        'PASSWORD': os.getenv("DATABASE_PASSWORD", "mg6QgRDeYwkw1C59fw86z1eIXP6SOjgK"),
-        'HOST': os.getenv("DATABASE_HOST", "dpg-culo2ein91rc73efus90-a.oregon-postgres.render.com"),
-        'PORT': os.getenv("DATABASE_PORT", "5432"),
-    }
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        engine="django.db.backends.postgresql"
+    )
 }
+
 
 
 
@@ -166,3 +165,16 @@ print(DATABASES)
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/companies/"
 LOGOUT_REDIRECT_URL = "/login/"
+
+
+import os
+
+# 静的ファイルのルートディレクトリを設定
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+
+
+
+
+
