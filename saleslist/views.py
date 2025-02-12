@@ -98,7 +98,7 @@ from django.shortcuts import render
 from .models import Company
 
 def company_list(request):
-    print("リクエストパラメータ:", request.GET)  # 🔍 ここでURLパラメータを確認 デバッグ用
+    print("リクエストパラメータ:", request.GET)  # 🔍 デバッグ用
 
     # 🔹 検索条件の取得
     query = request.GET.get("query", "")
@@ -121,7 +121,7 @@ def company_list(request):
 
     # 🔹 基本情報の検索
     if query:
-        companies = companies.filter(Q(name__icontains=query))
+        companies = companies.filter(name__icontains=query)
 
     if phone:
         companies = companies.filter(Q(phone__icontains=phone) | Q(corporation_phone__icontains=phone))
@@ -140,8 +140,7 @@ def company_list(request):
 
     if sub_industry:
         companies = companies.filter(sub_industry__icontains=sub_industry)
-    
-    
+
     # 🔹 営業履歴の検索
     if start_date or end_date or sales_person or result or next_action_start or next_action_end:
         companies = companies.filter(salesactivity__isnull=False).distinct()
@@ -163,33 +162,22 @@ def company_list(request):
 
         if next_action_end:
             companies = companies.filter(salesactivity__next_action_date__lte=next_action_end)
-        
 
     # 🔹 ソート処理
     sort_column = request.GET.get("sort", "id")  # デフォルトでID順
     sort_order = request.GET.get("order", "asc")
-
-    # 並び順の適用
-    if sort_order == 'desc':
-        sort_column = f"-{sort_column}"  # 降順の場合は `-` をつける
 
     # ソート可能なカラムのリスト
     valid_columns = ["name", "phone", "corporation_name", "corporation_address", "activity_date", "sales_person", "result", "next_action_date"]
     if sort_column.lstrip("-") not in valid_columns:
         sort_column = "id"  # 不正な値が来た場合はデフォルト値にする
 
-    companies = Company.objects.all().order_by(sort_column)
+    # 並び順の適用
+    if sort_order == 'desc':
+        sort_column = f"-{sort_column}"  # 降順の場合は `-` をつける
 
-
-    # 🔹 検索機能
-    if query:
-        companies = companies.filter(name__icontains=query)
-    if phone:
-        companies = companies.filter(phone__icontains=phone)
-    if address:
-        companies = companies.filter(address__icontains=address)
-    if industry:
-        companies = companies.filter(industry__icontains=industry)
+    # **修正点: ソート処理は一番最後に適用する**
+    companies = companies.order_by(sort_column)
 
     return render(request, "company_list.html", {
         "companies": companies,
@@ -197,6 +185,7 @@ def company_list(request):
         "sort_column": sort_column.lstrip("-"),  # マイナス記号を削除して渡す
         "sort_order": sort_order,
     })
+
 
 
 

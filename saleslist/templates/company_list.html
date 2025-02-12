@@ -114,7 +114,11 @@
                 </a>
             </th>
             <th><a href="?sort=corporation_address&order={% if sort_column == 'corporation_address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">法人所在地</a></th>
-            <th><a href="?sort=activity_date&order={% if sort_column == 'activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">活動日</a></th>
+            <th>
+                <a href="?sort=activity_date&order={% if sort_column == 'activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    活動日 {% if sort_column == "activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
             <th><a href="?sort=sales_person&order={% if sort_column == 'sales_person' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">営業担当者</a></th>
             <th><a href="?sort=result&order={% if sort_column == 'result' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">営業結果</a></th>
             <th><a href="?sort=next_action_date&order={% if sort_column == 'next_action_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">次回営業予定日</a></th>
