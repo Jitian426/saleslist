@@ -138,7 +138,8 @@ def company_list(request):
 
     if sub_industry:
         companies = companies.filter(sub_industry__icontains=sub_industry)
-
+    
+    
     # 🔹 営業履歴の検索
     if start_date or end_date or sales_person or result or next_action_start or next_action_end:
         companies = companies.filter(salesactivity__isnull=False).distinct()
@@ -160,8 +161,34 @@ def company_list(request):
 
         if next_action_end:
             companies = companies.filter(salesactivity__next_action_date__lte=next_action_end)
-            
-    return render(request, 'company_list.html', {'companies': companies, 'query': query})
+        
+
+    # 🔹 ソート処理
+    sort_column = request.GET.get("sort", "id")  # デフォルトでID順
+    sort_order = request.GET.get("order", "asc")
+
+    if sort_order == "desc":
+        sort_column = f"-{sort_column}"  # 降順の場合は `-` をつける
+
+    companies = Company.objects.all().order_by(sort_column)
+
+    # 🔹 検索機能
+    if query:
+        companies = companies.filter(name__icontains=query)
+    if phone:
+        companies = companies.filter(phone__icontains=phone)
+    if address:
+        companies = companies.filter(address__icontains=address)
+    if industry:
+        companies = companies.filter(industry__icontains=industry)
+
+    return render(request, "company_list.html", {
+        "companies": companies,
+        "query": query,
+        "sort_column": request.GET.get("sort", ""),
+        "sort_order": request.GET.get("order", ""),
+    })
+
 
 from django.shortcuts import render, get_object_or_404
 from .models import Company, SalesActivity
