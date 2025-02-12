@@ -166,18 +166,25 @@ def company_list(request):
     # 🔹 ソート処理
     sort_column = request.GET.get("sort", "id")  # デフォルトでID順
     sort_order = request.GET.get("order", "asc")
+    print(f"ソート対象: {sort_column}, ソート順: {sort_order}")  # 🔍 デバッグ用
 
     # ソート可能なカラムのリスト
     valid_columns = ["name", "phone", "corporation_name", "corporation_address", "activity_date", "sales_person", "result", "next_action_date"]
-    if sort_column.lstrip("-") not in valid_columns:
+    if sort_column not in valid_columns:
+        print(f"⚠️ 無効なカラム指定: {sort_column} → デフォルトIDでソート")
         sort_column = "id"  # 不正な値が来た場合はデフォルト値にする
 
     # 並び順の適用
     if sort_order == 'desc':
         sort_column = f"-{sort_column}"  # 降順の場合は `-` をつける
+    elif sort_order != 'asc':  
+        print(f"⚠️ 無効なソート順指定: {sort_order} → デフォルト 'asc'")
+        sort_order = "asc"
 
-    # **修正点: ソート処理は一番最後に適用する**
-    companies = companies.order_by(sort_column)
+    print(f"最終的なソートキー: {sort_column}")  # 🔍 デバッグ用
+
+    # 🔹 企業情報を取得
+    companies = Company.objects.all().order_by(sort_column)
 
     return render(request, "company_list.html", {
         "companies": companies,
