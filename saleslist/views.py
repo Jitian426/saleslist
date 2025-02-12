@@ -45,6 +45,31 @@ def upload_csv(request):
             for row in reader:
                 print(f"データ確認: {row}")  # ✅ ここで取得データを確認
                 
+                # **企業がすでに存在するかチェック**
+                company, created = Company.objects.get_or_create(
+                    name=row["店舗名"].strip(),  
+                    phone=row["電話番号"].strip(),
+                    address=row["住所"].strip(),
+                    defaults={  # 新規作成時のみ適用
+                        "corporation_name": row.get("法人名", "").strip(),
+                        "corporation_phone": row.get("法人電話番号", "").strip(),
+                        "corporation_address": row.get("法人所在地", "").strip(),
+                        "representative": row.get("代表者名", "").strip(),
+                        "industry": row.get("大業種", "").strip(),
+                        "sub_industry": row.get("小業種", "").strip(),
+                    }
+                )
+
+                # **営業履歴の登録**
+                if row.get("営業結果"):
+                    SalesActivity.objects.create(
+                        company=company,
+                        sales_person="CSVインポート",
+                        result=row.get("営業結果", "見込"),
+                        memo=row.get("コメント", ""),
+                        next_action_date=None
+                    )
+
                 # **日付フォーマットの変換**
                 formatted_date = None
                 if row["開業日"]:
@@ -85,14 +110,7 @@ def upload_csv(request):
                     sub_industry=row.get("小業種", ""),
                 )
 
-                 # ✅ `company` を明示的に定義してから `SalesActivity` を作成
-                SalesActivity.objects.create(
-                    company=company,  # ✅ ここで定義した `company` を使用
-                    sales_person="CSVインポート",
-                    result=row.get("営業結果", "見込"),
-                    memo=row.get("コメント", ""),
-                    next_action_date=None
-                )
+                
 
 
             messages.success(request, 'CSVデータが正常に取り込まれました！')
