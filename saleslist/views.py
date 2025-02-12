@@ -43,8 +43,20 @@ def upload_csv(request):
                 return redirect('upload_csv')
 
             for row in reader:
-                print(f"データ確認: {row}")  # ✅ ここで取得データを確認
-                
+                print(f"データ確認: {row}")  # ✅ 取得データを確認
+
+                # **日付フォーマットの変換**
+                formatted_date = None
+                if row["開業日"]:
+                    try:
+                        formatted_date = datetime.strptime(row["開業日"], '%Y/%m/%d').strftime('%Y-%m-%d')
+                    except ValueError:
+                        try:
+                            formatted_date = datetime.strptime(row["開業日"], '%Y-%m-%d').strftime('%Y-%m-%d')
+                        except ValueError:
+                            messages.error(request, f'日付フォーマットが間違っています（行: {row}）')
+                            continue  # この行はスキップ
+
                 # **企業がすでに存在するかチェック**
                 company, created = Company.objects.get_or_create(
                     name=row["店舗名"].strip(),  
@@ -55,6 +67,7 @@ def upload_csv(request):
                         "corporation_phone": row.get("法人電話番号", "").strip(),
                         "corporation_address": row.get("法人所在地", "").strip(),
                         "representative": row.get("代表者名", "").strip(),
+                        "established_date": formatted_date,
                         "industry": row.get("大業種", "").strip(),
                         "sub_industry": row.get("小業種", "").strip(),
                     }
@@ -69,49 +82,7 @@ def upload_csv(request):
                         memo=row.get("コメント", ""),
                         next_action_date=None
                     )
-
-                # **日付フォーマットの変換**
-                formatted_date = None
-                if row["開業日"]:
-                    try:
-                        formatted_date = datetime.strptime(row["開業日"], '%Y/%m/%d').strftime('%Y-%m-%d')
-                    except ValueError:
-                        try:
-                            formatted_date = datetime.strptime(row["開業日"], '%Y-%m-%d').strftime('%Y-%m-%d')
-                        except ValueError:
-                            messages.error(request, f'日付フォーマットが間違っています（行: {row}）')
-                            continue  # この行はスキップ
-
-                # **データを作成**
-                Company.objects.create(
-                    name=row.get("店舗名", ""),  
-                    phone=row.get("電話番号", ""),  # ✅ `None` だった場合は `""` にする
-                    address=row.get("住所", ""),  
-                    corporation_name=row.get("法人名", ""),  
-                    corporation_phone=row.get("法人電話番号", ""),  
-                    corporation_address=row.get("法人所在地", ""),  
-                    representative=row.get("代表者名", ""),  
-                    established_date=formatted_date,  # ✅ `None` の場合、そのまま `None` を保持
-                    industry=row.get("大業種", ""),  # ✅ `None` の場合、空白文字を入れる
-                    sub_industry=row.get("小業種", ""),  # ✅ `None` の場合、空白文字を入れる
-                )
-
-                # 企業データを保存した後に、その `Company` インスタンスを取得する
-                company = Company.objects.create(
-                    name=row.get("店舗名", ""),  
-                    phone=row.get("電話番号", ""),
-                    address=row.get("住所", ""),
-                    corporation_name=row.get("法人名", ""),
-                    corporation_phone=row.get("法人電話番号", ""),
-                    corporation_address=row.get("法人所在地", ""),
-                    representative=row.get("代表者名", ""),
-                    established_date=formatted_date,
-                    industry=row.get("大業種", ""),
-                    sub_industry=row.get("小業種", ""),
-                )
-
-                
-
+                    
 
             messages.success(request, 'CSVデータが正常に取り込まれました！')
 
