@@ -98,6 +98,8 @@ from django.shortcuts import render
 from .models import Company
 
 def company_list(request):
+    print(request.GET)
+
     # 🔹 検索条件の取得
     query = request.GET.get("query", "")
     phone = request.GET.get("phone", "")
@@ -167,10 +169,12 @@ def company_list(request):
     sort_column = request.GET.get("sort", "id")  # デフォルトでID順
     sort_order = request.GET.get("order", "asc")
 
-    if sort_order == "desc":
-        sort_column = f"-{sort_column}"  # 降順の場合は `-` をつける
+    # 並び順の適用
+    if order == 'desc':
+        sort = f'-{sort}'  # 降順の場合はマイナスをつける
 
     companies = Company.objects.all().order_by(sort_column)
+
 
     # 🔹 検索機能
     if query:
@@ -188,6 +192,7 @@ def company_list(request):
         "sort_column": request.GET.get("sort", ""),
         "sort_order": request.GET.get("order", ""),
     })
+
 
 
 from django.shortcuts import render, get_object_or_404
