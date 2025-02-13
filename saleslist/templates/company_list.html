@@ -47,14 +47,15 @@
     <input type="text" name="corporation_phone" placeholder="法人電話番号" value="{{ corporation_phone }}">
     <input type="text" name="industry" placeholder="大業種" value="{{ industry }}">
     <input type="text" name="sub_industry" placeholder="小業種" value="{{ sub_industry }}">
+
     
     <br>
-    
+
     <label>活動日 (開始):</label>
-    <input type="date" name="start_date" value="{{ start_date }}">
-    
+    <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+
     <label>活動日 (終了):</label>
-    <input type="date" name="end_date" value="{{ end_date }}">
+    <input type="date" name="end_date" value="{{ request.GET.end_date }}">
 
     <label>営業担当者:</label>
     <select name="sales_person">
@@ -82,22 +83,26 @@
     </select>
 
     <label>次回営業予定日 (開始):</label>
-    <input type="date" name="next_action_start" value="{{ next_action_start }}">
-    
-    <label>次回営業予定日 (終了):</label>
-    <input type="date" name="next_action_end" value="{{ next_action_end }}">
+    <input type="date" name="next_action_start" value="{{ request.GET.next_action_start }}">
 
+    <label>次回営業予定日 (終了):</label>
+    <input type="date" name="next_action_end" value="{{ request.GET.next_action_end }}">
+
+    
     <button type="submit">検索</button>
 
 </form>
 
-<a href="{% url 'saleslist:company_list' %}" class="btn btn-secondary">ソート解除</a>
+<button type="button" class="btn btn-secondary" onclick="window.location.href='?sort=id&order=asc'">
+    ソート解除
+</button>
+
 
 
 
     <table>
         <tr>
-            <<th>
+            <th>
                 <a href="?sort=name&order={% if sort_column == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
                     店舗名 {% if sort_column == "name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
@@ -107,7 +112,11 @@
                     店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
-            <th class="address"><a href="?sort=address&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">店舗住所</a></th>
+            <th class="address">
+                <a href="?sort=address&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
             <th>
                 <a href="?sort=corporation_name&order={% if sort_column == 'corporation_name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
                     法人名 {% if sort_column == "corporation_name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
@@ -119,9 +128,21 @@
                     活動日 {% if sort_column == "activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
-            <th><a href="?sort=sales_person&order={% if sort_column == 'sales_person' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">営業担当者</a></th>
-            <th><a href="?sort=result&order={% if sort_column == 'result' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">営業結果</a></th>
-            <th><a href="?sort=next_action_date&order={% if sort_column == 'next_action_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">次回営業予定日</a></th>
+            <th>
+                <a href="?sort=sales_person&order={% if sort_column == 'sales_person' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    営業担当者 {% if sort_column == "sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=result&order={% if sort_column == 'result' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    営業結果 {% if sort_column == "result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=next_action_date&order={% if sort_column == 'next_action_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    次回営業予定日 {% if sort_column == "next_action_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
             <th>詳細</th>
         </tr>
         {% for company in companies %}
