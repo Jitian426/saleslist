@@ -16,7 +16,8 @@ from .forms import SalesPersonRegistrationForm
 from django.http import JsonResponse
 from django.urls import get_resolver
 from .forms import CustomUserCreationForm
-
+from django.db.models import Prefetch
+from django.core.paginator import Paginator
 
 
 def upload_csv(request):
@@ -100,24 +101,28 @@ from .models import Company
 def company_list(request):
     print("リクエストパラメータ:", request.GET)  # 🔍 デバッグ用
 
-    # 🔹 検索条件の取得
-    query = request.GET.get("query", "")
-    phone = request.GET.get("phone", "")
-    address = request.GET.get("address", "")
-    corporation_name = request.GET.get("corporation_name", "")
-    corporation_phone = request.GET.get("corporation_phone", "")
-    industry = request.GET.get("industry", "")
-    sub_industry = request.GET.get("sub_industry", "")
+   # 🔹 検索条件の取得
+    query = request.GET.get("query", "").strip()
+    phone = request.GET.get("phone", "").strip()
+    address = request.GET.get("address", "").strip()
+    corporation_name = request.GET.get("corporation_name", "").strip()
+    corporation_phone = request.GET.get("corporation_phone", "").strip()
+    industry = request.GET.get("industry", "").strip()
+    sub_industry = request.GET.get("sub_industry", "").strip()
 
     # 🔹 営業履歴の検索条件
-    start_date = request.GET.get("start_date", "")
-    end_date = request.GET.get("end_date", "")
-    sales_person = request.GET.get("sales_person", "")
-    result = request.GET.get("result", "")
-    next_action_start = request.GET.get("next_action_start", "")
-    next_action_end = request.GET.get("next_action_end", "")
+    start_date = request.GET.get("start_date", "").strip()
+    end_date = request.GET.get("end_date", "").strip()
+    sales_person = request.GET.get("sales_person", "").strip()
+    result = request.GET.get("result", "").strip()
+    next_action_start = request.GET.get("next_action_start", "").strip()
+    next_action_end = request.GET.get("next_action_end", "").strip()
 
-    companies = Company.objects.all()
+     # 🔹 クエリセットの最適化
+    companies = Company.objects.prefetch_related("salesactivity_set").all()
+
+
+
 
     # 🔹 基本情報の検索
     if query:
@@ -166,25 +171,56 @@ def company_list(request):
     # 🔹 ソート処理
     sort_column = request.GET.get("sort", "id")  # デフォルトでID順
     sort_order = request.GET.get("order", "asc")
+    
     print(f"ソート対象: {sort_column}, ソート順: {sort_order}")  # 🔍 デバッグ用
 
+
     # ソート可能なカラムのリスト
-    valid_columns = ["name", "phone", "corporation_name", "corporation_address", "activity_date", "sales_person", "result", "next_action_date"]
+    valid_columns = ["id", "name", "phone", "address", "corporation_name", "corporation_phone", "activity_date", "sales_person", "result", "next_action_date"]
     if sort_column not in valid_columns:
         print(f"⚠️ 無効なカラム指定: {sort_column} → デフォルトIDでソート")
         sort_column = "id"  # 不正な値が来た場合はデフォルト値にする
+    
+    if sort_order == "desc":
+        sort_column = f"-{sort_column}"  # 降順の場合 `-` を付ける
 
-    # 並び順の適用
-    if sort_order == 'desc':
-        sort_column = f"-{sort_column}"  # 降順の場合は `-` をつける
-    elif sort_order != 'asc':  
-        print(f"⚠️ 無効なソート順指定: {sort_order} → デフォルト 'asc'")
-        sort_order = "asc"
+    print(f"ソート対象: {sort_column}")  # ✅ 確認用
 
-    print(f"最終的なソートキー: {sort_column}")  # 🔍 デバッグ用
 
-    # 🔹 企業情報を取得
-    companies = Company.objects.all().order_by(sort_column)
+    # 🔹 企業リストの取得
+    companies = Company.objects.all()
+
+
+     # 🔹 検索処理（Qオブジェクトを使って検索条件を適用）
+    filters = Q()
+
+    if query:
+        filters &= Q(name__icontains=query)
+    if phone:
+        filters &= Q(phone__icontains=phone) | Q(corporation_phone__icontains=phone)
+    if address:
+        filters &= Q(address__icontains=address)
+    if corporation_name:
+        filters &= Q(corporation_name__icontains=corporation_name)
+    if corporation_phone:
+        filters &= Q(corporation_phone__icontains=corporation_phone)
+    if industry:
+        filters &= Q(industry__icontains=industry)
+    if sub_industry:
+        filters &= Q(sub_industry__icontains=sub_industry)
+
+    companies = companies.filter(filters).distinct()
+
+
+    # 🔹 ソートの適用
+    companies = companies.order_by(sort_column)
+
+
+    # 🔹 ページネーション（1ページ50件）
+    paginator = Paginator(companies, 50)
+    page_number = request.GET.get("page")
+    companies = paginator.get_page(page_number)
+
 
     return render(request, "company_list.html", {
         "companies": companies,
@@ -203,6 +239,7 @@ from .forms import CompanyForm
 def company_detail(request, company_id):
     company = get_object_or_404(Company, id=company_id)
     sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')  # ✅ 日付降順に取得
+    
     return render(request, 'company_detail.html', {'company': company, "sales_activities": sales_activities})
 
     
@@ -362,3 +399,9 @@ from django.contrib.auth.decorators import login_required
 def company_list(request):
     companies = Company.objects.all()
     return render(request, 'company_list.html', {'companies': companies})
+
+
+sales_activities = SalesActivity.objects.order_by("-activity_date")
+companies = Company.objects.prefetch_related(
+    Prefetch("salesactivity_set", queryset=sales_activities, to_attr="latest_sales")
+).all()
