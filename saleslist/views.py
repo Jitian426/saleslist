@@ -99,7 +99,7 @@ from django.shortcuts import render
 from .models import Company
 
 def company_list(request):
-    print("リクエストパラメータ:", request.GET)  # 🔍 デバッグ用
+    print("🔍 検索前のパラメータ:", request.GET)  # ✅ 検索条件の取得前
 
    # 🔹 検索条件の取得
     query = request.GET.get("query", "").strip()
@@ -118,10 +118,10 @@ def company_list(request):
     next_action_start = request.GET.get("next_action_start", "").strip()
     next_action_end = request.GET.get("next_action_end", "").strip()
 
-     # 🔹 クエリセットの最適化
+
+    # 🔹 クエリセットの取得（最初は全件）
     companies = Company.objects.prefetch_related("salesactivity_set").all()
-
-
+    print(f"🔍 取得前の会社数: {companies.count()}")  # ✅ データの件数を確認
 
 
     # 🔹 基本情報の検索
@@ -190,8 +190,13 @@ def company_list(request):
     # 🔹 企業リストの取得
     companies = Company.objects.all()
 
+    print("デバッグ - 取得した会社リスト:")
+    for company in companies[:10]:  # 上位10件を表示
+        print(company.name)
 
-     # 🔹 検索処理（Qオブジェクトを使って検索条件を適用）
+
+
+    # 🔹 検索処理（Qオブジェクトを使って検索条件を適用）
     filters = Q()
 
     if query:
@@ -210,6 +215,7 @@ def company_list(request):
         filters &= Q(sub_industry__icontains=sub_industry)
 
     companies = companies.filter(filters).distinct()
+    print(f"🔍 検索後の会社数: {companies.count()}")  # ✅ フィルタ後の件数を確認
 
 
     # 🔹 ソートの適用

@@ -1,11 +1,15 @@
 app_name = "saleslist"  # ✅ 名前空間を定義
-from django.urls import path
+from django.urls import include, path
 from .views import company_detail
 from django.contrib.auth import views as auth_views
 from .views import (
     upload_csv, company_list, sales_activity_list, company_detail,
     add_sales_activity, edit_company, dashboard, register
 )
+from django.conf import settings
+
+
+
 
 urlpatterns = [
     path("upload/", upload_csv, name="upload_csv"),
@@ -31,3 +35,6 @@ urlpatterns += [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
 ]
 
+
+if settings.DEBUG:
+    urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]
