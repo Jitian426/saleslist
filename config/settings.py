@@ -188,3 +188,8 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
     MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
 
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "https://saleslist.onrender.com",
+]
