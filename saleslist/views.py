@@ -110,19 +110,13 @@ def company_list(request):
     industry = request.GET.get("industry", "").strip()
     sub_industry = request.GET.get("sub_industry", "").strip()
 
-    # 🔹 営業履歴の検索条件
-    start_date = request.GET.get("start_date", "").strip()
-    end_date = request.GET.get("end_date", "").strip()
-    sales_person = request.GET.get("sales_person", "").strip()
-    result = request.GET.get("result", "").strip()
-    next_action_start = request.GET.get("next_action_start", "").strip()
-    next_action_end = request.GET.get("next_action_end", "").strip()
+    print(f"検索パラメータ: query={query}, phone={phone}, address={address}, corporation_name={corporation_name}, corporation_phone={corporation_phone}, industry={industry}, sub_industry={sub_industry}")
 
     # 🔹 クエリセットの取得（最初は全件）
     companies = Company.objects.prefetch_related("salesactivity_set").all()
     print(f"🔍 取得前の会社数: {companies.count()}")  # ✅ データの件数を確認
 
-    # 🔹 検索処理（Qオブジェクトを使って検索条件を適用）
+    # 🔹 検索フィルタを適用
     filters = Q()
 
     if query:
@@ -140,7 +134,9 @@ def company_list(request):
     if sub_industry:
         filters &= Q(sub_industry__icontains=sub_industry)
 
-    # 🔹 検索フィルタを適用
+    print(f"🔍 適用前のフィルタ条件: {filters}")  # ✅ フィルタ適用前の条件を確認
+
+    # 🔹 検索結果を適用
     companies = companies.filter(filters).distinct()
     print(f"🔍 検索後の会社数: {companies.count()}")  # ✅ フィルタ後の件数を確認
 
@@ -154,7 +150,7 @@ def company_list(request):
     valid_columns = ["id", "name", "phone", "address", "corporation_name", "corporation_phone", "activity_date", "sales_person", "result", "next_action_date"]
     if sort_column not in valid_columns:
         print(f"⚠️ 無効なカラム指定: {sort_column} → デフォルトIDでソート")
-        sort_column = "id"  # 不正な値が来た場合はデフォルト値にする
+        sort_column = "id"
 
     if sort_order == "desc":
         sort_column = f"-{sort_column}"  # 降順の場合 `-` を付ける
@@ -175,6 +171,7 @@ def company_list(request):
         "sort_column": sort_column.lstrip("-"),  # マイナス記号を削除して渡す
         "sort_order": sort_order,
     })
+
 
 
 
