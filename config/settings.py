@@ -70,7 +70,10 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'saleslist', 'templates')],
+        'DIRS': [
+            BASE_DIR / 'saleslist' / 'templates',  # ✅ saleslist配下のテンプレート
+            BASE_DIR / 'templates'  # ✅ ルート直下の templates も検索対象にする
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -82,6 +85,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
