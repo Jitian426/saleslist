@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <!-- Bootstrap 5 のCDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} の詳細</title>
+    <style>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+        }
+        th {
+            width: 180px;  /* ✅ 左側のラベル（項目名）の幅を固定 */
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+            background-color: #f2f2f2;  /* ✅ 左側の背景を少しグレーに */
+            font-weight: bold;
+        }
+        td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+            word-wrap: break-word;
+            max-width: 600px;  /* ✅ 右側のデータ部分を広めにする */
+        }
+    </style>
+</head>
+<body>
+    <h2>{{ company.name }} の詳細情報</h2>
+
+    <table>
+        <tr><th>店舗名</th><td>{{ company.name }}</td></tr>
+        <tr><th>店舗電話番号</th><td>{{ company.phone }}</td></tr>
+        <tr><th>店舗住所</th><td>{{ company.address }}</td></tr>
+        <tr><th>法人名</th><td>{{ company.corporation_name }}</td></tr>
+        <tr><th>法人電話番号</th><td>{{ company.corporation_phone }}</td></tr>
+        <tr><th>法人所在地</th><td>{{ company.corporation_address }}</td></tr>
+        <tr><th>代表者名</th><td>{{ company.representative }}</td></tr>
+        <tr><th>開業日</th><td>{{ company.established_date|date:"Y/m/d" }}</td></tr>
+        <tr><th>大業種</th><td>{{ company.industry }}</td></tr>
+        <tr><th>小業種</th><td>{{ company.sub_industry }}</td></tr>
+    </table>
+    <p><a href="{% url 'saleslist:edit_company' company.id %}">✏️ 企業情報を編集</a></p>
+
+    <h3>営業履歴</h3>
+    <p><a href="{% url 'saleslist:add_sales_activity' company.id %}">+ 営業履歴を追加</a></p>
+
+    <table>
+        <tr>
+            <th>営業担当者</th>
+            <th>活動日</th>
+            <th>営業結果</th>
+            <th>次回営業予定日</th>
+            <th>コメント</th>
+        </tr>
+        {% for activity in sales_activities %}
+        <tr>
+            <td>{{ activity.sales_person }}</td>
+            <td>{{ activity.activity_date|date:"Y/m/d H:i" }}</td>
+            <td>{{ activity.result }}</td>
+            <td>{{ activity.next_action_date|date:"Y/m/d H:i" }}</td>
+            <td>
+                {% if activity.memo %}
+                    {{ activity.memo|linebreaks|truncatewords:20 }}
+                {% else %}
+                    なし
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">営業履歴がありません</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    
+    <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
+</body>
+</html>
