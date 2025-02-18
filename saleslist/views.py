@@ -101,7 +101,7 @@ from .models import Company
 def company_list(request):
     print("🔍 検索前のパラメータ:", request.GET)  # ✅ 検索条件の取得前
 
-   # 🔹 検索条件の取得
+    # 🔹 検索条件の取得
     query = request.GET.get("query", "").strip()
     phone = request.GET.get("phone", "").strip()
     address = request.GET.get("address", "").strip()
@@ -118,83 +118,9 @@ def company_list(request):
     next_action_start = request.GET.get("next_action_start", "").strip()
     next_action_end = request.GET.get("next_action_end", "").strip()
 
-
     # 🔹 クエリセットの取得（最初は全件）
     companies = Company.objects.prefetch_related("salesactivity_set").all()
     print(f"🔍 取得前の会社数: {companies.count()}")  # ✅ データの件数を確認
-
-
-    # 🔹 基本情報の検索
-    if query:
-        companies = companies.filter(name__icontains=query)
-
-    if phone:
-        companies = companies.filter(Q(phone__icontains=phone) | Q(corporation_phone__icontains=phone))
-
-    if address:
-        companies = companies.filter(address__icontains=address)
-
-    if corporation_name:
-        companies = companies.filter(corporation_name__icontains=corporation_name)
-
-    if corporation_phone:
-        companies = companies.filter(corporation_phone__icontains=corporation_phone)
-
-    if industry:
-        companies = companies.filter(industry__icontains=industry)
-
-    if sub_industry:
-        companies = companies.filter(sub_industry__icontains=sub_industry)
-
-    # 🔹 営業履歴の検索
-    if start_date or end_date or sales_person or result or next_action_start or next_action_end:
-        companies = companies.filter(salesactivity__isnull=False).distinct()
-
-        if start_date:
-            companies = companies.filter(salesactivity__activity_date__gte=start_date)
-
-        if end_date:
-            companies = companies.filter(salesactivity__activity_date__lte=end_date)
-
-        if sales_person:
-            companies = companies.filter(salesactivity__sales_person=sales_person)
-
-        if result:
-            companies = companies.filter(salesactivity__result=result)
-
-        if next_action_start:
-            companies = companies.filter(salesactivity__next_action_date__gte=next_action_start)
-
-        if next_action_end:
-            companies = companies.filter(salesactivity__next_action_date__lte=next_action_end)
-
-    # 🔹 ソート処理
-    sort_column = request.GET.get("sort", "id")  # デフォルトでID順
-    sort_order = request.GET.get("order", "asc")
-    
-    print(f"ソート対象: {sort_column}, ソート順: {sort_order}")  # 🔍 デバッグ用
-
-
-    # ソート可能なカラムのリスト
-    valid_columns = ["id", "name", "phone", "address", "corporation_name", "corporation_phone", "activity_date", "sales_person", "result", "next_action_date"]
-    if sort_column not in valid_columns:
-        print(f"⚠️ 無効なカラム指定: {sort_column} → デフォルトIDでソート")
-        sort_column = "id"  # 不正な値が来た場合はデフォルト値にする
-    
-    if sort_order == "desc":
-        sort_column = f"-{sort_column}"  # 降順の場合 `-` を付ける
-
-    print(f"ソート対象: {sort_column}")  # ✅ 確認用
-
-
-    # 🔹 企業リストの取得
-    companies = Company.objects.all()
-
-    print("デバッグ - 取得した会社リスト:")
-    for company in companies[:10]:  # 上位10件を表示
-        print(company.name)
-
-
 
     # 🔹 検索処理（Qオブジェクトを使って検索条件を適用）
     filters = Q()
@@ -214,19 +140,34 @@ def company_list(request):
     if sub_industry:
         filters &= Q(sub_industry__icontains=sub_industry)
 
+    # 🔹 検索フィルタを適用
     companies = companies.filter(filters).distinct()
     print(f"🔍 検索後の会社数: {companies.count()}")  # ✅ フィルタ後の件数を確認
 
+    # 🔹 ソート処理
+    sort_column = request.GET.get("sort", "id")  # デフォルトでID順
+    sort_order = request.GET.get("order", "asc")
+
+    print(f"ソート対象: {sort_column}, ソート順: {sort_order}")  # 🔍 デバッグ用
+
+    # ソート可能なカラムのリスト
+    valid_columns = ["id", "name", "phone", "address", "corporation_name", "corporation_phone", "activity_date", "sales_person", "result", "next_action_date"]
+    if sort_column not in valid_columns:
+        print(f"⚠️ 無効なカラム指定: {sort_column} → デフォルトIDでソート")
+        sort_column = "id"  # 不正な値が来た場合はデフォルト値にする
+
+    if sort_order == "desc":
+        sort_column = f"-{sort_column}"  # 降順の場合 `-` を付ける
+
+    print(f"ソート対象: {sort_column}")  # ✅ 確認用
 
     # 🔹 ソートの適用
     companies = companies.order_by(sort_column)
-
 
     # 🔹 ページネーション（1ページ50件）
     paginator = Paginator(companies, 50)
     page_number = request.GET.get("page")
     companies = paginator.get_page(page_number)
-
 
     return render(request, "company_list.html", {
         "companies": companies,
@@ -234,7 +175,6 @@ def company_list(request):
         "sort_column": sort_column.lstrip("-"),  # マイナス記号を削除して渡す
         "sort_order": sort_order,
     })
-
 
 
 
@@ -411,3 +351,9 @@ sales_activities = SalesActivity.objects.order_by("-activity_date")
 companies = Company.objects.prefetch_related(
     Prefetch("salesactivity_set", queryset=sales_activities, to_attr="latest_sales")
 ).all()
+
+
+from django.contrib.auth.views import LoginView
+
+class CustomLoginView(LoginView):
+    template_name = "registration/login.html"
