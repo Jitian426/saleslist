@@ -1,5 +1,5 @@
 import os
-print(os.getenv("DATABASE_URL"))  # ✅ ここで DB URL が正しく取得できるか確認
+# print(os.getenv("DATABASE_URL"))  # ✅ ここで DB URL が正しく取得できるか確認
 
 """
 Django settings for config project.
@@ -43,13 +43,13 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'saleslist',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'saleslist',
 ]
 
 MIDDLEWARE = [
@@ -168,7 +168,7 @@ LOGOUT_REDIRECT_URL = "/login/"
 
 LOGIN_REDIRECT_URL = "/companies/"
 
-print(DATABASES)
+# print(DATABASES)
 
 # 認証関連の設定
 LOGIN_URL = "/login/"
@@ -190,7 +190,7 @@ INTERNAL_IPS = [
 
 if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
-    MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
+    
 
 
 CSRF_TRUSTED_ORIGINS = [
