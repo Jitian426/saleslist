@@ -20,11 +20,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 from django.contrib.auth import views as auth_views
+from saleslist.views import company_list
 
 urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('admin/', admin.site.urls),
-    path('', include('saleslist.urls', namespace='saleslist'))  # ✅ 名前空間を適用
+    path('', include('saleslist.urls', namespace='saleslist')),  # ✅ 名前空間を適用
+    path('companies/', company_list, name="company_list"),  # ✅ ここが正しくあるか？
     ]
     
      # 🔹 debug_toolbar の追加

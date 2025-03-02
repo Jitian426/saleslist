@@ -98,79 +98,25 @@ def upload_csv(request):
 from django.shortcuts import render
 from .models import Company
 
+
 def company_list(request):
-    print("🔍 検索前のパラメータ:", request.GET)  # ✅ 検索条件の取得前
+    print("✅ company_list が呼び出されました")  # ✅ ビューが実行されているか確認
+    print(f"🔍 受け取ったクエリパラメータ: {request.GET}")  # ✅ クエリパラメータを表示
 
-    # 🔹 検索条件の取得
     query = request.GET.get("query", "").strip()
-    phone = request.GET.get("phone", "").strip()
-    address = request.GET.get("address", "").strip()
-    corporation_name = request.GET.get("corporation_name", "").strip()
-    corporation_phone = request.GET.get("corporation_phone", "").strip()
-    industry = request.GET.get("industry", "").strip()
-    sub_industry = request.GET.get("sub_industry", "").strip()
+    print(f"🔍 取得した query: '{query}'")  # ✅ 取得した検索ワードを表示
 
-    print(f"検索パラメータ: query={query}, phone={phone}, address={address}, corporation_name={corporation_name}, corporation_phone={corporation_phone}, industry={industry}, sub_industry={sub_industry}")
-
-    # 🔹 クエリセットの取得（最初は全件）
-    companies = Company.objects.prefetch_related("salesactivity_set").all()
-    print(f"🔍 取得前の会社数: {companies.count()}")  # ✅ データの件数を確認
-
-    # 🔹 検索フィルタを適用
-    filters = Q()
-
+    companies = Company.objects.all()
+    
     if query:
-        filters &= Q(name__icontains=query)
-    if phone:
-        filters &= Q(phone__icontains=phone) | Q(corporation_phone__icontains=phone)
-    if address:
-        filters &= Q(address__icontains=address)
-    if corporation_name:
-        filters &= Q(corporation_name__icontains=corporation_name)
-    if corporation_phone:
-        filters &= Q(corporation_phone__icontains=corporation_phone)
-    if industry:
-        filters &= Q(industry__icontains=industry)
-    if sub_industry:
-        filters &= Q(sub_industry__icontains=sub_industry)
-
-    print(f"🔍 適用前のフィルタ条件: {filters}")  # ✅ フィルタ適用前の条件を確認
-
-    # 🔹 検索結果を適用
-    companies = companies.filter(filters).distinct()
-    print(f"🔍 検索後の会社数: {companies.count()}")  # ✅ フィルタ後の件数を確認
-
-    # 🔹 ソート処理
-    sort_column = request.GET.get("sort", "id")  # デフォルトでID順
-    sort_order = request.GET.get("order", "asc")
-
-    print(f"ソート対象: {sort_column}, ソート順: {sort_order}")  # 🔍 デバッグ用
-
-    # ソート可能なカラムのリスト
-    valid_columns = ["id", "name", "phone", "address", "corporation_name", "corporation_phone", "activity_date", "sales_person", "result", "next_action_date"]
-    if sort_column not in valid_columns:
-        print(f"⚠️ 無効なカラム指定: {sort_column} → デフォルトIDでソート")
-        sort_column = "id"
-
-    if sort_order == "desc":
-        sort_column = f"-{sort_column}"  # 降順の場合 `-` を付ける
-
-    print(f"ソート対象: {sort_column}")  # ✅ 確認用
-
-    # 🔹 ソートの適用
-    companies = companies.order_by(sort_column)
-
-    # 🔹 ページネーション（1ページ50件）
-    paginator = Paginator(companies, 50)
-    page_number = request.GET.get("page")
-    companies = paginator.get_page(page_number)
+        companies = companies.filter(name__icontains=query)
+        print(f"🔍 フィルタ適用後の会社数: {companies.count()}")  # ✅ フィルタ適用後の結果を確認
 
     return render(request, "company_list.html", {
         "companies": companies,
         "query": query,
-        "sort_column": sort_column.lstrip("-"),  # マイナス記号を削除して渡す
-        "sort_order": sort_order,
     })
+
 
 
 
@@ -334,14 +280,6 @@ def register(request):
 def show_urls(request):
     urls = [str(url) for url in get_resolver().url_patterns]
     return JsonResponse({'urls': urls})
-
-
-from django.contrib.auth.decorators import login_required
-
-@login_required
-def company_list(request):
-    companies = Company.objects.all()
-    return render(request, 'company_list.html', {'companies': companies})
 
 
 sales_activities = SalesActivity.objects.order_by("-activity_date")

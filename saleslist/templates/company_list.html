@@ -41,12 +41,14 @@
 <!-- 🔹 検索フォーム -->
 <form method="GET">
     <input type="text" name="query" placeholder="店舗名" value="{{ query }}">
-    <input type="text" name="phone" placeholder="電話番号" value="{{ phone }}">
-    <input type="text" name="address" placeholder="住所" value="{{ address }}">
-    <input type="text" name="corporation_name" placeholder="法人名" value="{{ corporation_name }}">
-    <input type="text" name="corporation_phone" placeholder="法人電話番号" value="{{ corporation_phone }}">
-    <input type="text" name="industry" placeholder="大業種" value="{{ industry }}">
-    <input type="text" name="sub_industry" placeholder="小業種" value="{{ sub_industry }}">
+    <input type="text" name="phone" placeholder="電話番号" value="{{ query }}">
+    <input type="text" name="address" placeholder="住所" value="{{ query }}">
+    <input type="text" name="corporation_name" placeholder="法人名" value="{{ query }}">
+    <input type="text" name="corporation_phone" placeholder="法人電話番号" value="{{ query }}">
+    <input type="text" name="industry" placeholder="大業種" value="{{ query }}">
+    <input type="text" name="sub_industry" placeholder="小業種" value="{{ query }}">
+    <button type="submit">検索</button>
+
 
     
     <br>
