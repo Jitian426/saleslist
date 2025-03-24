@@ -120,10 +120,6 @@
                     </a>
                 </th>
                 <th>
-                    <a href="?sort=corporation_address&order={% if sort_column == 'corporation_address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                        法人所在地 {% if sort_column == "corporation_address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}</a>
-                </th>
-                <th>
                     <a href="?sort=established_date&order={% if sort_column == 'established_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
                         開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                     </a>
@@ -166,7 +162,6 @@
                 <td>{{ company.mobile_phone }}</td>
                 <td class="address">{{ company.address }}</td>
                 <td>{{ company.corporation_name }}</td>
-                <td>{{ company.corporation_address }}</td>
                 <td>{{ company.established_date|date:"Y/m/d" }}</td>
                 <td>{{ company.license_number }}</td>
     
