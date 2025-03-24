@@ -132,11 +132,8 @@ def company_list(request):
     logger.debug(f"🔍 取得した corporation_name: {search_params['corporation_name']}")
     
     
-    # 🔹 検索条件がない場合は空のクエリセットを返す
-    if not any(search_params.values()):
-        companies = Company.objects.none()
-    else:
-        companies = Company.objects.all()
+    # 🔹 常に全件取得（無検索でもすべて表示）
+    companies = Company.objects.all()
 
     # クエリの適用（会社情報）
     filters = Q()
