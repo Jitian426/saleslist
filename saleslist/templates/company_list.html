@@ -33,13 +33,15 @@
     </style>
 </head>
 <body>
+    <div style="text-align: right; margin: 10px 20px; font-size: 12px;">
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}">ダッシュボード</a> /
+            <a href="{% url 'password_reset' %}">パスワード変更</a> /
+            <a href="{% url 'saleslist:logout' %}">ログアウト</a>
+        {% endif %}
+    </div>
+    
     <h2>会社リスト</h2>
-    <form id="logout-form" action="{% url 'saleslist:logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">ログアウト</button>
-        <a href="{% url 'saleslist:dashboard' %}" class="btn btn-primary">ダッシュボードへ</a>
-        
-    </form>
 
 <!-- 🔹 検索フォーム -->
 <form method="GET" action="{% url 'saleslist:company_list' %}">
@@ -149,15 +151,13 @@
                         次回営業予定日 {% if sort_column == "next_action_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                     </a>
                 </th>
-                <th>詳細</th>
             </tr>
         </thead>
         <tbody>
-
         {% for company in companies %}
         
             <tr>
-                <td>{{ company.name }}</td>
+                <td><a href="{% url 'saleslist:company_detail' company.id %}">{{ company.name }}</a></td>
                 <td>{{ company.phone }}</td>
                 <td>{{ company.mobile_phone }}</td>
                 <td class="address">{{ company.address }}</td>
@@ -174,9 +174,6 @@
                     {% else %} なし {% endif %}
                 </td>
                 {% endwith %}
-                
-                <td><a href="{% url 'saleslist:company_detail' company.id %}">詳細を見る</a></td>
-    
             </tr>
             
         {% empty %}
