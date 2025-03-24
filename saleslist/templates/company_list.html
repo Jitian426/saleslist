@@ -101,6 +101,7 @@
                     店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
+            <th>携帯番号</th>
             <th class="address">
                 <a href="?sort=address&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
                     店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
@@ -120,6 +121,7 @@
                     開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
+            <th>許可番号</th>
             <th>
                 <a href="?sort=activity_date&order={% if sort_column == 'activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
                     活動日 {% if sort_column == "activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
@@ -148,10 +150,12 @@
         <tr>
             <td>{{ company.name }}</td>
             <td>{{ company.phone }}</td>
+            <td>{{ company.mobile_phone }}</td>
             <td class="address">{{ company.address }}</td>
             <td>{{ company.corporation_name }}</td>
             <td>{{ company.corporation_address }}</td>
             <td>{{ company.established_date|date:"Y/m/d" }}</td>
+            <td>{{ company.license_number }}</td>
 
             {% with company.salesactivity_set.last as last_activity %}
             <td>{% if last_activity %}{{ last_activity.activity_date|date:"Y/m/d H:i" }}{% else %}なし{% endif %}</td>

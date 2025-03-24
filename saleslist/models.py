@@ -6,15 +6,17 @@ from django.contrib.auth.models import AbstractUser
 class Company(models.Model):
     name = models.CharField(max_length=255, db_index=True)  # 🔹 店舗名にインデックスを追加
     phone = models.CharField(max_length=100, db_index=True, default="なし")  # ✅ 「未設定」を「なし」に変更  # 🔹 電話番号にもインデックスを追加
+    fax = models.CharField("FAX番号", max_length=20, blank=True, null=True)  # ←追加 
+    mobile_phone = models.CharField("携帯番号", max_length=20, blank=True, null=True)  # ←追加   
     address = models.TextField()
     corporation_name = models.CharField(max_length=255, db_index=True)  # 🔹 法人名にもインデックス
     corporation_phone = models.CharField(max_length=100, verbose_name="法人電話番号", blank=True, null=True)  
     corporation_address = models.TextField(verbose_name="法人所在地", blank=True, null=True)  
     representative = models.CharField(max_length=100, verbose_name="代表者名", blank=True, null=True)  
     established_date = models.DateField(verbose_name="開業日", blank=True, null=True)  # ✅ 修正
+    license_number = models.CharField(max_length=100, blank=True, null=True)  # 許可番号 ← 追加
     industry = models.CharField(max_length=100, verbose_name="大業種", blank=True, null=True)  # ✅ 修正
     sub_industry = models.CharField(max_length=100, verbose_name="小業種", blank=True, null=True)  # ✅ 修正
-
 
 
     def __str__(self):
