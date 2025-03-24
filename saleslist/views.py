@@ -95,28 +95,119 @@ def upload_csv(request):
     return render(request, 'upload_csv.html')
 
 
+import logging
 from django.shortcuts import render
-from .models import Company
+from .models import Company, SalesActivity
+from django.db.models import Q, Prefetch
+from django.db import connection
+import time  # 🔹 実行時間を測定するために追加
 
+logger = logging.getLogger(__name__)
 
 def company_list(request):
-    print("✅ company_list が呼び出されました")  # ✅ ビューが実行されているか確認
-    print(f"🔍 受け取ったクエリパラメータ: {request.GET}")  # ✅ クエリパラメータを表示
+    logger.debug("✅ company_list が呼び出されました")
 
-    query = request.GET.get("query", "").strip()
-    print(f"🔍 取得した query: '{query}'")  # ✅ 取得した検索ワードを表示
+    start_time = time.time()  # 🔹 クエリ実行時間の計測開始
 
-    companies = Company.objects.all()
+    # 検索パラメータの取得
+    search_params = {
+        "query": request.GET.get("query", "").strip(),
+        "phone": request.GET.get("phone", "").strip(),
+        "address": request.GET.get("address", "").strip(),
+        "corporation_name": request.GET.get("corporation_name", "").strip(),
+        "corporation_phone": request.GET.get("corporation_phone", "").strip(),
+        "industry": request.GET.get("industry", "").strip(),
+        "sub_industry": request.GET.get("sub_industry", "").strip(),
+        "start_date": request.GET.get("start_date", "").strip(),
+        "end_date": request.GET.get("end_date", "").strip(),
+        "sales_person": request.GET.get("sales_person", "").strip(),
+        "result": request.GET.get("result", "").strip(),
+        "next_action_start": request.GET.get("next_action_start", "").strip(),
+        "next_action_end": request.GET.get("next_action_end", "").strip(),
+    }
+
+    logger.debug(f"🔍 取得した query: {search_params['query']}")
+    logger.debug(f"🔍 取得した phone: {search_params['phone']}")
+    logger.debug(f"🔍 取得した address: {search_params['address']}")
+    logger.debug(f"🔍 取得した corporation_name: {search_params['corporation_name']}")
     
-    if query:
-        companies = companies.filter(name__icontains=query)
-        print(f"🔍 フィルタ適用後の会社数: {companies.count()}")  # ✅ フィルタ適用後の結果を確認
+    
+    # 🔹 検索条件がない場合は空のクエリセットを返す
+    if not any(search_params.values()):
+        companies = Company.objects.none()
+    else:
+        companies = Company.objects.all()
 
-    return render(request, "company_list.html", {
+    # クエリの適用（会社情報）
+    filters = Q()
+    if search_params["query"]:
+        filters &= Q(name__icontains=search_params["query"])
+    if search_params["phone"]:
+        filters &= Q(phone__icontains=search_params["phone"])
+    if search_params["address"]:
+        filters &= Q(address__icontains=search_params["address"])
+    if search_params["corporation_name"]:
+        filters &= Q(corporation_name__icontains=search_params["corporation_name"])
+    if search_params["corporation_phone"]:
+        filters &= Q(corporation_phone__icontains=search_params["corporation_phone"])
+    if search_params["industry"]:
+        filters &= Q(industry__icontains=search_params["industry"])
+    if search_params["sub_industry"]:
+        filters &= Q(sub_industry__icontains=search_params["sub_industry"])
+
+    # 🔽 ここでログ出力
+    logger.debug(f"🔎 会社フィルタ: {filters}")
+
+    # 営業履歴のフィルタ適用
+    sales_filters = Q()
+    if search_params["sales_person"]:
+        sales_filters &= Q(salesactivity__sales_person__icontains=search_params["sales_person"])
+    if search_params["result"]:
+        sales_filters &= Q(salesactivity__result=search_params["result"])
+    if search_params["start_date"] and search_params["end_date"]:
+        sales_filters &= Q(salesactivity__activity_date__range=[search_params["start_date"], search_params["end_date"]])
+    if search_params["next_action_start"] and search_params["next_action_end"]:
+        sales_filters &= Q(salesactivity__next_action_date__range=[search_params["next_action_start"], search_params["next_action_end"]])
+
+    # 🔹 フィルタ適用前の状態をログに記録
+    logger.debug(f"🔍 フィルタ適用前: {filters}")
+    logger.debug(f"🔍 営業履歴のフィルタ適用前: {sales_filters}")
+
+    # Qオブジェクトでフィルタ
+    companies = companies.filter(filters)
+    if sales_filters:
+        companies = companies.filter(sales_filters)
+
+    # ここで必ず .query を出す！
+    logger.debug(f"📊 クエリ型: {type(companies)}")
+    try:
+        logger.debug(f"📊 実行クエリ: {companies.query}")
+    except Exception as e:
+        logger.warning(f"⚠️ クエリ出力時にエラー発生: {e}")
+
+    # フィルタ結果件数
+    logger.debug(f"📊 フィルタ適用後の会社数: {companies.count()} 件")
+
+    # →そのあとにソート処理
+    sort_column = request.GET.get("sort", "name")
+    sort_order = request.GET.get("order", "asc")
+    if sort_order == "desc":
+        sort_column = f"-{sort_column}"
+    companies = companies.order_by(sort_column)
+
+
+    context = {
         "companies": companies,
-        "query": query,
-    })
+        "sort_column": sort_column.lstrip("-"),
+        "sort_order": sort_order,
+        "sales_persons": SalesActivity.objects.values("sales_person").distinct(),
+        "results": ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"],
+        **search_params,  # ←ここ重要！
+    }
 
+
+    
+    return render(request, "company_list.html", context)
 
 
 
@@ -280,12 +371,6 @@ def register(request):
 def show_urls(request):
     urls = [str(url) for url in get_resolver().url_patterns]
     return JsonResponse({'urls': urls})
-
-
-sales_activities = SalesActivity.objects.order_by("-activity_date")
-companies = Company.objects.prefetch_related(
-    Prefetch("salesactivity_set", queryset=sales_activities, to_attr="latest_sales")
-).all()
 
 
 from django.contrib.auth.views import LoginView

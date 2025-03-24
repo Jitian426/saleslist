@@ -9,8 +9,6 @@ from .views import (
 from django.conf import settings
 
 
-
-
 urlpatterns = [
     path("upload/", upload_csv, name="upload_csv"),
     path("companies/", company_list, name="company_list"),

@@ -192,8 +192,36 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
     
 
-
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://saleslist.onrender.com",
 ]
+
+
+import sys
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,  # ✅ 標準出力に変更
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "saleslist": {  # ✅ views.py のログも出力できるようにする
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
+
+

@@ -23,11 +23,10 @@ from django.contrib.auth import views as auth_views
 from saleslist.views import company_list
 
 urlpatterns = [
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('admin/', admin.site.urls),
-    path('', include('saleslist.urls', namespace='saleslist')),  # ✅ 名前空間を適用
-    path('companies/', company_list, name="company_list"),  # ✅ ここが正しくあるか？
-    ]
+    path('', include('saleslist.urls')),  # ✅ saleslist.urls に一元化
+]
+
     
      # 🔹 debug_toolbar の追加
 if settings.DEBUG:
