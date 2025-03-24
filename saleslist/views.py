@@ -148,8 +148,7 @@ def company_list(request):
             Q(mobile_phone__icontains=phone_query)
         )
         filters &= phone_filter  # ← これで OR 条件が正しく filters に加わる
-    
-    logger.debug(f"📞 電話番号検索条件: {phone_filter}")
+        logger.debug(f"📞 電話番号検索条件: {phone_filter}") # ← この行も if の中に入れる
 
 
 
