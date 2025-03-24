@@ -140,7 +140,19 @@ def company_list(request):
     if search_params["query"]:
         filters &= Q(name__icontains=search_params["query"])
     if search_params["phone"]:
-        filters &= Q(phone__icontains=search_params["phone"])
+        phone_query = search_params["phone"]
+        phone_filter = (
+            Q(phone__icontains=phone_query) |
+            Q(corporation_phone__icontains=phone_query) |
+            Q(fax__icontains=phone_query) |
+            Q(mobile_phone__icontains=phone_query)
+        )
+        filters &= phone_filter  # ← これで OR 条件が正しく filters に加わる
+    
+    logger.debug(f"📞 電話番号検索条件: {phone_filter}")
+
+
+
     if search_params["address"]:
         filters &= Q(address__icontains=search_params["address"])
     if search_params["corporation_name"]:
