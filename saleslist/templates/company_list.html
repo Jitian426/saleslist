@@ -45,40 +45,38 @@
 
     <div class="container-fluid px-4">
         <form method="GET" action="{% url 'saleslist:company_list' %}" class="mb-3">
-          <div class="row g-2">
-            <div class="col-md-2">
-              <input type="text" name="query" class="form-control" placeholder="店舗名" value="{{ query }}">
-            </div>
-            <div class="col-md-2">
-              <input type="text" name="phone" class="form-control" placeholder="電話番号" value="{{ phone }}">
-            </div>
-            <div class="col-md-2">
-              <input type="text" name="address" class="form-control" placeholder="住所" value="{{ address }}">
-            </div>
-            <div class="col-md-2">
-              <input type="text" name="corporation_name" class="form-control" placeholder="法人名" value="{{ corporation_name }}">
-            </div>
-            <div class="col-md-2">
-              <input type="text" name="industry" class="form-control" placeholder="大業種" value="{{ industry }}">
-            </div>
-            <div class="col-md-2">
-              <input type="text" name="sub_industry" class="form-control" placeholder="小業種" value="{{ sub_industry }}">
-            </div>
-          </div>
-      
-          <div class="row mt-2 g-2">
-            <div class="col-md-3">
-              <label class="form-label">活動日 (開始):</label>
-              <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">活動日 (終了):</label>
-              <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
-            </div>
-            <div class="row mt-2 g-2">
-              <div class="col-md-3">
-                <label class="form-label">営業担当者:</label>
-                <select name="sales_person" class="form-select">
+            <div class="row g-2 align-items-end">
+              <div class="col-sm-2">
+                <input type="text" class="form-control form-control-sm" name="query" placeholder="店舗名" value="{{ query }}">
+              </div>
+              <div class="col-sm-2">
+                <input type="text" class="form-control form-control-sm" name="phone" placeholder="電話番号" value="{{ phone }}">
+              </div>
+              <div class="col-sm-2">
+                <input type="text" class="form-control form-control-sm" name="address" placeholder="住所" value="{{ address }}">
+              </div>
+              <div class="col-sm-2">
+                <input type="text" class="form-control form-control-sm" name="corporation_name" placeholder="法人名" value="{{ corporation_name }}">
+              </div>
+              <div class="col-sm-2">
+                <input type="text" class="form-control form-control-sm" name="industry" placeholder="大業種" value="{{ industry }}">
+              </div>
+              <div class="col-sm-2">
+                <input type="text" class="form-control form-control-sm" name="sub_industry" placeholder="小業種" value="{{ sub_industry }}">
+              </div>
+          
+              <!-- 改行して2段目 -->
+              <div class="col-sm-2">
+                <label class="form-label mb-0 small">活動日 (開始)</label>
+                <input type="date" class="form-control form-control-sm" name="start_date" value="{{ start_date }}">
+              </div>
+              <div class="col-sm-2">
+                <label class="form-label mb-0 small">活動日 (終了)</label>
+                <input type="date" class="form-control form-control-sm" name="end_date" value="{{ end_date }}">
+              </div>
+              <div class="col-sm-2">
+                <label class="form-label mb-0 small">営業担当者</label>
+                <select name="sales_person" class="form-select form-select-sm">
                   <option value="">すべて</option>
                   {% for activity in sales_persons %}
                     <option value="{{ activity.sales_person }}" {% if sales_person == activity.sales_person %}selected{% endif %}>
@@ -87,35 +85,34 @@
                   {% endfor %}
                 </select>
               </div>
-          
-              <div class="col-md-3">
-                <label class="form-label">営業結果:</label>
-                <select name="result" class="form-select">
+              <div class="col-sm-2">
+                <label class="form-label mb-0 small">営業結果</label>
+                <select name="result" class="form-select form-select-sm">
                   <option value="">すべて</option>
                   {% for res in results %}
                     <option value="{{ res }}" {% if result == res %}selected{% endif %}>{{ res }}</option>
                   {% endfor %}
                 </select>
               </div>
-            <div class="col-md-3">
-              <label class="form-label">次回営業予定日 (開始):</label>
-              <input type="date" name="next_action_start" class="form-control" value="{{ next_action_start }}">
+              <div class="col-sm-2">
+                <label class="form-label mb-0 small">次回予定 (開始)</label>
+                <input type="date" class="form-control form-control-sm" name="next_action_start" value="{{ next_action_start }}">
+              </div>
+              <div class="col-sm-2">
+                <label class="form-label mb-0 small">次回予定 (終了)</label>
+                <input type="date" class="form-control form-control-sm" name="next_action_end" value="{{ next_action_end }}">
+              </div>
+          
+              <!-- ボタン -->
+              <div class="col-sm-2">
+                <button type="submit" class="btn btn-sm btn-primary w-100">検索</button>
+              </div>
+              <div class="col-sm-2">
+                <a href="{% url 'saleslist:company_list' %}" class="btn btn-sm btn-outline-secondary w-100">すべてリセット</a>
+              </div>
             </div>
-            <div class="col-md-3">
-              <label class="form-label">次回営業予定日 (終了):</label>
-              <input type="date" name="next_action_end" class="form-control" value="{{ next_action_end }}">
-            </div>
-          </div>
-      
-          <div class="col-md-3 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">検索</button>
-          </div>
-      
-          <div class="col-md-3 d-flex align-items-end">
-            <a href="{% url 'saleslist:company_list' %}" class="btn btn-outline-secondary w-100">すべてリセット</a>
-          </div>
-        </div>
-      </form>
+          </form>
+          
     </div>      
 
 
