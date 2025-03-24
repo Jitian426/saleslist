@@ -36,7 +36,7 @@
     <div style="text-align: right; margin: 10px 20px; font-size: 12px;">
         {% if user.is_authenticated %}
             <a href="{% url 'saleslist:dashboard' %}">ダッシュボード</a> /
-            <a href="{% url 'password_reset' %}">パスワード変更</a> /
+            <a href="{% url 'saleslist:password_reset' %}">パスワード変更</a> /
             <a href="{% url 'saleslist:logout' %}">ログアウト</a>
         {% endif %}
     </div>
