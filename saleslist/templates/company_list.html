@@ -101,7 +101,11 @@
                     店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
-            <th>携帯番号</th>
+            <th>
+                <a href="?sort=mobile_phone&order={% if sort_column == 'mobile_phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    携帯番号 {% if sort_column == "mobile_phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
             <th class="address">
                 <a href="?sort=address&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
                     店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
@@ -121,7 +125,11 @@
                     開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
-            <th>許可番号</th>
+            <th>
+                <a href="?sort=license_number&order={% if sort_column == 'license_number' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    許可番号 {% if sort_column == "license_number" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
             <th>
                 <a href="?sort=activity_date&order={% if sort_column == 'activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
                     活動日 {% if sort_column == "activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
