@@ -8,19 +8,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>会社リスト</title>
     <style>
-        body {
-            font-size: 13px;
-        }
         table {
             width: 100%;
+            font-size: 12px;
             border-collapse: collapse;
-            font-size: 12px;  /* ✅ 文字サイズを小さくして全情報が収まるように */
         }
         th, td {
-            border: 1px solid black;
             padding: 8px;
             text-align: left;
-            word-wrap: break-word;
+            border: none; /* ✅ 枠線撤廃 */
+        }
+        thead {
+            border-bottom: 2px solid #ccc; /* ✅ ヘッダー下にグレーの線 */
+        }
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0; /* ✅ 各行の下に薄い線 */
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9; /* ✅ 偶数行の背景色 */
+        }
+        tbody tr:hover {
+            background-color: #f1f1f1; /* ✅ ホバー時の背景色 */
+        }
+        body {
+            font-size: 12px;
         }
         th {
             background-color: #f2f2f2;
@@ -53,7 +64,7 @@
         {% endif %}
     </div>
 
-    <h2>会社リスト</h2>
+    <h2>Saleslist</h2>
 
     <div class="container-fluid px-4">
         <form method="GET" action="{% url 'saleslist:company_list' %}" class="mb-3">
