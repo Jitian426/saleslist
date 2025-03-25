@@ -35,7 +35,10 @@
 <body>
     <div style="text-align: right; margin: 10px 20px; font-size: 12px;">
         {% if user.is_superuser or user.username == 'ryuji' %}
-            <a href="{% url 'saleslist:export_companies_csv' %}" class="btn btn-sm btn-outline-primary">CSVエクスポート</a> /
+            <div class="mb-2">
+                <a href="{% url 'saleslist:upload_csv' %}" class="btn btn-outline-primary btn-sm">CSVインポート</a>
+                <a href="{% url 'saleslist:export_companies_csv' %}" class="btn btn-outline-success btn-sm">CSVエクスポート</a>
+            </div>
         {% endif %}
         {% if user.is_authenticated %}
             <a href="{% url 'saleslist:dashboard' %}">ダッシュボード</a> /

@@ -404,21 +404,19 @@ from django.http import HttpResponse
 import csv
 from django.contrib.auth.decorators import user_passes_test
 
-@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji') 
+@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def export_companies_csv(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="companies.csv"'
+    # BOM付きUTF-8で文字化けを防止
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename=companies.csv'
 
     writer = csv.writer(response)
-    # ヘッダー行
     writer.writerow([
         "店舗名", "電話番号", "FAX番号", "携帯番号", "住所", "法人名", "法人電話番号",
         "法人所在地", "代表者名", "開業日", "許可番号", "大業種", "小業種"
     ])
 
-    companies = Company.objects.all()
-
-    for company in companies:
+    for company in Company.objects.all():
         writer.writerow([
             company.name,
             company.phone,
@@ -429,7 +427,7 @@ def export_companies_csv(request):
             company.corporation_phone,
             company.corporation_address,
             company.representative,
-            company.established_date.strftime("%Y/%m/%d") if company.established_date else "",
+            company.established_date.strftime('%Y/%m/%d') if company.established_date else '',
             company.license_number,
             company.industry,
             company.sub_industry,
