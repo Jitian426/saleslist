@@ -232,7 +232,7 @@ def company_list(request):
     from django.core.paginator import Paginator
 
     # クエリ適用＆ソート後のcompaniesに対してページネーション
-    paginator = Paginator(companies, 200)  # ← 1ページ200件
+    paginator = Paginator(companies, 300)  # ← 1ページ300件
     page_number = request.GET.get('page')  # ← 現在のページ番号を取得
     page_obj = paginator.get_page(page_number)  # ← 該当ページのデータ
 
