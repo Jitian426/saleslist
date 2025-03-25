@@ -7,6 +7,7 @@ from .views import (
     add_sales_activity, edit_company, dashboard, register
 )
 from django.conf import settings
+from .views import CustomLoginView
 
 
 urlpatterns = [
@@ -20,7 +21,7 @@ urlpatterns = [
     path("", company_list, name="home"),  # ✅ ホーム画面を企業リストにする
 
     # ✅ ログイン・ログアウト
-    path("login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
+    path("login/", CustomLoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("register/", register, name="register"),
 ]
