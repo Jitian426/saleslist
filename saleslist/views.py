@@ -39,7 +39,7 @@ def upload_csv(request):
 
             expected_columns = [
                 "店舗名", "電話番号", "FAX番号", "携帯番号", "住所", "法人名", "法人電話番号",
-                "法人所在地", "代表者名", "開業日", "許可番号", "大業種", "小業種", "営業結果", "コメント"
+                "法人所在地", "代表者名", "開業日", "許可番号", "大業種", "小業種", "営業担当者", "営業結果", "コメント"
             ]
             actual_columns = list(reader.fieldnames)
 
@@ -85,7 +85,7 @@ def upload_csv(request):
                 if row.get("営業結果"):
                     SalesActivity.objects.create(
                         company=company,
-                        sales_person="CSVインポート",
+                        sales_person=row.get("営業担当者", "CSVインポート").strip(),  # ← 修正点
                         result=row.get("営業結果", "見込"),
                         memo=row.get("コメント", ""),
                         next_action_date=None
