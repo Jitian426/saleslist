@@ -232,15 +232,11 @@
                 <td>{{ company.established_date|date:"Y/m/d" }}</td>
                 <td>{{ company.license_number }}</td>
     
-                {% with company.salesactivity_set.last as last_activity %}
-                <td>{% if last_activity %}{{ last_activity.activity_date|date:"Y/m/d H:i" }}{% else %}なし{% endif %}</td>
-                <td>{% if last_activity %}{{ last_activity.sales_person }}{% else %}なし{% endif %}</td>
-                <td>{% if last_activity %}{{ last_activity.result }}{% else %}なし{% endif %}</td>
-                <td>{% if last_activity and last_activity.next_action_date %}
-                    {{ last_activity.next_action_date|date:"Y/m/d H:i" }}  <!-- ✅ 時間まで表示 -->
-                    {% else %} なし {% endif %}
-                </td>
-                {% endwith %}
+                <td>{{ company.latest_activity_date|date:"Y/m/d H:i" }}</td>
+                <td>{{ company.latest_sales_person }}</td>
+                <td>{{ company.latest_result }}</td>
+                <td>{{ company.latest_next_action_date|date:"Y/m/d H:i" }}</td>
+                
             </tr>
             
         {% empty %}

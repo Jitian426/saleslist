@@ -117,7 +117,13 @@ logger = logging.getLogger(__name__)
 def company_list(request):
     logger.debug("✅ company_list が呼び出されました")
 
-    start_time = time.time()  # 🔹 クエリ実行時間の計測開始
+    from django.db.models import OuterRef, Subquery
+
+    # 最新の営業履歴を取得するサブクエリ
+    latest_activities = SalesActivity.objects.filter(
+        company=OuterRef('pk')
+    ).order_by('-activity_date')
+
 
     # 検索パラメータの取得
     search_params = {
@@ -144,6 +150,15 @@ def company_list(request):
     
     # 🔹 常に全件取得（無検索でもすべて表示）
     companies = Company.objects.all()
+
+
+    # 必要な情報だけ事前取得（営業結果、担当者、次回営業予定日など）
+    companies = companies.annotate(
+        latest_activity_date=Subquery(latest_activities.values('activity_date')[:1]),
+        latest_sales_person=Subquery(latest_activities.values('sales_person')[:1]),
+        latest_result=Subquery(latest_activities.values('result')[:1]),
+        latest_next_action_date=Subquery(latest_activities.values('next_action_date')[:1]),
+    )
 
     # クエリの適用（会社情報）
     filters = Q()
