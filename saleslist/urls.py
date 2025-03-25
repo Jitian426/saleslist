@@ -3,7 +3,7 @@ from django.urls import path, include
 from .views import company_detail
 from django.contrib.auth import views as auth_views
 from .views import (
-    upload_csv, company_list, sales_activity_list, company_detail,
+    upload_csv, export_companies_csv, company_list, sales_activity_list, company_detail,
     add_sales_activity, edit_company, dashboard, register
 )
 from django.conf import settings
@@ -12,6 +12,7 @@ from .views import CustomLoginView
 
 urlpatterns = [
     path("upload/", upload_csv, name="upload_csv"),
+    path('export_csv/', export_companies_csv, name='export_csv'),
     path("companies/", company_list, name="company_list"),
     path("sales_activities/", sales_activity_list, name="sales_activity_list"),
     path("company/<int:company_id>/", company_detail, name="company_detail"),  # ✅ 確認

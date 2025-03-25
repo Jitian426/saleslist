@@ -36,7 +36,10 @@ def upload_csv(request):
             decoded_file = io.StringIO(csv_file.read().decode('utf-8-sig'))  # ✅ BOM削除
             reader = csv.DictReader(decoded_file)
 
-            expected_columns = ["店舗名", "電話番号", "住所", "法人名", "法人電話番号", "法人所在地", "代表者名", "開業日", "大業種", "小業種", "営業結果", "コメント"]
+            expected_columns = [
+                "店舗名", "電話番号", "FAX番号", "携帯番号", "住所", "法人名", "法人電話番号",
+                "法人所在地", "代表者名", "開業日", "許可番号", "大業種", "小業種", "営業結果", "コメント"
+            ]
             actual_columns = list(reader.fieldnames)
 
             if actual_columns != expected_columns:
@@ -64,11 +67,14 @@ def upload_csv(request):
                     phone=row["電話番号"].strip(),
                     address=row["住所"].strip(),
                     defaults={  # 新規作成時のみ適用
+                        "fax": row.get("FAX番号", "").strip(),
+                        "mobile_phone": row.get("携帯番号", "").strip(),
                         "corporation_name": row.get("法人名", "").strip(),
                         "corporation_phone": row.get("法人電話番号", "").strip(),
                         "corporation_address": row.get("法人所在地", "").strip(),
                         "representative": row.get("代表者名", "").strip(),
                         "established_date": formatted_date,
+                        "license_number": row.get("許可番号", "").strip(),
                         "industry": row.get("大業種", "").strip(),
                         "sub_industry": row.get("小業種", "").strip(),
                     }
@@ -303,8 +309,8 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = [
-            'name', 'phone', 'address', 'corporation_name', 'corporation_phone',
-            'corporation_address', 'representative', 'established_date', 'industry', 'sub_industry'
+            'name', 'phone', 'fax', 'mobile_phone', 'address', 'corporation_name', 'corporation_phone',
+            'corporation_address', 'representative', 'established_date', 'license_number', 'industry', 'sub_industry'
         ]
 
 
@@ -391,3 +397,40 @@ from django.contrib.auth.views import LoginView
 
 class CustomLoginView(LoginView):
     template_name = "registration/login.html"
+
+
+from django.http import HttpResponse
+import csv
+
+@login_required
+def export_companies_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="companies.csv"'
+
+    writer = csv.writer(response)
+    # ヘッダー行
+    writer.writerow([
+        "店舗名", "電話番号", "FAX番号", "携帯番号", "住所", "法人名", "法人電話番号",
+        "法人所在地", "代表者名", "開業日", "許可番号", "大業種", "小業種"
+    ])
+
+    companies = Company.objects.all()
+
+    for company in companies:
+        writer.writerow([
+            company.name,
+            company.phone,
+            company.fax,
+            company.mobile_phone,
+            company.address,
+            company.corporation_name,
+            company.corporation_phone,
+            company.corporation_address,
+            company.representative,
+            company.established_date.strftime("%Y/%m/%d") if company.established_date else "",
+            company.license_number,
+            company.industry,
+            company.sub_industry,
+        ])
+
+    return response
