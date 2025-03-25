@@ -8,7 +8,9 @@ from .views import (
 )
 from django.conf import settings
 from .views import CustomLoginView
+from . import views
 
+app_name = 'saleslist'
 
 urlpatterns = [
     path("upload/", upload_csv, name="upload_csv"),
@@ -20,6 +22,7 @@ urlpatterns = [
     path("company/<int:company_id>/edit/", edit_company, name="edit_company"),
     path("dashboard/", dashboard, name="dashboard"),
     path("", company_list, name="home"),  # ✅ ホーム画面を企業リストにする
+    path('export_csv/', views.export_companies_csv, name='export_companies_csv'),
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),

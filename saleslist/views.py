@@ -18,8 +18,9 @@ from django.urls import get_resolver
 from .forms import CustomUserCreationForm
 from django.db.models import Prefetch
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import user_passes_test
 
-
+@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def upload_csv(request):
     if request.method == "POST":
         csv_file = request.FILES.get("csv_file")
@@ -375,7 +376,7 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', context)
 
-
+@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def register(request):
     if request.method == "POST":
         form = SalesPersonRegistrationForm(request.POST)
@@ -401,8 +402,9 @@ class CustomLoginView(LoginView):
 
 from django.http import HttpResponse
 import csv
+from django.contrib.auth.decorators import user_passes_test
 
-@login_required
+@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji') 
 def export_companies_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="companies.csv"'
