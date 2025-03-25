@@ -101,9 +101,11 @@ from .models import Company, SalesActivity
 from django.db.models import Q, Prefetch
 from django.db import connection
 import time  # 🔹 実行時間を測定するために追加
+from django.contrib.auth.decorators import login_required  # ← 追加
 
 logger = logging.getLogger(__name__)
 
+@login_required
 def company_list(request):
     logger.debug("✅ company_list が呼び出されました")
 
@@ -224,6 +226,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Company, SalesActivity
 from .forms import CompanyForm
 
+@login_required
 def company_detail(request, company_id):
     company = get_object_or_404(Company, id=company_id)
     sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')  # ✅ 日付降順に取得
@@ -304,6 +307,8 @@ class CompanyForm(forms.ModelForm):
             'corporation_address', 'representative', 'established_date', 'industry', 'sub_industry'
         ]
 
+
+@login_required
 # ✅ 企業情報編集用のビュー
 def edit_company(request, company_id):
     company = get_object_or_404(Company, id=company_id)
@@ -342,6 +347,7 @@ from django.shortcuts import render
 from .models import SalesActivity
 from .models import Company
 
+@login_required
 def dashboard(request):
     today = localtime(now()).date()
     week_later = today + timedelta(days=7)
