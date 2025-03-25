@@ -20,6 +20,7 @@ from django.db.models import Prefetch
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
 
+
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def upload_csv(request):
     if request.method == "POST":
@@ -213,8 +214,17 @@ def company_list(request):
     companies = companies.order_by(sort_column)
 
 
+    from django.core.paginator import Paginator
+
+    # クエリ適用＆ソート後のcompaniesに対してページネーション
+    paginator = Paginator(companies, 200)  # ← 1ページ200件
+    page_number = request.GET.get('page')  # ← 現在のページ番号を取得
+    page_obj = paginator.get_page(page_number)  # ← 該当ページのデータ
+
+
     context = {
-        "companies": companies,
+        "companies": page_obj,  # ← companies → page_obj に変更
+        "page_obj": page_obj,   # ← テンプレートでページネーション情報として使う
         "sort_column": sort_column.lstrip("-"),
         "sort_order": sort_order,
         "sales_persons": SalesActivity.objects.values("sales_person").distinct(),
