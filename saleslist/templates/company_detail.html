@@ -83,5 +83,20 @@
 
     
     <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
+
+    <hr>
+    <h6 class="mt-4">編集履歴</h6>
+    <div class="text-muted" style="font-size: 0.85em;">
+      {% for log in company.edit_logs.all %}
+        <p>
+          [{{ log.timestamp|date:"Y-m-d H:i" }}] 
+          レコード{{ log.action }}{% if log.changed_fields %} ({{ log.changed_fields|join:", " }}){% endif %}　
+          ユーザー: {{ log.user.username }}
+        </p>
+      {% empty %}
+        <p>編集履歴はまだありません。</p>
+     {% endfor %}
+    </div>
+
 </body>
 </html>

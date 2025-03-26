@@ -361,13 +361,36 @@ def edit_company(request, company_id):
 
     if request.method == "POST":
         form = CompanyForm(request.POST, instance=company)
+        
         if form.is_valid():
+            # 変更前のデータを記録
+            original_data = {field: getattr(company, field) for field in form.fields}
+
             form.save()
-            return redirect("saleslist:company_detail", company_id=company.id)  # ✅ 更新後に詳細ページへリダイレクト
+
+            # 再取得して変更後と比較
+            updated_company = Company.objects.get(pk=company.id)
+            changed_fields = [
+                field for field in form.fields
+                if original_data[field] != getattr(updated_company, field)
+            ]
+
+            # ✅ 編集ログを記録
+            if changed_fields:
+                CompanyEditLog.objects.create(
+                    company=company,
+                    user=request.user,
+                    action="情報編集",
+                    changed_fields=changed_fields
+                )
+
+            return redirect("saleslist:company_detail", company_id=company.id)
+        
     else:
         form = CompanyForm(instance=company)
 
     return render(request, 'edit_company.html', {'form': form, 'company': company})
+
 
 def send_scheduled_email():
     now_time = now()
@@ -475,12 +498,25 @@ def export_companies_csv(request):
     return response
 
 
+from .models import CompanyEditLog
+
 @login_required
 def company_create(request):
     if request.method == "POST":
         form = CompanyForm(request.POST)
         if form.is_valid():
-            form.save()
+            company = form.save(commit=False)
+            company.created_by = request.user
+            company.save()
+
+            # ✅ 新規登録ログを記録
+            CompanyEditLog.objects.create(
+                company=company,
+                user=request.user,
+                action="新規登録",
+                changed_fields=None
+            )
+
             return redirect("saleslist:company_list")
     else:
         form = CompanyForm()
