@@ -12,7 +12,22 @@ class CompanyForm(forms.ModelForm):
             'name', 'phone', 'fax', 'mobile_phone', 'address', 'corporation_name', 'corporation_phone',
             'corporation_address', 'representative', 'established_date', 'license_number', 'industry', 'sub_industry'
         ]
-
+        labels = {
+            'name': '店舗名',
+            'phone': '店舗電話番号',
+            'fax': 'FAX番号',
+            'mobile_phone': '携帯番号',
+            'address': '住所',
+            'corporation_name': '法人名',
+            'corporation_phone': '法人電話番号',
+            'corporation_address': '法人所在地',
+            'representative': '代表者名',
+            'established_date': '開業日',
+            'license_number': '許可番号',
+            'industry': '大業種',
+            'sub_industry': '小業種',
+            # 他も必要があれば追加できます
+        }
         widgets = {
             "established_date": forms.DateInput(attrs={"type": "date"}),
         }
