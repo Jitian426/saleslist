@@ -221,11 +221,24 @@ def company_list(request):
     # フィルタ結果件数
     logger.debug(f"📊 フィルタ適用後の会社数: {companies.count()} 件")
 
-    # →そのあとにソート処理
+    # ソート対象の取得
     sort_column = request.GET.get("sort", "name")
     sort_order = request.GET.get("order", "asc")
+
+    # ✅ 「activity_date」などを内部のannotateフィールドに変換するマッピング
+    sort_map = {
+        "activity_date": "latest_activity_date",
+        "next_action_date": "latest_next_action_date",
+        "sales_person": "latest_sales_person",
+        "result": "latest_result",
+    }
+    sort_column = sort_map.get(sort_column, sort_column)
+
+    # 昇順 or 降順
     if sort_order == "desc":
         sort_column = f"-{sort_column}"
+
+    # ソート適用
     companies = companies.order_by(sort_column)
 
 
