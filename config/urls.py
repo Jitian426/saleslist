@@ -24,7 +24,7 @@ from saleslist.views import company_list
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('saleslist.urls')),  # ✅ saleslist.urls に一元化
+    path('', include('saleslist.urls', namespace='saleslist')),
 ]
 
     
