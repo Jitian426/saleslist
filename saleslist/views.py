@@ -481,7 +481,7 @@ def company_create(request):
         form = CompanyForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("company_list")
+            return redirect("saleslist:company_list")
     else:
         form = CompanyForm()
 
