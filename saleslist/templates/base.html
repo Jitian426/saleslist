@@ -21,7 +21,7 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'saleslist:dashboard' %}">ダッシュボード</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'saleslist:upload_csv' %}">CSVアップロード</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">ログアウト</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'saleslist:logout' %}">ログアウト</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">ログイン</a></li>
                     {% endif %}
