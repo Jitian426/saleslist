@@ -19,6 +19,7 @@ from .forms import CustomUserCreationForm
 from django.db.models import Prefetch
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
+from .forms import CompanyForm  # ← 次に作るフォーム
 
 
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
@@ -472,3 +473,16 @@ def export_companies_csv(request):
         ])
 
     return response
+
+
+@login_required
+def company_create(request):
+    if request.method == "POST":
+        form = CompanyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("company_list")
+    else:
+        form = CompanyForm()
+
+    return render(request, "company_create.html", {"form": form})

@@ -23,6 +23,7 @@ urlpatterns = [
     path("dashboard/", dashboard, name="dashboard"),
     path("", company_list, name="home"),  # ✅ ホーム画面を企業リストにする
     path('export_csv/', views.export_companies_csv, name='export_companies_csv'),
+    path("companies/add/", views.company_create, name="company_create"),
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),

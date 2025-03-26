@@ -9,9 +9,13 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = [
-            'name', 'phone', 'address', 'corporation_name', 'corporation_phone',
-            'corporation_address', 'representative', 'established_date', 'industry', 'sub_industry'
+            'name', 'phone', 'fax', 'mobile_phone', 'address', 'corporation_name', 'corporation_phone',
+            'corporation_address', 'representative', 'established_date', 'license_number', 'industry', 'sub_industry'
         ]
+
+        widgets = {
+            "established_date": forms.DateInput(attrs={"type": "date"}),
+        }
 
 class SalesActivityForm(forms.ModelForm):
     sales_person_email = forms.EmailField(required=False, label="営業担当者のメールアドレス")
