@@ -161,6 +161,13 @@ def company_list(request):
         latest_next_action_date=Subquery(latest_activities.values('next_action_date')[:1]),
     )
 
+    # annotate() の後に追加
+    for company in companies:
+        company.latest_sales_person = company.latest_sales_person or ""
+        company.latest_result = company.latest_result or ""
+        company.latest_next_action_date = company.latest_next_action_date or ""
+        company.latest_activity_date = company.latest_activity_date or ""
+
     # クエリの適用（会社情報）
     filters = Q()
     if search_params["query"]:
@@ -363,8 +370,17 @@ def edit_company(request, company_id):
         form = CompanyForm(request.POST, instance=company)
         
         if form.is_valid():
-            # 変更前のデータを記録
-            original_data = {field: getattr(company, field) for field in form.fields}
+            company = form.save(commit=False)
+
+            # ✅ None→空文字変換（対象フィールドのみ）
+            for field in [
+                'fax', 'mobile_phone', 'corporation_phone',
+                'representative', 'license_number', 'sub_industry'
+            ]:
+                if getattr(company, field) is None:
+                    setattr(company, field, "")
+
+            company.save()
 
             form.save()
 
