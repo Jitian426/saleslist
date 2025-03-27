@@ -32,6 +32,16 @@ class CompanyForm(forms.ModelForm):
             "established_date": forms.DateInput(attrs={"type": "date"}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # ✅ 「法人名」を任意入力に変更
+        self.fields['corporation_name'].required = False
+
+        # ✅ 「大業種（industry）」を必須にする
+        self.fields['industry'].required = True
+        
+
 class SalesActivityForm(forms.ModelForm):
     sales_person_email = forms.EmailField(required=False, label="営業担当者のメールアドレス")
     
