@@ -147,22 +147,21 @@
         </form>
     </div>
 
-<!-- ✅ ソート解除ボタンを検索フォームの直後に横並び＆右寄せで -->
-<div class="d-flex justify-content-end mt-2 mb-0">
-    <a href="?sort=id&order=asc" class="btn btn-outline-secondary btn-sm" style="font-size: 11px; padding: 2px 6px;">
-        ソート解除
-    </a>
-    <!-- 3スペース分の余白（Bootstrapでマージン左設定）-->
-    <a href="{% url 'saleslist:company_create' %}" class="btn btn-primary btn-sm ms-3" style="font-size: 11px; padding: 2px 8px;">
-      会社新規登録
-    </a>
+<!-- ✅ ソート解除ボタン＆件数表示（左寄せ・小さく） -->
+<div class="d-flex justify-content-start align-items-center mt-2 mb-2" style="font-size: 12px;">
+  <a href="?sort=id&order=asc" class="btn btn-outline-secondary btn-sm me-3" style="font-size: 11px; padding: 2px 6px;">
+      ソート解除
+  </a>
+  <!-- 3スペース分の余白（Bootstrapでマージン左設定）-->
+  <a href="{% url 'saleslist:company_create' %}" class="btn btn-primary btn-sm ms-3" style="font-size: 11px; padding: 2px 8px;">
+    会社新規登録
+  </a>
+
+  <span class="text-muted" style="font-size: 11px;">
+      対象レコード: {{ total_filtered_count|intcomma }}　総レコード: {{ total_count|intcomma }}
+  </span>
 </div>
 
-<!-- ✅ 対象レコード・総レコード件数（右下に小さく） -->
-<div class="text-end small me-2 mb-2" style="font-size: 11px; color: #555;">
-  対象レコード: {{ page_obj.paginator.count|intcomma }}　
-  総レコード: {{ total_records|intcomma }}
-</div>
 
     <!-- 🔽 テーブル開始前に追加 -->
 <div class="table-responsive">
