@@ -111,6 +111,9 @@ from django.db.models import Q, Prefetch
 from django.db import connection
 import time  # 🔹 実行時間を測定するために追加
 from django.contrib.auth.decorators import login_required  # ← 追加
+from django.db.models import OuterRef, Subquery, F, Value, CharField
+from django.db.models.functions import Cast
+
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +159,11 @@ def company_list(request):
     # 必要な情報だけ事前取得（営業結果、担当者、次回営業予定日など）
     companies = companies.annotate(
         latest_activity_date=Subquery(latest_activities.values('activity_date')[:1]),
-        latest_sales_person=Subquery(latest_activities.values('sales_person__username')[:1]),  # ✅ 修正！
+        latest_sales_person=Subquery(
+            latest_activities.annotate(
+                sales_person_str=Cast(F('sales_person'), output_field=CharField())
+            ).values('sales_person_str')[:1]
+        ),
         latest_result=Subquery(latest_activities.values('result')[:1]),
         latest_next_action_date=Subquery(latest_activities.values('next_action_date')[:1]),
     )
