@@ -52,34 +52,33 @@
     <h3>営業履歴</h3>
     <p><a href="{% url 'saleslist:add_sales_activity' company.id %}">+ 営業履歴を追加</a></p>
 
-    <table>
-        <tr>
-            <th>営業担当者</th>
-            <th>活動日</th>
-            <th>営業結果</th>
-            <th>次回営業予定日</th>
-            <th>コメント</th>
-        </tr>
-        {% for activity in sales_activities %}
-        <tr>
-            <td>{{ activity.sales_person }}</td>
-            <td>{{ activity.activity_date|date:"Y/m/d H:i" }}</td>
-            <td>{{ activity.result }}</td>
-            <td>{{ activity.next_action_date|date:"Y/m/d H:i" }}</td>
-            <td>
-                {% if activity.memo %}
-                    {{ activity.memo|linebreaks|truncatewords:20 }}
-                {% else %}
-                    なし
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5">営業履歴がありません</td>
-        </tr>
-        {% endfor %}
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+          <tr>
+            <th style="width: 100px;">営業担当者</th>
+            <th style="width: 140px;">活動日</th>  <!-- 約16文字 -->
+            <th style="width: 80px;">営業結果</th>
+            <th style="width: 160px;">次回営業予定日</th>
+            <th style="width: 100%;">コメント</th> <!-- 残りすべて -->
+          </tr>
+        </thead>
+        <tbody>
+          {% for activity in sales_activities %}
+            <tr>
+              <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
+              <td>{{ activity.sales_person }}</td>
+              <td>{{ activity.result }}</td>
+              <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
+              <td>{{ activity.memo|linebreaksbr }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5">営業履歴はまだ登録されていません。</td>
+            </tr>
+          {% endfor %}
+        </tbody>
     </table>
+      
 
     
     <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
