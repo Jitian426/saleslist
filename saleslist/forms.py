@@ -33,14 +33,11 @@ class CompanyForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
+            # ✅ フィールドの必須設定をここで調整
+            self.fields['corporation_name'].required = False  # ← 任意に変更
+            self.fields['industry'].required = True           # ← 必須に設定
 
-        # ✅ 「法人名」を任意入力に変更
-        self.fields['corporation_name'].required = False
-
-        # ✅ 「大業種（industry）」を必須にする
-        self.fields['industry'].required = True
-        
 
 class SalesActivityForm(forms.ModelForm):
     sales_person_email = forms.EmailField(required=False, label="営業担当者のメールアドレス")
