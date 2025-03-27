@@ -264,18 +264,16 @@ def company_list(request):
     page_number = request.GET.get('page')  # ← 現在のページ番号を取得
     page_obj = paginator.get_page(page_number)  # ← 該当ページのデータ
 
-
     context = {
-        "companies": page_obj,  # ← companies → page_obj に変更
-        "page_obj": page_obj,   # ← テンプレートでページネーション情報として使う
+        "companies": page_obj,
+        "page_obj": page_obj,
         "sort_column": sort_column.lstrip("-"),
         "sort_order": sort_order,
         "sales_persons": SalesActivity.objects.values("sales_person").distinct(),
         "results": ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"],
-        **search_params,  # ←ここ重要！
+        "total_records": Company.objects.count(),  # ← 🔸全件数を渡す
+        **search_params,
     }
-
-
     
     return render(request, "company_list.html", context)
 
