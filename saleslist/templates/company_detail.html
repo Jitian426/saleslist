@@ -49,35 +49,34 @@
     </table>
     <p><a href="{% url 'saleslist:edit_company' company.id %}">✏️ 企業情報を編集</a></p>
 
-    <h3>営業履歴</h3>
-    <p><a href="{% url 'saleslist:add_sales_activity' company.id %}">+ 営業履歴を追加</a></p>
-
-    <table class="table table-striped table-hover align-middle">
-        <thead>
+    <h4 class="mt-4">営業履歴</h4>
+    <table class="table table-striped table-hover align-middle mt-2">
+      <thead>
+        <tr>
+          <th style="width: 100px;">営業担当者</th>         <!-- コンパクト -->  
+          <th style="width: 140px;">活動日</th>               <!-- 半角16文字分 -->
+          <th style="width: 80px;">営業結果</th>             <!-- 全角4文字分 -->
+          <th style="width: 160px;">次回営業予定日</th>       <!-- 半角16文字分 -->
+          <th style="width: 400px;">コメント</th>              <!-- 残りを広く -->
+        </tr>
+      </thead>
+      <tbody>
+        {% for activity in sales_activities %}
           <tr>
-            <th style="width: 100px;">営業担当者</th>
-            <th style="width: 140px;">活動日</th>  <!-- 約16文字 -->
-            <th style="width: 80px;">営業結果</th>
-            <th style="width: 160px;">次回営業予定日</th>
-            <th style="width: 100%;">コメント</th> <!-- 残りすべて -->
+            <td>{{ activity.sales_person }}</td>
+            <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
+            <td>{{ activity.result }}</td>
+            <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
+            <td>{{ activity.memo }}</td>
           </tr>
-        </thead>
-        <tbody>
-          {% for activity in sales_activities %}
-            <tr>
-              <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
-              <td>{{ activity.sales_person }}</td>
-              <td>{{ activity.result }}</td>
-              <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
-              <td>{{ activity.memo|linebreaksbr }}</td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="5">営業履歴はまだ登録されていません。</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-    </table>
+        {% empty %}
+          <tr>
+            <td colspan="5">営業履歴はまだ登録されていません。</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+</table>
+
       
 
     
