@@ -377,6 +377,9 @@ def edit_company(request, company_id):
         if form.is_valid():
             company = form.save(commit=False)
 
+            # ✅ 保存前に変更前データを記録
+            original_data = {field: getattr(company, field) for field in form.fields}
+
             # ✅ None→空文字変換（対象フィールドのみ）
             for field in [
                 'fax', 'mobile_phone', 'corporation_phone',
@@ -386,8 +389,6 @@ def edit_company(request, company_id):
                     setattr(company, field, "")
 
             company.save()
-
-            form.save()
 
             # 再取得して変更後と比較
             updated_company = Company.objects.get(pk=company.id)
