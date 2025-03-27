@@ -33,20 +33,21 @@ class CompanyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # ✅ 任意・必須の設定
+        # ✅ フィールドの必須設定
         self.fields['corporation_name'].required = False
         self.fields['industry'].required = True
 
-        # ✅ 開業日フィールドを再定義（文字入力 & フォーマット指定）
-        self.fields['established_date'] = forms.DateField(
-            label="開業日",
-            required=False,
-            input_formats=["%Y/%m/%d", "%Y-%m-%d"],
-            widget=forms.TextInput(attrs={
-                "placeholder": "例: 2025/03/27",
+        # ✅ カレンダー入力＋自由形式入力を許可する DateInput に変更
+        self.fields['established_date'].widget = forms.DateInput(
+            attrs={
+                "type": "date",
                 "class": "form-control"
-            })
+            },
+            format="%Y-%m-%d",  # type="date" のデフォルト形式に合わせる
         )
+
+        # ✅ YYYY/MM/DD も受け付けるように input_formats を追加
+        self.fields['established_date'].input_formats = ["%Y-%m-%d", "%Y/%m/%d"]
 
 
 class SalesActivityForm(forms.ModelForm):
