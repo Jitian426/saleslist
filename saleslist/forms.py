@@ -29,10 +29,7 @@ class CompanyForm(forms.ModelForm):
             'sub_industry': '小業種',
             # 他も必要があれば追加できます
         }
-        widgets = {
-            "established_date": forms.TextInput(attrs={"placeholder": "例: 2025/03/27", "class": "form-control"}),
-        }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
