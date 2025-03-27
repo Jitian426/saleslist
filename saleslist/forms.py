@@ -33,6 +33,7 @@ class CompanyForm(forms.ModelForm):
             "established_date": forms.TextInput(attrs={"placeholder": "例: 2025/03/27", "class": "form-control"}),
         }
     
+    # ✅ ← この位置に移動することが重要！
     def clean_established_date(self):
         date_input = self.cleaned_data.get('established_date')
 
@@ -49,7 +50,7 @@ class CompanyForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['corporation_name'].required = False
         self.fields['industry'].required = True
-
+        
 
 class SalesActivityForm(forms.ModelForm):
     sales_person_email = forms.EmailField(required=False, label="営業担当者のメールアドレス")
