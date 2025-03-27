@@ -27,27 +27,29 @@ class CompanyForm(forms.ModelForm):
             'license_number': '許可番号',
             'industry': '大業種',
             'sub_industry': '小業種',
-            # 他も必要があれば追加できます
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # ✅ フィールドの必須設定
-        self.fields['corporation_name'].required = False
-        self.fields['industry'].required = True
-
-        # ✅ カレンダー入力＋自由形式入力を許可する DateInput に変更
-        self.fields['established_date'].widget = forms.DateInput(
+        self.fields['established_date'].widget = forms.TextInput(
             attrs={
-                "type": "date",
-                "class": "form-control"
-            },
-            format="%Y-%m-%d",  # type="date" のデフォルト形式に合わせる
+                "class": "form-control",
+                "placeholder": "例: 2025/03/27 または 2025-03-27"
+            }
         )
 
-        # ✅ YYYY/MM/DD も受け付けるように input_formats を追加
-        self.fields['established_date'].input_formats = ["%Y-%m-%d", "%Y/%m/%d"]
+    def clean_established_date(self):
+        date_input = self.cleaned_data.get('established_date')
+        if isinstance(date_input, str):
+            for fmt in ("%Y/%m/%d", "%Y-%m-%d"):
+                try:
+                    return datetime.strptime(date_input, fmt).date()
+                except ValueError:
+                    continue
+            raise forms.ValidationError("日付の形式が正しくありません。例: 2025/03/27 または 2025-03-27")
+        return date_input
+
+
 
 
 class SalesActivityForm(forms.ModelForm):
