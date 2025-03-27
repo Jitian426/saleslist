@@ -30,26 +30,25 @@ class CompanyForm(forms.ModelForm):
             # 他も必要があれば追加できます
         }
         widgets = {
-            "established_date": forms.DateInput(attrs={"type": "date"}),
+            "established_date": forms.TextInput(attrs={"placeholder": "例: 2025/03/27", "class": "form-control"}),
         }
     
-        def clean_established_date(self):
-            date_input = self.cleaned_data.get('established_date')
+    def clean_established_date(self):
+        date_input = self.cleaned_data.get('established_date')
 
-            if isinstance(date_input, str):
-                for fmt in ("%Y/%m/%d", "%Y-%m-%d"):
-                    try:
-                        return datetime.strptime(date_input, fmt).date()
-                    except ValueError:
-                        continue
-                raise forms.ValidationError("開業日の形式が正しくありません。例: 2025/03/27 または 2025-03-27")
-            return date_input
+        if isinstance(date_input, str):
+            for fmt in ("%Y/%m/%d", "%Y-%m-%d"):
+                try:
+                    return datetime.strptime(date_input, fmt).date()
+                except ValueError:
+                    continue
+            raise forms.ValidationError("開業日の形式が正しくありません。例: 2025/03/27 または 2025-03-27")
+        return date_input
 
     def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            # ✅ フィールドの必須設定をここで調整
-            self.fields['corporation_name'].required = False  # ← 任意に変更
-            self.fields['industry'].required = True           # ← 必須に設定
+        super().__init__(*args, **kwargs)
+        self.fields['corporation_name'].required = False
+        self.fields['industry'].required = True
 
 
 class SalesActivityForm(forms.ModelForm):
