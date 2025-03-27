@@ -31,6 +31,18 @@ class CompanyForm(forms.ModelForm):
         widgets = {
             "established_date": forms.DateInput(attrs={"type": "date"}),
         }
+    
+        def clean_established_date(self):
+            date_input = self.cleaned_data.get('established_date')
+
+            if isinstance(date_input, str):
+                for fmt in ("%Y/%m/%d", "%Y-%m-%d"):
+                    try:
+                        return datetime.strptime(date_input, fmt).date()
+                    except ValueError:
+                        continue
+                raise forms.ValidationError("開業日の形式が正しくありません。例: 2025/03/27 または 2025-03-27")
+            return date_input
 
     def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -69,6 +81,7 @@ class SalesPersonRegistrationForm(UserCreationForm):
             "password1": "※ パスワードは8文字以上で設定してください",
             "password2": "※ 確認のため、もう一度同じパスワードを入力してください",
         }
+    
 
 
 class CustomUserCreationForm(UserCreationForm):
