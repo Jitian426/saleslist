@@ -530,6 +530,16 @@ def company_create(request):
         if form.is_valid():
             company = form.save(commit=False)
             company.created_by = request.user
+
+            # ✅ None → 空文字 変換（対象フィールドのみ）
+            for field in [
+                'fax', 'mobile_phone', 'corporation_phone',
+                'corporation_address', 'representative',
+                'license_number', 'sub_industry'
+            ]:
+                if getattr(company, field) is None:
+                    setattr(company, field, "")
+
             company.save()
 
             # ✅ 新規登録ログを記録
