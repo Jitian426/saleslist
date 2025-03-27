@@ -33,24 +33,24 @@ class CompanyForm(forms.ModelForm):
             "established_date": forms.TextInput(attrs={"placeholder": "例: 2025/03/27", "class": "form-control"}),
         }
     
-    # ✅ ← この位置に移動することが重要！
-    def clean_established_date(self):
-        date_input = self.cleaned_data.get('established_date')
-
-        if isinstance(date_input, str):
-            for fmt in ("%Y/%m/%d", "%Y-%m-%d"):
-                try:
-                    return datetime.strptime(date_input, fmt).date()
-                except ValueError:
-                    continue
-            raise forms.ValidationError("開業日の形式が正しくありません。例: 2025/03/27 または 2025-03-27")
-        return date_input
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # ✅ 任意・必須の設定
         self.fields['corporation_name'].required = False
         self.fields['industry'].required = True
-        
+
+        # ✅ 開業日フィールドを再定義（文字入力 & フォーマット指定）
+        self.fields['established_date'] = forms.DateField(
+            label="開業日",
+            required=False,
+            input_formats=["%Y/%m/%d", "%Y-%m-%d"],
+            widget=forms.TextInput(attrs={
+                "placeholder": "例: 2025/03/27",
+                "class": "form-control"
+            })
+        )
+
 
 class SalesActivityForm(forms.ModelForm):
     sales_person_email = forms.EmailField(required=False, label="営業担当者のメールアドレス")
