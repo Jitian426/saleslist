@@ -209,7 +209,7 @@ def company_list(request):
     # 営業履歴のフィルタ適用
     sales_filters = Q()
     if search_params["sales_person"]:
-        sales_filters &= Q(salesactivity__sales_person__icontains=search_params["sales_person"])
+       filters &= Q(latest_sales_person__icontains=search_params["sales_person"])
     if search_params["result"]:
         sales_filters &= Q(salesactivity__result=search_params["result"])
     if search_params["start_date"] and search_params["end_date"]:
