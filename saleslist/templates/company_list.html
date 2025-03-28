@@ -117,16 +117,16 @@
   </form>
 </div>
 
-<!-- ✅ ソート解除＋新規登録ボタン -->
-<div class="d-flex justify-content-end mt-2 mb-0">
-  <a href="?sort=id&order=asc" class="btn btn-outline-secondary btn-sm" style="font-size: 11px; padding: 2px 6px;">ソート解除</a>
-  <a href="{% url 'saleslist:company_create' %}" class="btn btn-primary btn-sm ms-3" style="font-size: 11px; padding: 2px 8px;">会社新規登録</a>
-</div>
-
 <!-- ✅ 対象レコード・総レコード件数 -->
 <div class="d-flex justify-content-start align-items-center mt-2 mb-2" style="font-size: 11px; color: #555;">
   対象レコード: {{ page_obj.paginator.count|intcomma }}　
   総レコード: {{ total_records|intcomma }}
+</div>
+
+<!-- ✅ ソート解除＋新規登録ボタン -->
+<div class="d-flex justify-content-end mt-2 mb-0">
+    <a href="?sort=id&order=asc" class="btn btn-outline-secondary btn-sm" style="font-size: 11px; padding: 2px 6px;">ソート解除</a>
+    <a href="{% url 'saleslist:company_create' %}" class="btn btn-primary btn-sm ms-3" style="font-size: 11px; padding: 2px 8px;">会社新規登録</a>
 </div>
 
 <div class="table-responsive">
@@ -170,23 +170,36 @@
 
 <!-- ✅ ページネーションUI -->
 <div class="d-flex justify-content-center my-3">
-  <nav>
-    <ul class="pagination pagination-sm">
-      {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}">前へ</a>
-        </li>
-      {% endif %}
-      <li class="page-item disabled">
-        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-      </li>
-      {% if page_obj.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}">次へ</a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
+    <nav>
+      <ul class="pagination pagination-sm">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">前へ</a>
+          </li>
+        {% endif %}
+  
+        {# ✅ ページ番号リンクを出力（前後2ページ＋現在） #}
+        {% for num in page_obj.paginator.page_range %}
+          {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+            {% if num == page_obj.number %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+  
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">次へ</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
 </div>
 
 </body>
