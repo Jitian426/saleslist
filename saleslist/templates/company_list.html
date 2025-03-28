@@ -132,20 +132,65 @@
 <div class="table-responsive">
   <table class="table table-striped table-hover align-middle">
     <thead class="table-light">
-      <tr>
-        <th>店舗名</th>
-        <th>店舗電話番号</th>
-        <th>携帯番号</th>
-        <th>店舗住所</th>
-        <th>法人名</th>
-        <th>開業日</th>
-        <th>許可番号</th>
-        <th>活動日</th>
-        <th>営業担当者</th>
-        <th>営業結果</th>
-        <th>次回営業予定日</th>
-      </tr>
+        <tr>
+            <th>
+                <a href="?sort=name&order={% if sort_column == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    店舗名 {% if sort_column == "name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=phone&order={% if sort_column == 'phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=mobile_phone&order={% if sort_column == 'mobile_phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    携帯番号 {% if sort_column == "mobile_phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th class="address">
+                <a href="?sort=address&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=corporation_name&order={% if sort_column == 'corporation_name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    法人名 {% if sort_column == "corporation_name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=established_date&order={% if sort_column == 'established_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=license_number&order={% if sort_column == 'license_number' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    許可番号 {% if sort_column == "license_number" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=activity_date&order={% if sort_column == 'latest_activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    活動日 {% if sort_column == "latest_activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=sales_person&order={% if sort_column == 'latest_sales_person' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    営業担当者 {% if sort_column == "latest_sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=result&order={% if sort_column == 'latest_result' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    営業結果 {% if sort_column == "latest_result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?sort=next_action_date&order={% if sort_column == 'latest_next_action_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    次回営業予定日 {% if sort_column == "latest_next_action_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+        </tr>
     </thead>
+    
     <tbody>
       {% for company in companies %}
         <tr>
@@ -157,8 +202,8 @@
           <td>{{ company.established_date|date:"Y/m/d" }}</td>
           <td>{{ company.license_number }}</td>
           <td>{{ company.latest_activity_date|date:"Y/m/d H:i" }}</td>
-          <td>{{ company.latest_sales_person }}</td>
-          <td>{{ company.latest_result }}</td>
+          <td>{{ company.latest_sales_person|default_if_none:"" }}</td>
+          <td>{{ company.latest_result|default_if_none:"" }}</td>
           <td>{{ company.latest_next_action_date|date:"Y/m/d H:i" }}</td>
         </tr>
       {% empty %}
