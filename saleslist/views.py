@@ -144,6 +144,7 @@ def company_list(request):
         "result": request.GET.get("result", "").strip(),
         "next_action_start": request.GET.get("next_action_start", "").strip(),
         "next_action_end": request.GET.get("next_action_end", "").strip(),
+        "exclude_query": request.GET.get("exclude_query", "").strip(),
     }
 
     logger.debug(f"🔍 取得した query: {search_params['query']}")
@@ -190,8 +191,6 @@ def company_list(request):
         filters &= phone_filter  # ← これで OR 条件が正しく filters に加わる
         logger.debug(f"📞 電話番号検索条件: {phone_filter}") # ← この行も if の中に入れる
 
-
-
     if search_params["address"]:
         filters &= Q(address__icontains=search_params["address"])
     if search_params["corporation_name"]:
@@ -202,6 +201,9 @@ def company_list(request):
         filters &= Q(industry__icontains=search_params["industry"])
     if search_params["sub_industry"]:
         filters &= Q(sub_industry__icontains=search_params["sub_industry"])
+    
+    if search_params["exclude_query"]:
+        filters &= ~Q(name__icontains=search_params["exclude_query"])
 
     # 🔽 ここでログ出力
     logger.debug(f"🔎 会社フィルタ: {filters}")
