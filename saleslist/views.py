@@ -375,9 +375,6 @@ def edit_company(request, company_id):
         form = CompanyForm(request.POST, instance=company)
         
         if form.is_valid():
-            # ✅ 変更前のデータを記録（form.save() より前に！）
-            original_data = {field: getattr(company, field) for field in form.fields}
-
             company = form.save(commit=False)
 
             # ✅ None→空文字変換（対象フィールドのみ）
@@ -390,11 +387,8 @@ def edit_company(request, company_id):
 
             company.save()
 
-            # 再取得ではなく、保存済みオブジェクトのまま比較
-            changed_fields = [
-                field for field in form.fields
-                if original_data[field] != getattr(company, field)
-            ]
+            # ✅ フォームで実際に変更されたフィールドのみ取得
+            changed_fields = form.changed_data
 
             # ✅ 編集ログを記録
             if changed_fields:
