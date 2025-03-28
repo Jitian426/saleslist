@@ -4,7 +4,6 @@
 <head>
     <!-- Bootstrap 5 のCDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>会社リスト</title>
@@ -17,253 +16,159 @@
         th, td {
             padding: 8px;
             text-align: left;
-            border: none; /* ✅ 枠線撤廃 */
+            border: none;
         }
         thead {
-            border-bottom: 2px solid #ccc; /* ✅ ヘッダー下にグレーの線 */
+            border-bottom: 2px solid #ccc;
         }
         tbody tr {
-            border-bottom: 1px solid #e0e0e0; /* ✅ 各行の下に薄い線 */
+            border-bottom: 1px solid #e0e0e0;
         }
         tbody tr:nth-child(even) {
-            background-color: #f9f9f9; /* ✅ 偶数行の背景色 */
+            background-color: #f9f9f9;
         }
         tbody tr:hover {
-            background-color: #f1f1f1; /* ✅ ホバー時の背景色 */
-        }
-        body {
-            font-size: 12px;
-        }
-        th {
-            background-color: #f2f2f2;
+            background-color: #f1f1f1;
         }
         .address {
-            max-width: 300px;  /* ✅ 店舗住所は長めに */
+            max-width: 300px;
             word-wrap: break-word;
             white-space: normal;
         }
     </style>
 </head>
 <body>
-    <!-- ✅ ページ上部：タイトル＋右上リンク群（横並び） -->
-    <div class="d-flex justify-content-between align-items-center px-3 py-1" style="border-bottom: 1px solid #ccc;">
-
-    <h2 class="mb-1" style="font-size: 24px;">Saleslist</h2>
-    
-    <div class="d-flex align-items-center" style="gap: 10px; font-size: 12px;">
-        {% if user.is_superuser or user.username == 'ryuji' %}
-        <a href="{% url 'saleslist:upload_csv' %}"
-        class="btn btn-outline-primary btn-sm"
-        style="font-size: 12px; padding: 2px 6px;">
-        CSVインポート
-     </a>
-     <a href="{% url 'saleslist:export_companies_csv' %}"
-        class="btn btn-outline-success btn-sm"
-        style="font-size: 12px; padding: 2px 6px;">
-        CSVエクスポート
-     </a>
-        {% endif %}
-        {% if user.is_authenticated %}
-            <a href="{% url 'saleslist:dashboard' %}">ダッシュボード</a> /
-            <a href="{% url 'saleslist:password_reset' %}">パスワード変更</a> /
-            <form id="logout-form" action="{% url 'saleslist:logout' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" style="all: unset; color: blue; cursor: pointer;">
-                    ログアウト
-                </button>
-            </form>
-        {% endif %}
-    </div>
+<div class="d-flex justify-content-between align-items-center px-3 py-1" style="border-bottom: 1px solid #ccc;">
+  <h2 class="mb-1" style="font-size: 24px;">Saleslist</h2>
+  <div class="d-flex align-items-center" style="gap: 10px; font-size: 12px;">
+    {% if user.is_superuser or user.username == 'ryuji' %}
+      <a href="{% url 'saleslist:upload_csv' %}" class="btn btn-outline-primary btn-sm" style="font-size: 12px; padding: 2px 6px;">CSVインポート</a>
+      <a href="{% url 'saleslist:export_companies_csv' %}" class="btn btn-outline-success btn-sm" style="font-size: 12px; padding: 2px 6px;">CSVエクスポート</a>
+    {% endif %}
+    {% if user.is_authenticated %}
+      <a href="{% url 'saleslist:dashboard' %}">ダッシュボード</a> /
+      <a href="{% url 'saleslist:password_reset' %}">パスワード変更</a> /
+      <form id="logout-form" action="{% url 'saleslist:logout' %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" style="all: unset; color: blue; cursor: pointer;">ログアウト</button>
+      </form>
+    {% endif %}
+  </div>
 </div>
 
-    <div class="container-fluid px-4">
-        <form method="GET" action="{% url 'saleslist:company_list' %}" class="mb-3">
-            <div class="row g-2 align-items-end">
-              <div class="col-sm-2">
-                <input type="text" class="form-control form-control-sm" name="query" placeholder="店舗名" value="{{ query }}">
-              </div>
-              <div class="col-sm-2">
-                <input type="text" class="form-control form-control-sm" name="phone" placeholder="電話番号" value="{{ phone }}">
-              </div>
-              <!-- ✅ テスト挿入 除外検索機能 -->
-              <div class="col-sm-2">
-                <input type="text" class="form-control form-control-sm" name="exclude_query" placeholder="除外キーワード" value="{{ exclude_query }}">
-              </div>
-              
-              <div class="col-sm-2">
-                <input type="text" class="form-control form-control-sm" name="address" placeholder="住所" value="{{ address }}">
-              </div>
-              <div class="col-sm-2">
-                <input type="text" class="form-control form-control-sm" name="corporation_name" placeholder="法人名" value="{{ corporation_name }}">
-              </div>
-              <div class="col-sm-2">
-                <input type="text" class="form-control form-control-sm" name="industry" placeholder="大業種" value="{{ industry }}">
-              </div>
-              <div class="col-sm-2">
-                <input type="text" class="form-control form-control-sm" name="sub_industry" placeholder="小業種" value="{{ sub_industry }}">
-              </div>
-          
-              <!-- 改行して2段目 -->
-              <div class="col-sm-2">
-                <label class="form-label mb-0 small">活動日 (開始)</label>
-                <input type="date" class="form-control form-control-sm" name="start_date" value="{{ start_date }}">
-              </div>
-              <div class="col-sm-2">
-                <label class="form-label mb-0 small">活動日 (終了)</label>
-                <input type="date" class="form-control form-control-sm" name="end_date" value="{{ end_date }}">
-              </div>
-              <div class="col-sm-2">
-                <label class="form-label mb-0 small">営業担当者</label>
-                <select name="sales_person" class="form-select form-select-sm">
-                  <option value="">すべて</option>
-                  {% for activity in sales_persons %}
-                    <option value="{{ activity.sales_person }}" {% if sales_person == activity.sales_person %}selected{% endif %}>
-                      {{ activity.sales_person }}
-                    </option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="col-sm-2">
-                <label class="form-label mb-0 small">営業結果</label>
-                <select name="result" class="form-select form-select-sm">
-                  <option value="">すべて</option>
-                  {% for res in results %}
-                    <option value="{{ res }}" {% if result == res %}selected{% endif %}>{{ res }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="col-sm-2">
-                <label class="form-label mb-0 small">次回予定 (開始)</label>
-                <input type="date" class="form-control form-control-sm" name="next_action_start" value="{{ next_action_start }}">
-              </div>
-              <div class="col-sm-2">
-                <label class="form-label mb-0 small">次回予定 (終了)</label>
-                <input type="date" class="form-control form-control-sm" name="next_action_end" value="{{ next_action_end }}">
-              </div>
-          
-              <!-- ボタン -->
-              <div class="col-sm-2">
-                <button type="submit" class="btn btn-sm btn-primary w-100">検索</button>
-              </div>
-              <div class="col-sm-2">
-                <a href="{% url 'saleslist:company_list' %}" class="btn btn-sm btn-outline-secondary w-100">すべてリセット</a>
-              </div>
-            </div>
-        </form>
-    </div>
+<div class="container-fluid px-4">
+  <form method="GET" action="{% url 'saleslist:company_list' %}" class="mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="query" placeholder="店舗名" value="{{ query }}"></div>
+      <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="phone" placeholder="電話番号" value="{{ phone }}"></div>
+      <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="address" placeholder="住所" value="{{ address }}"></div>
+      <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="corporation_name" placeholder="法人名" value="{{ corporation_name }}"></div>
+      <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="industry" placeholder="大業種" value="{{ industry }}"></div>
+      <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="sub_industry" placeholder="小業種" value="{{ sub_industry }}"></div>
 
-<!-- ✅ 対象レコード・総レコード件数（右下に小さく） -->
+      <div class="col-sm-2">
+        <label class="form-label mb-0 small">活動日 (開始)</label>
+        <input type="date" class="form-control form-control-sm" name="start_date" value="{{ start_date }}">
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label mb-0 small">活動日 (終了)</label>
+        <input type="date" class="form-control form-control-sm" name="end_date" value="{{ end_date }}">
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label mb-0 small">営業担当者</label>
+        <select name="sales_person" class="form-select form-select-sm">
+          <option value="">すべて</option>
+          {% for activity in sales_persons %}
+            <option value="{{ activity.sales_person }}" {% if sales_person == activity.sales_person %}selected{% endif %}>
+              {{ activity.sales_person }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label mb-0 small">営業結果</label>
+        <select name="result" class="form-select form-select-sm">
+          <option value="">すべて</option>
+          {% for res in results %}
+            <option value="{{ res }}" {% if result == res %}selected{% endif %}>{{ res }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label mb-0 small">次回予定 (開始)</label>
+        <input type="date" class="form-control form-control-sm" name="next_action_start" value="{{ next_action_start }}">
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label mb-0 small">次回予定 (終了)</label>
+        <input type="date" class="form-control form-control-sm" name="next_action_end" value="{{ next_action_end }}">
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label mb-0 small">除外キーワード</label>
+        <input type="text" class="form-control form-control-sm" name="exclude" placeholder="除外ワード" value="{{ exclude }}">
+      </div>
+
+      <div class="col-sm-2">
+        <button type="submit" class="btn btn-sm btn-primary w-100">検索</button>
+      </div>
+      <div class="col-sm-2">
+        <a href="{% url 'saleslist:company_list' %}" class="btn btn-sm btn-outline-secondary w-100">すべてリセット</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ✅ ソート解除＋新規登録ボタン -->
+<div class="d-flex justify-content-end mt-2 mb-0">
+  <a href="?sort=id&order=asc" class="btn btn-outline-secondary btn-sm" style="font-size: 11px; padding: 2px 6px;">ソート解除</a>
+  <a href="{% url 'saleslist:company_create' %}" class="btn btn-primary btn-sm ms-3" style="font-size: 11px; padding: 2px 8px;">会社新規登録</a>
+</div>
+
+<!-- ✅ 対象レコード・総レコード件数 -->
 <div class="d-flex justify-content-start align-items-center mt-2 mb-2" style="font-size: 11px; color: #555;">
   対象レコード: {{ page_obj.paginator.count|intcomma }}　
   総レコード: {{ total_records|intcomma }}
 </div>
 
-    <!-- 🔽 テーブル開始前に追加 -->
 <div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        ...
-    </table>
+  <table class="table table-striped table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>店舗名</th>
+        <th>店舗電話番号</th>
+        <th>携帯番号</th>
+        <th>店舗住所</th>
+        <th>法人名</th>
+        <th>開業日</th>
+        <th>許可番号</th>
+        <th>活動日</th>
+        <th>営業担当者</th>
+        <th>営業結果</th>
+        <th>次回営業予定日</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for company in companies %}
+        <tr>
+          <td><a href="{% url 'saleslist:company_detail' company.id %}">{{ company.name }}</a></td>
+          <td>{{ company.phone }}</td>
+          <td>{{ company.mobile_phone }}</td>
+          <td class="address">{{ company.address }}</td>
+          <td>{{ company.corporation_name }}</td>
+          <td>{{ company.established_date|date:"Y/m/d" }}</td>
+          <td>{{ company.license_number }}</td>
+          <td>{{ company.latest_activity_date|date:"Y/m/d H:i" }}</td>
+          <td>{{ company.latest_sales_person }}</td>
+          <td>{{ company.latest_result }}</td>
+          <td>{{ company.latest_next_action_date|date:"Y/m/d H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="11">該当する会社が見つかりませんでした。</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
-<!-- ✅ ソート解除＋新規登録ボタン -->
-<div class="d-flex justify-content-end mt-2 mb-0">
-  <a href="?sort=id&order=asc" class="btn btn-outline-secondary btn-sm" style="font-size: 11px; padding: 2px 6px;">
-      ソート解除
-  </a>
-  <a href="{% url 'saleslist:company_create' %}" class="btn btn-primary btn-sm ms-3" style="font-size: 11px; padding: 2px 8px;">
-      会社新規登録
-  </a>
-</div>
-
-    <table class="table table-striped table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>
-                  <a href="?sort=name&order={% if sort_column == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                        店舗名 {% if sort_column == "name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                </th>
-                <th>
-                  <a href="?sort=name&order={% if sort_column == 'phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                        店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                </th>
-                <th>
-                  <a href="?sort=name&order={% if sort_column == 'mobile_phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                        携帯番号 {% if sort_column == "mobile_phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                </th>
-                <th class="address">
-                  <a href="?sort=name&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                        店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                </th>
-                <th>
-                  <a href="?sort=name&order={% if sort_column == 'corporation_name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                        法人名 {% if sort_column == "corporation_name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                </th>
-                <th>
-                  <a href="?sort=name&order={% if sort_column == 'established_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                        開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                </th>
-                <th>
-                  <a href="?sort=name&order={% if sort_column == 'license_number' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                        許可番号 {% if sort_column == "license_number" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                </th>
-                <th>
-                  <a href="?sort=name&order={% if sort_column == 'latest_activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                      活動日 {% if sort_column == "latest_activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                  </th>
-                  <th>
-                    <a href="?sort=name&order={% if sort_column == 'latest_sales_person' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                      営業担当者 {% if sort_column == "latest_sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                  </th>
-                  <th>
-                    <a href="?sort=name&order={% if sort_column == 'latest_result' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                      営業結果 {% if sort_column == "latest_result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                  </th>
-                  <th>
-                    <a href="?sort=name&order={% if sort_column == 'latest_next_action_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}&{{ request.GET.urlencode|safe }}">
-                      次回営業予定日 {% if sort_column == "latest_next_action_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                    </a>
-                  </th>
-                  
-            </tr>
-        </thead>
-        <tbody>
-        {% for company in companies %}
-        
-            <tr>
-                <td><a href="{% url 'saleslist:company_detail' company.id %}">{{ company.name }}</a></td>
-                <td>{{ company.phone }}</td>
-                <td>{{ company.mobile_phone }}</td>
-                <td class="address">{{ company.address }}</td>
-                <td>{{ company.corporation_name }}</td>
-                <td>{{ company.established_date|date:"Y/m/d" }}</td>
-                <td>{{ company.license_number }}</td>
-    
-                <td>{{ company.latest_activity_date|date:"Y/m/d H:i" }}</td>
-                <td>{{ company.latest_sales_person|default_if_none:"" }}</td>
-                <td>{{ company.latest_result|default_if_none:"" }}</td>
-                <td>{{ company.latest_next_action_date|date:"Y/m/d H:i" }}</td>
-                
-            </tr>
-            
-        {% empty %}
-            <tr>
-                <td colspan="9">該当する会社が見つかりませんでした。</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    
-<!-- ✅ 改良版ページネーション -->
+<!-- ✅ ページネーションUI -->
 <div class="d-flex justify-content-center my-3">
   <nav>
     <ul class="pagination pagination-sm">
@@ -272,17 +177,9 @@
           <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}">前へ</a>
         </li>
       {% endif %}
-
-      {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}">{{ num }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
-
+      <li class="page-item disabled">
+        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      </li>
       {% if page_obj.has_next %}
         <li class="page-item">
           <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}">次へ</a>
@@ -291,7 +188,6 @@
     </ul>
   </nav>
 </div>
-
 
 </body>
 </html>
