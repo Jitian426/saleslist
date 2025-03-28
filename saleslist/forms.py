@@ -57,7 +57,7 @@ class SalesActivityForm(forms.ModelForm):
     
     class Meta:
         model = SalesActivity
-        fields = ["sales_person", "result", "memo", "next_action_date"]
+        fields = ["result", "memo", "next_action_date"]
         widgets = {
             "next_action_date": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             'result': forms.Select(choices=SalesActivity.RESULT_CHOICES),  # ✅ 選択肢を適用
