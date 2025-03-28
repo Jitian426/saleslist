@@ -324,7 +324,9 @@ def add_sales_activity(request, company_id):
             sales_activity = form.save(commit=False)
             sales_activity.company = company
             sales_activity.activity_date = localtime(now())  # ✅ 日時を適用
-            sales_activity.sales_person = request.user       # ✅ 自動的にログインユーザーを登録
+            # ✅ 氏名で保存（空なら fallback で username）
+            full_name = f"{request.user.last_name}{request.user.first_name}"
+            sales_activity.sales_person = full_name if full_name.strip() else request.user.username
             sales_activity.sales_person_email = request.POST.get('sales_person_email')
             sales_activity.save()
             
