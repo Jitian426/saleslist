@@ -68,7 +68,11 @@
       <tbody>
         {% for activity in sales_activities %}
           <tr>
-            <td>{{ activity.sales_person }}</td>
+            <td>
+                {% if activity.sales_person %}
+                  {{ activity.sales_person.last_name }} {{ activity.sales_person.first_name }}
+                {% endif %}
+            </td>
             <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
             <td>{{ activity.result }}</td>
             <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
