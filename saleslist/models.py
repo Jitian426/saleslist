@@ -22,6 +22,7 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+from django.conf import settings  # ← 追加（Userモデルを参照するため）
 
 class SalesActivity(models.Model):
     RESULT_CHOICES = [
@@ -36,7 +37,7 @@ class SalesActivity(models.Model):
     ]
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="企業")  
-    sales_person = models.CharField(max_length=100, verbose_name="営業担当者")  
+    sales_person = models.CharField(max_length=100, verbose_name="営業担当者")
     sales_person_email = models.EmailField(verbose_name="営業担当者のメールアドレス", blank=True, null=True)  
     activity_date = models.DateTimeField(auto_now_add=True, verbose_name="営業活動日時")  
     result = models.CharField(max_length=20, choices=[
