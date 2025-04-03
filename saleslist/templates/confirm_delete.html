@@ -18,13 +18,14 @@
   </tbody>
 </table>
 
-<form method="post" action="/companies/delete_filtered/execute/">
+<form method="post" action="{% url 'saleslist:execute_delete_filtered_companies' %}">
   {% csrf_token %}
+  
   {% for key, value in search_params.items %}
-    <input type="hidden" name="{{ key }}" value="{{ value }}">
+      <input type="hidden" name="{{ key }}" value="{{ value }}">
   {% endfor %}
-  <button type="submit" class="btn btn-danger">削除を実行</button>
-  <a href="{% url 'saleslist:download_filtered_companies_csv' %}?{{ search_params|urlencode }}" class="btn btn-outline-secondary">対象一覧をCSVで確認</a>
-  <a href="{% url 'saleslist:company_list' %}" class="btn btn-secondary">キャンセル</a>
+
+  <button type="submit" class="btn btn-danger btn-sm">削除を実行</button>
 </form>
+
 {% endblock %}
