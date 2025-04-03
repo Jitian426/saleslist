@@ -586,6 +586,13 @@ def execute_delete_filtered_companies(request):
     if 'query' in search_params and search_params['query']:
         filtered_qs = filtered_qs.filter(name__icontains=search_params['query'])
 
+    if 'address' in search_params and search_params['address']:
+        filtered_qs = filtered_qs.filter(address__icontains=search_params['address'])
+
+    if 'industry' in search_params and search_params['industry']:
+        filtered_qs = filtered_qs.filter(industry__icontains=search_params['industry'])
+
+
     deleted_ids = list(filtered_qs.values_list('id', flat=True))
     deleted_names = list(filtered_qs.values_list('name', flat=True))
 
