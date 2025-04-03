@@ -551,3 +551,74 @@ def company_create(request):
         form = CompanyForm()
 
     return render(request, "company_create.html", {"form": form})
+
+
+from django.views.decorators.http import require_POST
+from .models import CompanyEditLog  # 既にインポート済みならOK
+
+
+@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
+def confirm_delete_filtered_companies(request):
+    search_params = request.GET.dict()
+    filtered_qs = Company.objects.all()
+
+    # ※ company_list と同様のフィルタをここで再構成（要リファクタリング化）
+    # 例：名前フィルタ（実際は全条件対応させること）
+    if 'query' in search_params and search_params['query']:
+        filtered_qs = filtered_qs.filter(name__icontains=search_params['query'])
+
+    count = filtered_qs.count()
+
+    context = {
+        "companies": filtered_qs,
+        "count": count,
+        "search_params": search_params,
+    }
+    return render(request, "confirm_delete.html", context)
+
+
+@require_POST
+@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
+def execute_delete_filtered_companies(request):
+    search_params = request.POST.dict()
+    filtered_qs = Company.objects.all()
+
+    if 'query' in search_params and search_params['query']:
+        filtered_qs = filtered_qs.filter(name__icontains=search_params['query'])
+
+    deleted_ids = list(filtered_qs.values_list('id', flat=True))
+    deleted_names = list(filtered_qs.values_list('name', flat=True))
+
+    count = filtered_qs.count()
+    filtered_qs.delete()
+
+    # ログ記録
+    for company_id, name in zip(deleted_ids, deleted_names):
+        CompanyEditLog.objects.create(
+            company_id=company_id,
+            user=request.user,
+            action="一括削除",
+            changed_fields={"name": name}
+        )
+
+    messages.success(request, f"{count} 件の会社情報を削除しました。")
+    return redirect("saleslist:company_list")
+
+
+@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
+def download_filtered_companies_csv(request):
+    search_params = request.GET.dict()
+    filtered_qs = Company.objects.all()
+
+    if 'query' in search_params and search_params['query']:
+        filtered_qs = filtered_qs.filter(name__icontains=search_params['query'])
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename=delete_targets.csv'
+    writer = csv.writer(response)
+    writer.writerow(["店舗名", "電話番号", "住所", "大業種", "法人名", "許可番号"])
+
+    for company in filtered_qs:
+        writer.writerow([company.name, company.phone, company.address, company.industry, company.corporation_name, company.license_number])
+
+    return response

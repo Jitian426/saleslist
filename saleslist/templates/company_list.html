@@ -113,6 +113,18 @@
       <div class="col-sm-2">
         <a href="{% url 'saleslist:company_list' %}" class="btn btn-sm btn-outline-secondary w-100">すべてリセット</a>
       </div>
+
+      {% if user.is_superuser or user.username == 'ryuji' %}
+        <form method="get" action="{% url 'saleslist:confirm_delete_filtered_companies' %}" style="margin-top: 10px;">
+          {% for key, value in request.GET.items %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+          {% endfor %}
+          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('この検索条件の会社一覧を確認・削除しますか？')">
+            この検索結果の一括削除を確認
+          </button>
+        </form>
+      {% endif %}
+
     </div>
   </form>
 </div>

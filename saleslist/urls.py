@@ -24,6 +24,9 @@ urlpatterns = [
     path("", company_list, name="home"),  # ✅ ホーム画面を企業リストにする
     path('export_csv/', views.export_companies_csv, name='export_companies_csv'),
     path("companies/add/", views.company_create, name="company_create"),
+    path('companies/delete_filtered/confirm/', views.confirm_delete_filtered_companies, name='confirm_delete_filtered_companies'),
+    path('companies/delete_filtered/execute/', views.execute_delete_filtered_companies, name='execute_delete_filtered_companies'),
+    path('companies/delete_filtered/download_csv/', views.download_filtered_companies_csv, name='download_filtered_companies_csv'),
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),

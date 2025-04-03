@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>検索結果の一括削除確認</h4>
+
+<p class="text-danger fw-bold">以下の {{ count }} 件を削除します。内容を確認してください。</p>
+
+<table class="table table-sm table-striped table-bordered">
+  <thead><tr><th>店舗名</th><th>電話番号</th><th>住所</th><th>大業種</th></tr></thead>
+  <tbody>
+    {% for company in companies %}
+      <tr>
+        <td>{{ company.name }}</td>
+        <td>{{ company.phone }}</td>
+        <td>{{ company.address }}</td>
+        <td>{{ company.industry }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<form method="post" action="{% url 'saleslist:execute_delete_filtered_companies' %}">
+  {% csrf_token %}
+  {% for key, value in search_params.items %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+  {% endfor %}
+  <button type="submit" class="btn btn-danger">削除を実行</button>
+  <a href="{% url 'saleslist:download_filtered_companies_csv' %}?{{ search_params|urlencode }}" class="btn btn-outline-secondary">対象一覧をCSVで確認</a>
+  <a href="{% url 'saleslist:company_list' %}" class="btn btn-secondary">キャンセル</a>
+</form>
+{% endblock %}
