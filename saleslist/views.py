@@ -580,6 +580,7 @@ def confirm_delete_filtered_companies(request):
 @require_POST
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def execute_delete_filtered_companies(request):
+    print("✅ execute_delete_filtered_companies が呼び出されました")
     search_params = request.POST.dict()
     filtered_qs = Company.objects.all()
 
