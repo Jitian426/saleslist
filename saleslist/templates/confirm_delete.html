@@ -18,7 +18,7 @@
   </tbody>
 </table>
 
-<form method="post" action="{% url 'saleslist:execute_delete_filtered_companies' %}">
+<form method="post" action="/companies/delete_filtered/execute/">
   {% csrf_token %}
   {% for key, value in search_params.items %}
     <input type="hidden" name="{{ key }}" value="{{ value }}">

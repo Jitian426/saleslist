@@ -581,6 +581,7 @@ def confirm_delete_filtered_companies(request):
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def execute_delete_filtered_companies(request):
     print("✅ execute_delete_filtered_companies が呼び出されました")
+    print(f"📥 POST 内容: {request.POST.dict()}")
     search_params = request.POST.dict()
     filtered_qs = Company.objects.all()
 
