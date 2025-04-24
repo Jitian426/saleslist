@@ -1,10 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<h4>削除テスト</h4>
+<div class="container mt-4">
+  <h4>検索結果の一括削除確認</h4>
+  <p>以下の検索条件に一致する企業を削除します。よろしいですか？</p>
 
-<form method="post" action="/companies/delete_filtered/execute/">
-  {% csrf_token %}
-  <input type="hidden" name="query" value="テスト会社">
-  <button type="submit" class="btn btn-danger btn-sm">削除テスト実行</button>
-</form>
+  <ul>
+    {% for key, value in search_params.items %}
+      {% if value %}
+        <li><strong>{{ key }}</strong>: {{ value }}</li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <form method="post" action="{% url 'saleslist:execute_delete_filtered_companies' %}">
+    {% csrf_token %}
+    {% for key, value in search_params.items %}
+      <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+    <button type="submit" class="btn btn-danger">削除を実行</button>
+    <a href="{% url 'saleslist:company_list' %}" class="btn btn-secondary">キャンセル</a>
+  </form>
+</div>
 {% endblock %}

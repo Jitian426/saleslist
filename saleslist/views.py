@@ -562,10 +562,44 @@ def confirm_delete_filtered_companies(request):
     search_params = request.GET.dict()
     filtered_qs = Company.objects.all()
 
-    # ※ company_list と同様のフィルタをここで再構成（要リファクタリング化）
-    # 例：名前フィルタ（実際は全条件対応させること）
-    if 'query' in search_params and search_params['query']:
-        filtered_qs = filtered_qs.filter(name__icontains=search_params['query'])
+    if search_params.get("query"):
+        filtered_qs = filtered_qs.filter(name__icontains=search_params["query"])
+
+    if search_params.get("phone"):
+        phone = search_params["phone"]
+        filtered_qs = filtered_qs.filter(
+            Q(phone__icontains=phone) |
+            Q(corporation_phone__icontains=phone) |
+            Q(fax__icontains=phone) |
+            Q(mobile_phone__icontains=phone)
+        )
+
+    if search_params.get("address"):
+        filtered_qs = filtered_qs.filter(address__icontains=search_params["address"])
+
+    if search_params.get("corporation_name"):
+        filtered_qs = filtered_qs.filter(corporation_name__icontains=search_params["corporation_name"])
+
+    if search_params.get("industry"):
+        filtered_qs = filtered_qs.filter(industry__icontains=search_params["industry"])
+
+    if search_params.get("sub_industry"):
+        filtered_qs = filtered_qs.filter(sub_industry__icontains=search_params["sub_industry"])
+
+    if search_params.get("exclude_query"):
+        exclude_query = search_params["exclude_query"]
+        filtered_qs = filtered_qs.exclude(
+            Q(name__icontains=exclude_query) |
+            Q(address__icontains=exclude_query) |
+            Q(corporation_name__icontains=exclude_query)
+        )
+
+    # 営業履歴の条件を含めたい場合（オプション）
+    latest_sales_qs = SalesActivity.objects.filter(
+        company_id__in=filtered_qs.values("id")
+    ).order_by("company_id", "-activity_date")
+
+    # ※必要に応じて further refine
 
     count = filtered_qs.count()
 
@@ -575,6 +609,7 @@ def confirm_delete_filtered_companies(request):
         "search_params": search_params,
     }
     return render(request, "confirm_delete.html", context)
+
 
 from django.views.decorators.csrf import csrf_exempt
 
