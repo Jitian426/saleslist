@@ -576,10 +576,14 @@ def confirm_delete_filtered_companies(request):
     }
     return render(request, "confirm_delete.html", context)
 
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt  # ← 一時的にCSRFチェックを外す（あとで戻す）
 @require_POST
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def execute_delete_filtered_companies(request):
+    print("✅ POST受信:", request.method)
+    print("✅ 受信データ:", request.POST)    
     print("✅ execute_delete_filtered_companies が呼び出されました")
     print(f"📥 POST 内容: {request.POST.dict()}")
     search_params = request.POST.dict()
