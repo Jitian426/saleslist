@@ -102,7 +102,16 @@
   <!-- 営業結果ボタン群（画面下固定） -->
   <div id="sales-result-buttons" style="position: fixed; bottom: 0; left: 0; right: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ccc; z-index: 9999;" class="text-center">
     {% for result in sales_results %}
-      <button class="btn btn-outline-primary btn-sm mx-1 open-modal-btn" data-result="{{ result }}">{{ result }}</button>
+      <button
+        class="btn btn-outline-primary btn-sm mx-1"
+        data-result="{{ result }}"
+        data-bs-toggle="modal"
+        data-bs-target="#salesActivityModal"
+        onclick="document.getElementById('sales_result').value = this.dataset.result"
+      >
+        {{ result }}
+      </button>
+
     {% endfor %}
   </div>
 
@@ -137,7 +146,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const modal = new bootstrap.Modal(document.getElementById('salesActivityModal'));
   const form = document.getElementById('salesActivityForm');
 
   // ボタン押下 → 営業結果の値をセット → モーダル表示
