@@ -82,8 +82,6 @@
       </tbody>
 </table>
 
-      
-
     
     <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
 
@@ -100,6 +98,87 @@
         <p>編集履歴はまだありません。</p>
      {% endfor %}
     </div>
+
+  <!-- 営業結果ボタン群（画面下固定） -->
+  <div id="sales-result-buttons" style="position: fixed; bottom: 0; left: 0; right: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ccc; z-index: 9999;" class="text-center">
+    {% for result in "再コール,追わない,見込,アポ成立,受注,失注,不通留守,担当不在".split(',') %}
+      <button class="btn btn-outline-primary btn-sm mx-1 open-modal-btn" data-result="{{ result }}">{{ result }}</button>
+    {% endfor %}
+  </div>
+
+<!-- モーダル（Bootstrapを使用） -->
+<div class="modal fade" id="salesActivityModal" tabindex="-1" aria-labelledby="salesActivityModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="salesActivityForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="salesActivityModalLabel">営業履歴の追加</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="sales_result" id="sales_result">
+          <div class="mb-3">
+            <label for="next_scheduled_date" class="form-label">次回営業予定日時</label>
+            <input type="datetime-local" class="form-control" name="next_scheduled_date" id="next_scheduled_date">
+          </div>
+          <div class="mb-3">
+            <label for="memo" class="form-label">メモ</label>
+            <textarea class="form-control" name="memo" id="memo" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">登録</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = new bootstrap.Modal(document.getElementById('salesActivityModal'));
+  const form = document.getElementById('salesActivityForm');
+
+  // ボタン押下 → 営業結果の値をセット → モーダル表示
+  document.querySelectorAll('.open-modal-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.getElementById('sales_result').value = button.dataset.result;
+      modal.show();
+    });
+  });
+
+  // モーダルフォーム送信 → Ajaxで営業履歴を登録
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const data = {
+      sales_result: form.sales_result.value,
+      next_scheduled_date: form.next_scheduled_date.value,
+      memo: form.memo.value
+    };
+
+    const response = await fetch(window.location.pathname + 'add_sales_activity_ajax/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      alert("営業履歴を登録しました！");
+      modal.hide();
+      location.reload();  // 成功時はページを再読み込み
+    } else {
+      alert("登録に失敗しました。");
+    }
+  });
+});
+</script>
+
 
 </body>
 </html>

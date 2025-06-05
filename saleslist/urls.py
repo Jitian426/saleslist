@@ -20,6 +20,7 @@ urlpatterns = [
     path("company/<int:company_id>/", company_detail, name="company_detail"),  # ✅ 確認
     path("company/<int:company_id>/add_sales_activity/", add_sales_activity, name="add_sales_activity"),
     path("company/<int:company_id>/edit/", edit_company, name="edit_company"),
+    path("company/<int:pk>/add_sales_activity_ajax/", views.add_sales_activity_ajax, name="add_sales_activity_ajax"),
     path("dashboard/", dashboard, name="dashboard"),
     path("", company_list, name="home"),  # ✅ ホーム画面を企業リストにする
     path('export_csv/', views.export_companies_csv, name='export_companies_csv'),

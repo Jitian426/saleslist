@@ -670,3 +670,27 @@ def download_filtered_companies_csv(request):
         writer.writerow([company.name, company.phone, company.address, company.industry, company.corporation_name, company.license_number])
 
     return response
+
+
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+import json
+from .models import Company, SalesActivity
+from django.utils.timezone import now
+
+@require_POST
+def add_sales_activity_ajax(request, pk):
+    user = request.user
+    company = Company.objects.get(pk=pk)
+    data = json.loads(request.body)
+
+    SalesActivity.objects.create(
+        company=company,
+        sales_person=f"{user.first_name}{user.last_name}",
+        sales_result=data.get("sales_result"),
+        activity_date=now(),  # 現在時刻を自動セット
+        next_scheduled_date=data.get("next_scheduled_date"),
+        memo=data.get("memo"),
+        created_by=user
+    )
+    return JsonResponse({"status": "success"})
