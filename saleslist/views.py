@@ -289,10 +289,16 @@ from .forms import CompanyForm
 @login_required
 def company_detail(request, company_id):
     company = get_object_or_404(Company, id=company_id)
-    sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')  # ✅ 日付降順に取得
+    sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')
     
-    return render(request, 'company_detail.html', {'company': company, "sales_activities": sales_activities})
+    # ✅ 営業結果リストをテンプレートに渡す
+    sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
+    return render(request, 'company_detail.html', {
+        'company': company,
+        "sales_activities": sales_activities,
+        "sales_results": sales_results,
+    })
     
 
 from django.shortcuts import render, get_object_or_404
