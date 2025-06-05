@@ -148,11 +148,11 @@
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('salesActivityForm');
 
-  // ボタン押下 → 営業結果の値をセット → モーダル表示
+  // ✅ 不要なJSによるモーダル表示処理を削除
   document.querySelectorAll('.open-modal-btn').forEach(button => {
     button.addEventListener('click', () => {
+      // モーダル表示は Bootstrap に任せて、ここでは営業結果だけセット
       document.getElementById('sales_result').value = button.dataset.result;
-      modal.show();
     });
   });
 
@@ -178,7 +178,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (response.ok) {
       alert("営業履歴を登録しました！");
-      modal.hide();
+      // ✅ Bootstrapモーダルを閉じる（安全に記述）
+      const modalEl = document.getElementById('salesActivityModal');
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+
       location.reload();  // 成功時はページを再読み込み
     } else {
       alert("登録に失敗しました。");
