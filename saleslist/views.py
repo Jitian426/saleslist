@@ -695,7 +695,10 @@ def add_sales_activity_ajax(request, pk):
 
         next_action = data.get("next_scheduled_date") or None
 
-        # SalesActivity 作成
+        sales_person_email = data.get("sales_person_email")
+        if sales_person_email == "":
+            sales_person_email = None
+
         activity = SalesActivity.objects.create(
             company=company,
             sales_person=f"{user.first_name}{user.last_name}",
@@ -703,7 +706,7 @@ def add_sales_activity_ajax(request, pk):
             activity_date=now(),
             next_action_date=next_action,
             memo=data.get("memo"),
-            sales_person_email=data.get("sales_person_email")
+            sales_person_email=sales_person_email  # ← 修正後の変数を使う
         )
 
         # ✅ メール送信処理（Ajaxでも）
