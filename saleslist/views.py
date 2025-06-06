@@ -118,47 +118,26 @@ from django.db.models.functions import Cast
 logger = logging.getLogger(__name__)
 
 @login_required
-def company_list(request):
-    logger.debug("✅ company_list が呼び出されました")
+def company_detail(request, pk):
+    from django.db.models import OuterRef, Subquery, Q, F, CharField
+    from django.db.models.functions import Cast
+    from django.utils.http import urlencode
 
-    from django.db.models import OuterRef, Subquery
+    # GETパラメータ取得（検索・ソート用）
+    query = request.GET.get("query", "")
+    phone = request.GET.get("phone", "")
+    address = request.GET.get("address", "")
+    corporation_name = request.GET.get("corporation_name", "")
+    sales_person = request.GET.get("sales_person", "")
+    result = request.GET.get("result", "")
+    sort = request.GET.get("sort", "id")
+    order = request.GET.get("order", "asc")
 
-    # 最新の営業履歴を取得するサブクエリ
-    latest_activities = SalesActivity.objects.filter(
-        company=OuterRef('pk')
-    ).order_by('-activity_date')
+    # 最新営業履歴サブクエリ
+    latest_activities = SalesActivity.objects.filter(company=OuterRef('pk')).order_by('-activity_date')
 
-
-    # 検索パラメータの取得
-    search_params = {
-        "query": request.GET.get("query", "").strip(),
-        "phone": request.GET.get("phone", "").strip(),
-        "address": request.GET.get("address", "").strip(),
-        "corporation_name": request.GET.get("corporation_name", "").strip(),
-        "corporation_phone": request.GET.get("corporation_phone", "").strip(),
-        "industry": request.GET.get("industry", "").strip(),
-        "sub_industry": request.GET.get("sub_industry", "").strip(),
-        "start_date": request.GET.get("start_date", "").strip(),
-        "end_date": request.GET.get("end_date", "").strip(),
-        "sales_person": request.GET.get("sales_person", "").strip(),
-        "result": request.GET.get("result", "").strip(),
-        "next_action_start": request.GET.get("next_action_start", "").strip(),
-        "next_action_end": request.GET.get("next_action_end", "").strip(),
-        "exclude_query": request.GET.get("exclude_query", "").strip(),
-    }
-
-    logger.debug(f"🔍 取得した query: {search_params['query']}")
-    logger.debug(f"🔍 取得した phone: {search_params['phone']}")
-    logger.debug(f"🔍 取得した address: {search_params['address']}")
-    logger.debug(f"🔍 取得した corporation_name: {search_params['corporation_name']}")
-    
-    
-    # 🔹 常に全件取得（無検索でもすべて表示）
-    companies = Company.objects.all()
-
-
-    # 必要な情報だけ事前取得（営業結果、担当者、次回営業予定日など）
-    companies = companies.annotate(
+    # ベースQuerySet
+    companies = Company.objects.annotate(
         latest_activity_date=Subquery(latest_activities.values('activity_date')[:1]),
         latest_sales_person=Subquery(
             latest_activities.annotate(
@@ -169,116 +148,85 @@ def company_list(request):
         latest_next_action_date=Subquery(latest_activities.values('next_action_date')[:1]),
     )
 
-    # annotate() の後に追加
-    for company in companies:
-        company.latest_sales_person = company.latest_sales_person or ""
-        company.latest_result = company.latest_result or ""
-        company.latest_next_action_date = company.latest_next_action_date or ""
-        company.latest_activity_date = company.latest_activity_date or ""
-
-    # クエリの適用（会社情報）
+    # 検索条件を再適用
     filters = Q()
-    if search_params["query"]:
-        filters &= Q(name__icontains=search_params["query"])
-    if search_params["phone"]:
-        phone_query = search_params["phone"]
-        phone_filter = (
-            Q(phone__icontains=phone_query) |
-            Q(corporation_phone__icontains=phone_query) |
-            Q(fax__icontains=phone_query) |
-            Q(mobile_phone__icontains=phone_query)
+    if query:
+        filters &= (
+            Q(name__icontains=query) |
+            Q(phone__icontains=query) |
+            Q(address__icontains=query) |
+            Q(corporation_name__icontains=query)
         )
-        filters &= phone_filter  # ← これで OR 条件が正しく filters に加わる
-        logger.debug(f"📞 電話番号検索条件: {phone_filter}") # ← この行も if の中に入れる
+    if phone:
+        filters &= (
+            Q(phone__icontains=phone) |
+            Q(corporation_phone__icontains=phone) |
+            Q(fax__icontains=phone) |
+            Q(mobile_phone__icontains=phone)
+        )
+    if address:
+        filters &= Q(address__icontains=address)
+    if corporation_name:
+        filters &= Q(corporation_name__icontains=corporation_name)
+    if sales_person:
+        filters &= Q(latest_sales_person__icontains=sales_person)
+    if result:
+        filters &= Q(latest_result=result)
 
-    if search_params["address"]:
-        filters &= Q(address__icontains=search_params["address"])
-    if search_params["corporation_name"]:
-        filters &= Q(corporation_name__icontains=search_params["corporation_name"])
-    if search_params["corporation_phone"]:
-        filters &= Q(corporation_phone__icontains=search_params["corporation_phone"])
-    if search_params["industry"]:
-        filters &= Q(industry__icontains=search_params["industry"])
-    if search_params["sub_industry"]:
-        filters &= Q(sub_industry__icontains=search_params["sub_industry"])
-    
-    if search_params["exclude_query"]:
-        filters &= ~Q(name__icontains=search_params["exclude_query"])
-
-    # 🔽 ここでログ出力
-    logger.debug(f"🔎 会社フィルタ: {filters}")
-
-    # 営業履歴のフィルタ適用
-    sales_filters = Q()
-    if search_params["sales_person"]:
-       filters &= Q(latest_sales_person__icontains=search_params["sales_person"])
-    if search_params["result"]:
-        sales_filters &= Q(salesactivity__result=search_params["result"])
-    if search_params["start_date"] and search_params["end_date"]:
-        sales_filters &= Q(salesactivity__activity_date__range=[search_params["start_date"], search_params["end_date"]])
-    if search_params["next_action_start"] and search_params["next_action_end"]:
-        sales_filters &= Q(salesactivity__next_action_date__range=[search_params["next_action_start"], search_params["next_action_end"]])
-
-    # 🔹 フィルタ適用前の状態をログに記録
-    logger.debug(f"🔍 フィルタ適用前: {filters}")
-    logger.debug(f"🔍 営業履歴のフィルタ適用前: {sales_filters}")
-
-    # Qオブジェクトでフィルタ
     companies = companies.filter(filters)
-    if sales_filters:
-        companies = companies.filter(sales_filters)
 
-    # ここで必ず .query を出す！
-    logger.debug(f"📊 クエリ型: {type(companies)}")
-    try:
-        logger.debug(f"📊 実行クエリ: {companies.query}")
-    except Exception as e:
-        logger.warning(f"⚠️ クエリ出力時にエラー発生: {e}")
-
-    # フィルタ結果件数
-    logger.debug(f"📊 フィルタ適用後の会社数: {companies.count()} 件")
-
-    # ソート対象の取得
-    sort_column = request.GET.get("sort", "name")
-    sort_order = request.GET.get("order", "asc")
-
-    # ✅ 「activity_date」などを内部のannotateフィールドに変換するマッピング
+    # 並び順適用
     sort_map = {
         "activity_date": "latest_activity_date",
         "next_action_date": "latest_next_action_date",
         "sales_person": "latest_sales_person",
         "result": "latest_result",
     }
-    sort_column = sort_map.get(sort_column, sort_column)
-
-    # 昇順 or 降順
-    if sort_order == "desc":
+    sort_column = sort_map.get(sort, sort)
+    if order == "desc":
         sort_column = f"-{sort_column}"
-
-    # ソート適用
     companies = companies.order_by(sort_column)
 
+    # 対象リストと前後情報の取得
+    filtered_ids = list(companies.values_list("id", flat=True))
+    target_count = len(filtered_ids)
+    total_count = Company.objects.count()
 
-    from django.core.paginator import Paginator
+    try:
+        current_index = filtered_ids.index(pk)
+    except ValueError:
+        current_index = 0
 
-    # クエリ適用＆ソート後のcompaniesに対してページネーション
-    paginator = Paginator(companies, 300)  # ← 1ページ300件
-    page_number = request.GET.get('page')  # ← 現在のページ番号を取得
-    page_obj = paginator.get_page(page_number)  # ← 該当ページのデータ
+    prev_company = Company.objects.get(id=filtered_ids[current_index - 1]) if current_index > 0 else None
+    next_company = Company.objects.get(id=filtered_ids[current_index + 1]) if current_index < target_count - 1 else None
+
+    company = get_object_or_404(Company, id=pk)
+    sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')
+
+    sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
     context = {
-        "companies": page_obj,
-        "page_obj": page_obj,
-        "sort_column": sort_column.lstrip("-"),
-        "sort_order": sort_order,
-        "sales_persons": SalesActivity.objects.values("sales_person").distinct(),
-        "results": ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"],
-        "total_records": Company.objects.count(),  # ← 🔸全件数を渡す
-        **search_params,
+        "company": company,
+        "sales_activities": sales_activities,
+        "sales_results": sales_results,
+        "prev_company": prev_company,
+        "next_company": next_company,
+        "record_position": current_index + 1,
+        "target_count": target_count,
+        "total_count": total_count,
+        "query_params": urlencode({
+            "query": query,
+            "phone": phone,
+            "address": address,
+            "corporation_name": corporation_name,
+            "sales_person": sales_person,
+            "result": result,
+            "sort": sort,
+            "order": order,
+        }),
     }
-    
-    return render(request, "company_list.html", context)
 
+    return render(request, "company_detail.html", context)
 
 
 
