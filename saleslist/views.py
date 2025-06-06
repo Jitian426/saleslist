@@ -287,17 +287,16 @@ from .models import Company, SalesActivity
 from .forms import CompanyForm
 
 @login_required
-def company_detail(request, company_id):
-    company = get_object_or_404(Company, id=company_id)
+def company_detail(request, pk):
+    company = get_object_or_404(Company, id=pk)
     sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')
-    
-    # ✅ 営業結果リストをテンプレートに渡す
+
     sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
     return render(request, 'company_detail.html', {
         'company': company,
-        "sales_activities": sales_activities,
-        "sales_results": sales_results,
+        'sales_activities': sales_activities,
+        'sales_results': sales_results,
     })
     
 
@@ -750,10 +749,8 @@ from .models import Company, SalesActivity
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def company_detail(request, company_id):
-    # --- フィルター条件に応じた queryset を再構築（例：セッションに保存された検索条件を利用） ---
-    all_companies = Company.objects.all().order_by('id')  # 必要に応じて order_by 変更
-
+def company_detail(request, pk):
+    all_companies = Company.objects.all().order_by('id')
     filtered_ids = list(all_companies.values_list('id', flat=True))
     current_index = filtered_ids.index(int(pk))
 
