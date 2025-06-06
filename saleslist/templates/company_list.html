@@ -204,7 +204,11 @@
     <tbody>
       {% for company in companies %}
         <tr>
-          <td><a href="{% url 'saleslist:company_detail' company.id %}">{{ company.name }}</a></td>
+          <td>
+            <a href="{% url 'saleslist:company_detail' company.id %}?{{ request.GET.urlencode }}">
+              {{ company.name }}
+            </a>
+          </td>
           <td>{{ company.phone }}</td>
           <td>{{ company.mobile_phone }}</td>
           <td class="address">{{ company.address }}</td>
