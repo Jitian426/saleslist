@@ -759,6 +759,7 @@ def company_detail(request, pk):
 
     company = get_object_or_404(Company, pk=pk)
     sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')
+    sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
     context = {
         'company': company,
@@ -768,6 +769,7 @@ def company_detail(request, pk):
         'record_position': current_index + 1,
         'target_count': len(filtered_ids),
         'total_count': Company.objects.count(),
+        'sales_results': sales_results,  # ✅ これを追加！
     }
 
     return render(request, 'company_detail.html', context)
