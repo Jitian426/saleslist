@@ -701,8 +701,9 @@ def add_sales_activity_ajax(request, pk):
             sales_person=f"{user.first_name}{user.last_name}",
             result=data.get("sales_result"),
             activity_date=now(),
-            next_action_date=next_action,
-            memo=data.get("memo")
+            next_action_date=data.get("next_scheduled_date") or None,
+            memo=data.get("memo"),
+            sales_person_email=data.get("sales_person_email")  # ← 追加
         )
 
         return JsonResponse({"status": "success"})

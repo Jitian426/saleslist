@@ -137,6 +137,8 @@
           <div class="mb-3">
             <label for="memo" class="form-label">メモ</label>
             <textarea class="form-control" name="memo" id="memo" rows="3"></textarea>
+            <label for="sales_person_email" class="form-label">営業担当者メールアドレス</label>
+            <input type="email" class="form-control" name="sales_person_email" id="sales_person_email">
           </div>
         </div>
         <div class="modal-footer">
@@ -163,11 +165,11 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const data = {
       sales_result: form.sales_result.value,
       next_scheduled_date: form.next_scheduled_date.value,
-      memo: form.memo.value
+      memo: form.memo.value,
+      sales_person_email: form.sales_person_email.value  // ← 追加
     };
 
     const endpoint = document.getElementById('ajax_endpoint').value;
