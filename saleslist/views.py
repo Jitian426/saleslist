@@ -693,21 +693,40 @@ def add_sales_activity_ajax(request, pk):
 
         print("✅ Ajax受信データ:", data)
 
-        # ✅ 空文字なら None に変換（next_action_dateは nullable）
         next_action = data.get("next_scheduled_date") or None
 
-        SalesActivity.objects.create(
+        # SalesActivity 作成
+        activity = SalesActivity.objects.create(
             company=company,
             sales_person=f"{user.first_name}{user.last_name}",
             result=data.get("sales_result"),
             activity_date=now(),
-            next_action_date=data.get("next_scheduled_date") or None,
+            next_action_date=next_action,
             memo=data.get("memo"),
-            sales_person_email=data.get("sales_person_email")  # ← 追加
+            sales_person_email=data.get("sales_person_email")
         )
+
+        # ✅ メール送信処理（Ajaxでも）
+        if next_action and activity.sales_person_email:
+            EmailScheduledJob.objects.create(
+                recipient_email=activity.sales_person_email,
+                subject=f"【リマインド】{company.name} の営業予定",
+                message=f"【営業予定リマインド】\n\n"
+                        f"店舗名: {company.name}\n"
+                        f"営業担当者: {activity.sales_person}\n"
+                        f"次回営業予定日: {localtime(activity.next_action_date).strftime('%Y-%m-%d %H:%M')}\n"
+                        f"営業メモ: {activity.memo if activity.memo else 'メモなし'}\n\n"
+                        f"この予定を忘れずに対応してください。",
+                scheduled_time=activity.next_action_date
+            )
+
+            # ✅ スケジュール実行
+            delay = (activity.next_action_date - now()).total_seconds()
+            Timer(delay, send_scheduled_email).start()
 
         return JsonResponse({"status": "success"})
 
     except Exception as e:
         print("❌ Ajax営業履歴登録エラー:", str(e))
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
