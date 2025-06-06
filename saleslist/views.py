@@ -683,6 +683,8 @@ from django.http import JsonResponse
 import json
 from .models import Company, SalesActivity
 from django.utils.timezone import now
+from datetime import datetime
+from django.utils.timezone import make_aware
 
 @require_POST
 def add_sales_activity_ajax(request, pk):
@@ -693,12 +695,20 @@ def add_sales_activity_ajax(request, pk):
 
         print("✅ Ajax受信データ:", data)
 
-        next_action = data.get("next_scheduled_date") or None
+        # ✅ 日時変換（文字列 → datetime → aware）
+        raw_next = data.get("next_scheduled_date")
+        next_action = None
+        if raw_next:
+            try:
+                naive_dt = datetime.strptime(raw_next, "%Y-%m-%dT%H:%M")
+                next_action = make_aware(naive_dt)
+            except Exception as dt_err:
+                print("❌ 日付のパース失敗:", dt_err)
 
-        sales_person_email = data.get("sales_person_email")
-        if sales_person_email == "":
-            sales_person_email = None
+        # ✅ メールアドレスが空なら None
+        sales_person_email = data.get("sales_person_email") or None
 
+        # ✅ 登録処理
         activity = SalesActivity.objects.create(
             company=company,
             sales_person=f"{user.first_name}{user.last_name}",
@@ -706,25 +716,24 @@ def add_sales_activity_ajax(request, pk):
             activity_date=now(),
             next_action_date=next_action,
             memo=data.get("memo"),
-            sales_person_email=sales_person_email  # ← 修正後の変数を使う
+            sales_person_email=sales_person_email
         )
 
-        # ✅ メール送信処理（Ajaxでも）
-        if next_action and activity.sales_person_email:
+        # ✅ メール送信スケジューリング
+        if next_action and sales_person_email:
             EmailScheduledJob.objects.create(
-                recipient_email=activity.sales_person_email,
+                recipient_email=sales_person_email,
                 subject=f"【リマインド】{company.name} の営業予定",
                 message=f"【営業予定リマインド】\n\n"
                         f"店舗名: {company.name}\n"
                         f"営業担当者: {activity.sales_person}\n"
-                        f"次回営業予定日: {localtime(activity.next_action_date).strftime('%Y-%m-%d %H:%M')}\n"
+                        f"次回営業予定日: {localtime(next_action).strftime('%Y-%m-%d %H:%M')}\n"
                         f"営業メモ: {activity.memo if activity.memo else 'メモなし'}\n\n"
                         f"この予定を忘れずに対応してください。",
-                scheduled_time=activity.next_action_date
+                scheduled_time=next_action
             )
 
-            # ✅ スケジュール実行
-            delay = (activity.next_action_date - now()).total_seconds()
+            delay = (next_action - now()).total_seconds()
             Timer(delay, send_scheduled_email).start()
 
         return JsonResponse({"status": "success"})
