@@ -97,7 +97,7 @@
     
     <!-- 前へボタン -->
     {% if prev_company %}
-    <a href="{% url 'saleslist:company_detail' prev_company.id %}" class="btn btn-secondary btn-sm me-2">← 前へ</a>
+    <a href="{% url 'saleslist:company_detail' prev_company.id %}?{{ query_params }}" class="btn btn-secondary btn-sm me-2">← 前へ</a>
     {% else %}
     <button class="btn btn-secondary btn-sm me-2" disabled>← 前へ</button>
     {% endif %}
@@ -117,11 +117,11 @@
 
     <!-- 次へボタン -->
     {% if next_company %}
-    <a href="{% url 'saleslist:company_detail' next_company.id %}" class="btn btn-secondary btn-sm ms-2">次へ →</a>
+    <a href="{% url 'saleslist:company_detail' next_company.id %}?{{ query_params }}" class="btn btn-secondary btn-sm ms-2">次へ →</a>
     {% else %}
     <button class="btn btn-secondary btn-sm ms-2" disabled>次へ →</button>
     {% endif %}
-    
+
   </div>
 
 <!-- モーダル（Bootstrapを使用） -->

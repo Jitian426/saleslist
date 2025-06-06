@@ -747,29 +747,91 @@ from django.shortcuts import get_object_or_404, render
 from django.db.models import Q
 from .models import Company, SalesActivity
 from django.contrib.auth.decorators import login_required
+from django.utils.http import urlencode
 
 @login_required
 def company_detail(request, pk):
-    all_companies = Company.objects.all().order_by('id')
-    filtered_ids = list(all_companies.values_list('id', flat=True))
-    current_index = filtered_ids.index(int(pk))
+    company = get_object_or_404(Company, id=pk)
 
-    prev_company = Company.objects.get(pk=filtered_ids[current_index - 1]) if current_index > 0 else None
-    next_company = Company.objects.get(pk=filtered_ids[current_index + 1]) if current_index < len(filtered_ids) - 1 else None
+    # GETパラメータ取得（検索・ソート用）
+    query = request.GET.get("query", "")
+    phone = request.GET.get("phone", "")
+    address = request.GET.get("address", "")
+    corporation_name = request.GET.get("corporation_name", "")
+    sales_person = request.GET.get("sales_person", "")
+    result = request.GET.get("result", "")
+    sort = request.GET.get("sort", "id")
+    order = request.GET.get("order", "asc")
 
-    company = get_object_or_404(Company, pk=pk)
+    # 並び順の設定
+    sort_key = f"-{sort}" if order == "desc" else sort
+
+    # 検索・フィルタ処理
+    qs = Company.objects.all()
+
+    if query:
+        qs = qs.filter(
+            Q(name__icontains=query) |
+            Q(phone__icontains=query) |
+            Q(address__icontains=query) |
+            Q(corporation_name__icontains=query)
+        )
+    if phone:
+        qs = qs.filter(
+            Q(phone__icontains=phone) |
+            Q(corporation_phone__icontains=phone) |
+            Q(fax__icontains=phone) |
+            Q(mobile_phone__icontains=phone)
+        )
+    if address:
+        qs = qs.filter(address__icontains=address)
+    if corporation_name:
+        qs = qs.filter(corporation_name__icontains=corporation_name)
+
+    # ソート
+    qs = qs.order_by(sort_key)
+
+    # 対象ID一覧を取得
+    filtered_ids = list(qs.values_list("id", flat=True))
+    total_count = Company.objects.count()
+    target_count = len(filtered_ids)
+
+    try:
+        current_index = filtered_ids.index(pk)
+    except ValueError:
+        current_index = 0
+
+    prev_company = None
+    next_company = None
+
+    if current_index > 0:
+        prev_company = Company.objects.get(id=filtered_ids[current_index - 1])
+    if current_index < target_count - 1:
+        next_company = Company.objects.get(id=filtered_ids[current_index + 1])
+
+    # 営業履歴・営業結果
     sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')
     sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
     context = {
-        'company': company,
-        'sales_activities': sales_activities,
-        'prev_company': prev_company,
-        'next_company': next_company,
-        'record_position': current_index + 1,
-        'target_count': len(filtered_ids),
-        'total_count': Company.objects.count(),
-        'sales_results': sales_results,  # ✅ これを追加！
+        "company": company,
+        "sales_activities": sales_activities,
+        "sales_results": sales_results,
+        "prev_company": prev_company,
+        "next_company": next_company,
+        "record_position": current_index + 1,
+        "target_count": target_count,
+        "total_count": total_count,
+        "query_params": urlencode({
+            "query": query,
+            "phone": phone,
+            "address": address,
+            "corporation_name": corporation_name,
+            "sales_person": sales_person,
+            "result": result,
+            "sort": sort,
+            "order": order,
+        })
     }
 
-    return render(request, 'company_detail.html', context)
+    return render(request, "company_detail.html", context)
