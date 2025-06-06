@@ -686,17 +686,26 @@ from django.utils.timezone import now
 
 @require_POST
 def add_sales_activity_ajax(request, pk):
-    user = request.user
-    company = Company.objects.get(pk=pk)
-    data = json.loads(request.body)
+    try:
+        user = request.user
+        company = Company.objects.get(pk=pk)
+        data = json.loads(request.body)
 
-    SalesActivity.objects.create(
-        company=company,
-        sales_person=f"{user.first_name}{user.last_name}",
-        sales_result=data.get("sales_result"),
-        activity_date=now(),  # 現在時刻を自動セット
-        next_scheduled_date=data.get("next_scheduled_date"),
-        memo=data.get("memo"),
-        created_by=user
-    )
-    return JsonResponse({"status": "success"})
+        # デバッグ出力（Renderログで確認用）
+        print("✅ Ajax受信データ:", data)
+
+        SalesActivity.objects.create(
+            company=company,
+            sales_person=f"{user.first_name}{user.last_name}",
+            sales_result=data.get("sales_result"),
+            activity_date=now(),
+            next_scheduled_date=data.get("next_scheduled_date"),
+            memo=data.get("memo"),
+            created_by=user
+        )
+
+        return JsonResponse({"status": "success"})
+
+    except Exception as e:
+        print("❌ Ajax営業履歴登録エラー:", str(e))  # ← Renderログで確認
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
