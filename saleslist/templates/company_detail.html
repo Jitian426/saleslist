@@ -153,15 +153,16 @@
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('salesActivityForm');
 
-  // ✅ 不要なJSによるモーダル表示処理を削除
+  // ✅ CSRFトークンを取得
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // モーダル開くとき営業結果をセット
   document.querySelectorAll('.open-modal-btn').forEach(button => {
     button.addEventListener('click', () => {
-      // モーダル表示は Bootstrap に任せて、ここでは営業結果だけセット
       document.getElementById('sales_result').value = button.dataset.result;
     });
   });
 
-  // モーダルフォーム送信 → Ajaxで営業履歴を登録
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -169,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
       sales_result: form.sales_result.value,
       next_scheduled_date: form.next_scheduled_date.value,
       memo: form.memo.value,
-      sales_person_email: form.sales_person_email.value  // ← 追加
+      sales_person_email: form.sales_person_email.value  // ← 追加された項目
     };
 
     const endpoint = document.getElementById('ajax_endpoint').value;
@@ -177,19 +178,17 @@ document.addEventListener('DOMContentLoaded', function () {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
+        'X-CSRFToken': csrftoken  // ✅ これで解決
       },
       body: JSON.stringify(data)
     });
 
     if (response.ok) {
       alert("営業履歴を登録しました！");
-      // ✅ Bootstrapモーダルを閉じる（安全に記述）
       const modalEl = document.getElementById('salesActivityModal');
       const modalInstance = bootstrap.Modal.getInstance(modalEl);
       if (modalInstance) modalInstance.hide();
-
-      location.reload();  // 成功時はページを再読み込み
+      location.reload();
     } else {
       alert("登録に失敗しました。");
     }
