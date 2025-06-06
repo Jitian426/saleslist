@@ -693,14 +693,16 @@ def add_sales_activity_ajax(request, pk):
 
         print("✅ Ajax受信データ:", data)
 
+        # ✅ 空文字なら None に変換（next_action_dateは nullable）
+        next_action = data.get("next_scheduled_date") or None
+
         SalesActivity.objects.create(
             company=company,
             sales_person=f"{user.first_name}{user.last_name}",
-            result=data.get("sales_result"),  # ✅ 修正
+            result=data.get("sales_result"),
             activity_date=now(),
-            next_action_date=data.get("next_scheduled_date"),  # ✅ 修正
-            memo=data.get("memo"),
-            # created_by=user  ← ❌ 不要なら削除
+            next_action_date=next_action,
+            memo=data.get("memo")
         )
 
         return JsonResponse({"status": "success"})
