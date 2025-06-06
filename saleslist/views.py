@@ -742,7 +742,7 @@ def add_sales_activity_ajax(request, pk):
         print("❌ Ajax営業履歴登録エラー:", str(e))
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
     
-    
+
 
 from django.shortcuts import get_object_or_404, render
 from django.db.models import Q
@@ -750,7 +750,7 @@ from .models import Company, SalesActivity
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def company_detail(request, pk):
+def company_detail(request, company_id):
     # --- フィルター条件に応じた queryset を再構築（例：セッションに保存された検索条件を利用） ---
     all_companies = Company.objects.all().order_by('id')  # 必要に応じて order_by 変更
 
