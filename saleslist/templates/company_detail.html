@@ -121,6 +121,9 @@
     <div class="modal-content">
       <form id="salesActivityForm">
         {% csrf_token %}
+        <!-- ✅ Ajax用エンドポイントをhiddenで渡す -->
+        <input type="hidden" id="ajax_endpoint" value="{% url 'saleslist:add_sales_activity_ajax' company.id %}">
+
         <div class="modal-header">
           <h5 class="modal-title" id="salesActivityModalLabel">営業履歴の追加</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -167,7 +170,8 @@ document.addEventListener('DOMContentLoaded', function () {
       memo: form.memo.value
     };
 
-    const response = await fetch(window.location.pathname + 'add_sales_activity_ajax/', {
+    const endpoint = document.getElementById('ajax_endpoint').value;
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
