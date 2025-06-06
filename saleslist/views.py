@@ -741,4 +741,36 @@ def add_sales_activity_ajax(request, pk):
     except Exception as e:
         print("❌ Ajax営業履歴登録エラー:", str(e))
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    
+    
 
+from django.shortcuts import get_object_or_404, render
+from django.db.models import Q
+from .models import Company, SalesActivity
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def company_detail(request, pk):
+    # --- フィルター条件に応じた queryset を再構築（例：セッションに保存された検索条件を利用） ---
+    all_companies = Company.objects.all().order_by('id')  # 必要に応じて order_by 変更
+
+    filtered_ids = list(all_companies.values_list('id', flat=True))
+    current_index = filtered_ids.index(int(pk))
+
+    prev_company = Company.objects.get(pk=filtered_ids[current_index - 1]) if current_index > 0 else None
+    next_company = Company.objects.get(pk=filtered_ids[current_index + 1]) if current_index < len(filtered_ids) - 1 else None
+
+    company = get_object_or_404(Company, pk=pk)
+    sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')
+
+    context = {
+        'company': company,
+        'sales_activities': sales_activities,
+        'prev_company': prev_company,
+        'next_company': next_company,
+        'record_position': current_index + 1,
+        'target_count': len(filtered_ids),
+        'total_count': Company.objects.count(),
+    }
+
+    return render(request, 'company_detail.html', context)
