@@ -691,21 +691,20 @@ def add_sales_activity_ajax(request, pk):
         company = Company.objects.get(pk=pk)
         data = json.loads(request.body)
 
-        # デバッグ出力（Renderログで確認用）
         print("✅ Ajax受信データ:", data)
 
         SalesActivity.objects.create(
             company=company,
             sales_person=f"{user.first_name}{user.last_name}",
-            sales_result=data.get("sales_result"),
+            result=data.get("sales_result"),  # ✅ 修正
             activity_date=now(),
-            next_scheduled_date=data.get("next_scheduled_date"),
+            next_action_date=data.get("next_scheduled_date"),  # ✅ 修正
             memo=data.get("memo"),
-            created_by=user
+            # created_by=user  ← ❌ 不要なら削除
         )
 
         return JsonResponse({"status": "success"})
 
     except Exception as e:
-        print("❌ Ajax営業履歴登録エラー:", str(e))  # ← Renderログで確認
+        print("❌ Ajax営業履歴登録エラー:", str(e))
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
