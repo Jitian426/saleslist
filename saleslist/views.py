@@ -649,3 +649,47 @@ def company_detail(request, pk):
     }
 
     return render(request, "company_detail.html", context)
+
+
+from django.core.paginator import Paginator
+from django.db.models import OuterRef, Subquery, F, Value, CharField
+from django.db.models.functions import Cast
+
+@login_required
+def company_list(request):
+    sort = request.GET.get("sort", "id")
+    order = request.GET.get("order", "asc")
+
+    sort_map = {
+        "activity_date": "latest_activity_date",
+        "next_action_date": "latest_next_action_date",
+        "sales_person": "latest_sales_person",
+        "result": "latest_result",
+    }
+    sort_column = sort_map.get(sort, sort)
+    sort_column = f"-{sort_column}" if order == "desc" else sort_column
+
+    # 最新営業履歴の取得
+    latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
+
+    companies = Company.objects.annotate(
+        latest_activity_date=Subquery(latest_activities.values("activity_date")[:1]),
+        latest_sales_person=Subquery(
+            latest_activities.annotate(
+                sales_person_str=Cast(F("sales_person"), output_field=CharField())
+            ).values("sales_person_str")[:1]
+        ),
+        latest_result=Subquery(latest_activities.values("result")[:1]),
+        latest_next_action_date=Subquery(latest_activities.values("next_action_date")[:1]),
+    ).order_by(sort_column)
+
+    paginator = Paginator(companies, 100)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "company_list.html", {
+        "companies": page_obj,
+        "page_obj": page_obj,
+        "sort_column": sort,
+        "sort_order": order,
+    })
