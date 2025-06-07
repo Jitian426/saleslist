@@ -657,9 +657,22 @@ from django.db.models.functions import Cast
 
 @login_required
 def company_list(request):
+    from django.db.models import OuterRef, Subquery, F, CharField
+    from django.db.models.functions import Cast
+
+    # 🔸 検索パラメータの取得
+    search_params = {
+        "query": request.GET.get("query", "").strip(),
+        "phone": request.GET.get("phone", "").strip(),
+        "address": request.GET.get("address", "").strip(),
+        "corporation_name": request.GET.get("corporation_name", "").strip(),
+        "sales_person": request.GET.get("sales_person", "").strip(),
+        "result": request.GET.get("result", "").strip(),
+    }
+
+    # 🔸 ソートパラメータの取得
     sort = request.GET.get("sort", "id")
     order = request.GET.get("order", "asc")
-
     sort_map = {
         "activity_date": "latest_activity_date",
         "next_action_date": "latest_next_action_date",
@@ -669,7 +682,7 @@ def company_list(request):
     sort_column = sort_map.get(sort, sort)
     sort_column = f"-{sort_column}" if order == "desc" else sort_column
 
-    # 最新営業履歴の取得
+    # 🔸 サブクエリで最新営業履歴を取得
     latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
 
     companies = Company.objects.annotate(
@@ -681,15 +694,56 @@ def company_list(request):
         ),
         latest_result=Subquery(latest_activities.values("result")[:1]),
         latest_next_action_date=Subquery(latest_activities.values("next_action_date")[:1]),
-    ).order_by(sort_column)
+    )
 
+    # 🔸 フィルタ適用
+    from django.db.models import Q
+    filters = Q()
+    if search_params["query"]:
+        filters &= (
+            Q(name__icontains=search_params["query"]) |
+            Q(phone__icontains=search_params["query"]) |
+            Q(address__icontains=search_params["query"]) |
+            Q(corporation_name__icontains=search_params["query"])
+        )
+    if search_params["phone"]:
+        filters &= (
+            Q(phone__icontains=search_params["phone"]) |
+            Q(corporation_phone__icontains=search_params["phone"]) |
+            Q(fax__icontains=search_params["phone"]) |
+            Q(mobile_phone__icontains=search_params["phone"])
+        )
+    if search_params["address"]:
+        filters &= Q(address__icontains=search_params["address"])
+    if search_params["corporation_name"]:
+        filters &= Q(corporation_name__icontains=search_params["corporation_name"])
+    if search_params["sales_person"]:
+        filters &= Q(latest_sales_person__icontains=search_params["sales_person"])
+    if search_params["result"]:
+        filters &= Q(latest_result=search_params["result"])
+
+    companies = companies.filter(filters)
+
+    # 🔸 並び順
+    companies = companies.order_by(sort_column)
+
+    # 🔸 ページネーション
     paginator = Paginator(companies, 100)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+
+    # ✅ 件数取得
+    total_records = Company.objects.count()
+    target_count = companies.count()
 
     return render(request, "company_list.html", {
         "companies": page_obj,
         "page_obj": page_obj,
         "sort_column": sort,
         "sort_order": order,
+        "sales_persons": SalesActivity.objects.values("sales_person").distinct(),
+        "results": ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"],
+        "total_records": total_records,
+        "target_count": target_count,
+        **search_params,
     })
