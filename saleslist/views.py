@@ -169,7 +169,7 @@ def add_sales_activity(request, company_id):
                 delay = (sales_activity.next_action_date - now()).total_seconds()
                 Timer(delay, send_scheduled_email).start()
 
-            return redirect("saleslist:company_detail", company_id=company.id)  # ✅ リダイレクトを正しい位置に修正
+            return redirect("saleslist:company_detail", pk=company.id)  # ✅ リダイレクトを正しい位置に修正
     else:
         form = SalesActivityForm()
 
@@ -222,7 +222,7 @@ def edit_company(request, company_id):
                     changed_fields=changed_fields
                 )
 
-            return redirect("saleslist:company_detail", company_id=company.id)
+            return redirect("saleslist:company_detail", pk=company.id)
         
     else:
         form = CompanyForm(instance=company)
