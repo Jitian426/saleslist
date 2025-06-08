@@ -524,7 +524,7 @@ def add_sales_activity_ajax(request, pk):
         # ✅ 登録処理
         activity = SalesActivity.objects.create(
             company=company,
-            sales_person=f"{user.first_name}{user.last_name}",
+            sales_person=f"{user.last_name}{user.first_name}",
             result=data.get("sales_result"),
             activity_date=now(),
             next_action_date=next_action,
