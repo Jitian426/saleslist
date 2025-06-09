@@ -1,4 +1,5 @@
 {% load humanize %}
+{% load url_params %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -146,64 +147,64 @@
     <thead class="table-light">
         <tr>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=name&order={% if sort_column == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    店舗名 {% if sort_column == "name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=name','order='~('desc' if sort_column == 'name' and sort_order == 'asc' else 'asc') }}">
+                店舗名 {% if sort_column == "name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=phone&order={% if sort_column == 'phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=phone','order='~('desc' if sort_column == 'phone' and sort_order == 'asc' else 'asc') }}">
+                店舗電話番号 {% if sort_column == "phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=mobile_phone&order={% if sort_column == 'mobile_phone' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    携帯番号 {% if sort_column == "mobile_phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=mobile_phone','order='~('desc' if sort_column == 'mobile_phone' and sort_order == 'asc' else 'asc') }}">
+                携帯番号 {% if sort_column == "mobile_phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th class="address">
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=address&order={% if sort_column == 'address' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                <a href="?{{ request.GET|url_params:'sort=address','order='~('desc' if sort_column == 'address' and sort_order == 'asc' else 'asc') }}">
+                  店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=corporation_name&order={% if sort_column == 'corporation_name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    法人名 {% if sort_column == "corporation_name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=corporation_name','order='~('desc' if sort_column == 'corporation_name' and sort_order == 'asc' else 'asc') }}">
+                法人名 {% if sort_column == "corporation_name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=established_date&order={% if sort_column == 'established_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=established_date','order='~('desc' if sort_column == 'established_date' and sort_order == 'asc' else 'asc') }}">
+                開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=industry&order={% if sort_column == 'industry' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    大業種 {% if sort_column == "industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=industry','order='~('desc' if sort_column == 'industry' and sort_order == 'asc' else 'asc') }}">
+                大業種 {% if sort_column == "industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=sub_industry&order={% if sort_column == 'sub_industry' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    小業種 {% if sort_column == "sub_industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=sub_industry','order='~('desc' if sort_column == 'sub_industry' and sort_order == 'asc' else 'asc') }}">
+                小業種 {% if sort_column == "sub_industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=activity_date&order={% if sort_column == 'latest_activity_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    活動日 {% if sort_column == "latest_activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=latest_activity_date','order='~('desc' if sort_column == 'latest_activity_date' and sort_order == 'asc' else 'asc') }}">
+                活動日 {% if sort_column == "latest_activity_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=sales_person&order={% if sort_column == 'latest_sales_person' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    営業担当者 {% if sort_column == "latest_sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=latest_sales_person','order='~('desc' if sort_column == 'latest_sales_person' and sort_order == 'asc' else 'asc') }}">
+                営業担当者 {% if sort_column == "latest_sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=result&order={% if sort_column == 'latest_result' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    営業結果 {% if sort_column == "latest_result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=latest_result','order='~('desc' if sort_column == 'latest_result' and sort_order == 'asc' else 'asc') }}">
+                営業結果 {% if sort_column == "latest_result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=next_action_date&order={% if sort_column == 'latest_next_action_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    次回営業予定日 {% if sort_column == "latest_next_action_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-                </a>
+              <a href="?{{ request.GET|url_params:'sort=latest_next_action_date','order='~('desc' if sort_column == 'latest_next_action_date' and sort_order == 'asc' else 'asc') }}">
+                次回営業予定日 {% if sort_column == "latest_next_action_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+              </a>
             </th>
         </tr>
     </thead>    

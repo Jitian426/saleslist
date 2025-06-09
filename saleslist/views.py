@@ -760,8 +760,8 @@ def company_list(request):
     }
 
     # 🔸 ソートパラメータの取得
-    sort = request.GET.get("sort", "id")
-    order = request.GET.get("order", "asc")
+    sort = request.GET.getlist("sort")[-1] if request.GET.getlist("sort") else "id"
+    order = request.GET.getlist("order")[-1] if request.GET.getlist("order") else "asc"
     sort_map = {
         "activity_date": "latest_activity_date",
         "next_action_date": "latest_next_action_date",
