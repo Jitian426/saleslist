@@ -288,6 +288,18 @@ def dashboard(request):
         .order_by("-next_action_date")
     )
 
+    latest_activity_ids = (
+        SalesActivity.objects
+        .values("company_id")
+        .annotate(latest_id=Max("id"))
+        .values_list("latest_id", flat=True)
+    )
+
+    overdue_activities = (
+        SalesActivity.objects
+        .filter(id__in=latest_activity_ids, next_action_date__lt=timezone.now())
+    )
+
     return render(request, 'dashboard.html', context)
 
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
