@@ -289,11 +289,19 @@ def dashboard(request):
         .order_by("-next_action_date")
     )
 
+    # 各企業ごとに最新の営業履歴IDを取得
     latest_activity_ids = (
         SalesActivity.objects
         .values("company_id")
         .annotate(latest_id=Max("id"))
         .values_list("latest_id", flat=True)
+    )
+    # 最新の営業履歴だけを取得（例：今日の予定）
+    today_sales = (
+        SalesActivity.objects
+        .filter(id__in=latest_activity_ids, next_action_date__date=timezone.now().date())
+        .select_related("company")
+        .order_by("next_action_date")
     )
 
     overdue_activities = (
