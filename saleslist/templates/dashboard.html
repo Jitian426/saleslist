@@ -12,31 +12,49 @@
     <h1>📊 ダッシュボード</h1>
 
     <h2>📅 今日の営業予定</h2>
-    <ul>
+    <table class="table table-bordered table-sm">
+      <thead><tr><th>日時</th><th>店舗名</th></tr></thead>
+      <tbody>
         {% for activity in today_sales %}
-            <li>{{ activity.company.name }} - {{ activity.next_action_date|date:"Y-m-d H:i" }}</li>
+          <tr>
+            <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
+            <td><a href="{% url 'saleslist:company_detail' activity.company.id %}">{{ activity.company.name }}</a></td>
+          </tr>
         {% empty %}
-            <li>今日の予定はありません。</li>
+          <tr><td colspan="2">今日の予定はありません。</td></tr>
         {% endfor %}
-    </ul>
+      </tbody>
+    </table>
 
     <h2>⚠ 期限超過の営業予定</h2>
-    <ul>
+    <table class="table table-bordered table-sm">
+      <thead><tr><th>日時</th><th>店舗名</th></tr></thead>    
+      <tbody>
         {% for activity in overdue_sales %}
-            <li>{{ activity.company.name }} - {{ activity.next_action_date|date:"Y-m-d H:i" }}</li>
+          <tr>
+            <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
+            <td><a href="{% url 'saleslist:company_detail' activity.company.id %}">{{ activity.company.name }}</a></td>
+          </tr>
         {% empty %}
-            <li>期限超過の予定はありません。</li>
+          <tr><td colspan="2">期限超過の予定はありません。</td></tr>
         {% endfor %}
-    </ul>
+      </tbody>
+    </table>
 
     <h2>📆 今週の営業予定</h2>
-    <ul>
+    <table class="table table-bordered table-sm">
+      <thead><tr><th>日時</th><th>店舗名</th></tr></thead>    
+      <tbody>
         {% for activity in upcoming_sales %}
-            <li>{{ activity.company.name }} - {{ activity.next_action_date|date:"Y-m-d H:i" }}</li>
+          <tr>
+            <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
+            <td><a href="{% url 'saleslist:company_detail' activity.company.id %}">{{ activity.company.name }}</a></td>
+          </tr>
         {% empty %}
-            <li>今週の予定はありません。</li>
+          <tr><td colspan="2">今週の予定はありません。</td></tr>
         {% endfor %}
-    </ul>
+      </tbody>
+    </table>
 
     <p><a href="{% url 'saleslist:company_list' %}">企業リストに戻る</a></p>
 </body>

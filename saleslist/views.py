@@ -20,6 +20,7 @@ from django.db.models import Prefetch
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
 from .forms import CompanyForm  # ← 次に作るフォーム
+from django.utils import timezone
 
 
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
