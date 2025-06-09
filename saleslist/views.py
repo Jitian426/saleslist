@@ -253,6 +253,7 @@ from django.utils.timezone import now, localtime, timedelta
 from django.shortcuts import render
 from .models import SalesActivity
 from .models import Company
+from django.db.models import Max
 
 @login_required
 def dashboard(request):
@@ -273,6 +274,19 @@ def dashboard(request):
         'overdue_sales': overdue_sales,
         'upcoming_sales': upcoming_sales,
     }
+
+    latest_activities = (
+        SalesActivity.objects
+        .values("company_id")
+        .annotate(latest_time=Max("activity_date"))
+        .values_list("company_id", flat=True)
+    )
+
+    activities = (
+        SalesActivity.objects
+        .filter(company_id__in=latest_activities)
+        .order_by("-next_action_date")
+    )
 
     return render(request, 'dashboard.html', context)
 
