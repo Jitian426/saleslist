@@ -685,7 +685,15 @@ def company_detail(request, pk):
         "next_action_date": "latest_next_action_date",
         "sales_person": "latest_sales_person",
         "result": "latest_result",
+        "name": "name",
+        "phone": "phone",
+        "address": "address",
+        "corporation_name": "corporation_name",
+        "established_date": "established_date",  # ← 追加：開業日
+        "sub_industry": "sub_industry",          # ← 追加：小業種
+        "industry": "industry",                  # ← 追加：大業種（必要であれば）
     }
+
     sort_column = sort_map.get(sort, sort)
     sort_key = f"-{sort_column}" if order == "desc" else sort_column
 
