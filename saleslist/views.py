@@ -255,6 +255,8 @@ from django.shortcuts import render
 from .models import SalesActivity
 from .models import Company
 from django.db.models import Max
+from django.utils import timezone
+from datetime import timedelta
 
 @login_required
 def dashboard(request):
@@ -307,6 +309,24 @@ def dashboard(request):
     overdue_activities = (
         SalesActivity.objects
         .filter(id__in=latest_activity_ids, next_action_date__lt=timezone.now())
+    )
+
+    overdue_sales = (
+        SalesActivity.objects
+        .filter(id__in=latest_activity_ids, next_action_date__lt=timezone.now())
+        .select_related("company")
+        .order_by("next_action_date")
+    )
+
+    upcoming_sales = (
+        SalesActivity.objects
+        .filter(
+            id__in=latest_activity_ids,
+            next_action_date__gte=timezone.now(),
+            next_action_date__lt=timezone.now() + timedelta(days=7)
+        )
+        .select_related("company")
+        .order_by("next_action_date")
     )
 
     return render(request, 'dashboard.html', context)
@@ -611,9 +631,16 @@ def company_detail(request, pk):
     result = request.GET.get("result", "")
     sort = request.GET.get("sort", "id")
     order = request.GET.get("order", "asc")
-
-    # 並び順の設定
-    sort_key = f"-{sort}" if order == "desc" else sort
+    
+    # 並び順の設定（company_list.htmlと揃える）
+    sort_map = {
+        "activity_date": "latest_activity_date",
+        "next_action_date": "latest_next_action_date",
+        "sales_person": "latest_sales_person",
+        "result": "latest_result",
+    }
+    sort_column = sort_map.get(sort, sort)
+    sort_key = f"-{sort_column}" if order == "desc" else sort_column
 
     # 検索・フィルタ処理
     qs = Company.objects.all()
