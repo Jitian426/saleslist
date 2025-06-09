@@ -174,8 +174,13 @@
                 </a>
             </th>
             <th>
-                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=license_number&order={% if sort_column == 'license_number' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    許可番号 {% if sort_column == "license_number" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=industry&order={% if sort_column == 'industry' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    大業種 {% if sort_column == "industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=sub_industry&order={% if sort_column == 'sub_industry' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    小業種 {% if sort_column == "sub_industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
                 </a>
             </th>
             <th>
@@ -214,7 +219,8 @@
           <td class="address">{{ company.address }}</td>
           <td>{{ company.corporation_name }}</td>
           <td>{{ company.established_date|date:"Y/m/d" }}</td>
-          <td>{{ company.license_number }}</td>
+          <td>{{ company.industry }}</td>
+          <td>{{ company.sub_industry }}</td>
           <td>{{ company.latest_activity_date|date:"Y/m/d H:i" }}</td>
           <td>{{ company.latest_sales_person|default_if_none:"" }}</td>
           <td>{{ company.latest_result|default_if_none:"" }}</td>
