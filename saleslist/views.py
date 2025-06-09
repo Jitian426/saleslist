@@ -620,6 +620,10 @@ from django.utils.http import urlencode
 
 @login_required
 def company_detail(request, pk):
+    from django.db.models import OuterRef, Subquery, F, CharField
+    from django.db.models.functions import Cast
+    from django.utils.http import urlencode
+
     company = get_object_or_404(Company, id=pk)
 
     # GETパラメータ取得（検索・ソート用）
@@ -631,8 +635,49 @@ def company_detail(request, pk):
     result = request.GET.get("result", "")
     sort = request.GET.get("sort", "id")
     order = request.GET.get("order", "asc")
-    
-    # 並び順の設定（company_list.htmlと揃える）
+
+    # 🔸 サブクエリで最新営業履歴を取得（company_listと統一）
+    latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
+
+    qs = Company.objects.annotate(
+        latest_activity_date=Subquery(latest_activities.values("activity_date")[:1]),
+        latest_sales_person=Subquery(
+            latest_activities.annotate(
+                sales_person_str=Cast(F("sales_person"), output_field=CharField())
+            ).values("sales_person_str")[:1]
+        ),
+        latest_result=Subquery(latest_activities.values("result")[:1]),
+        latest_next_action_date=Subquery(latest_activities.values("next_action_date")[:1]),
+    )
+
+    # フィルタ適用
+    filters = Q()
+    if query:
+        filters &= (
+            Q(name__icontains=query) |
+            Q(phone__icontains=query) |
+            Q(address__icontains=query) |
+            Q(corporation_name__icontains=query)
+        )
+    if phone:
+        filters &= (
+            Q(phone__icontains=phone) |
+            Q(corporation_phone__icontains=phone) |
+            Q(fax__icontains=phone) |
+            Q(mobile_phone__icontains=phone)
+        )
+    if address:
+        filters &= Q(address__icontains=address)
+    if corporation_name:
+        filters &= Q(corporation_name__icontains=corporation_name)
+    if sales_person:
+        filters &= Q(latest_sales_person__icontains=sales_person)
+    if result:
+        filters &= Q(latest_result=result)
+
+    qs = qs.filter(filters)
+
+    # 並び順の設定
     sort_map = {
         "activity_date": "latest_activity_date",
         "next_action_date": "latest_next_action_date",
@@ -642,29 +687,6 @@ def company_detail(request, pk):
     sort_column = sort_map.get(sort, sort)
     sort_key = f"-{sort_column}" if order == "desc" else sort_column
 
-    # 検索・フィルタ処理
-    qs = Company.objects.all()
-
-    if query:
-        qs = qs.filter(
-            Q(name__icontains=query) |
-            Q(phone__icontains=query) |
-            Q(address__icontains=query) |
-            Q(corporation_name__icontains=query)
-        )
-    if phone:
-        qs = qs.filter(
-            Q(phone__icontains=phone) |
-            Q(corporation_phone__icontains=phone) |
-            Q(fax__icontains=phone) |
-            Q(mobile_phone__icontains=phone)
-        )
-    if address:
-        qs = qs.filter(address__icontains=address)
-    if corporation_name:
-        qs = qs.filter(corporation_name__icontains=corporation_name)
-
-    # ソート
     qs = qs.order_by(sort_key)
 
     # 対象ID一覧を取得
@@ -677,16 +699,11 @@ def company_detail(request, pk):
     except ValueError:
         current_index = 0
 
-    prev_company = None
-    next_company = None
+    prev_company = Company.objects.get(id=filtered_ids[current_index - 1]) if current_index > 0 else None
+    next_company = Company.objects.get(id=filtered_ids[current_index + 1]) if current_index < target_count - 1 else None
 
-    if current_index > 0:
-        prev_company = Company.objects.get(id=filtered_ids[current_index - 1])
-    if current_index < target_count - 1:
-        next_company = Company.objects.get(id=filtered_ids[current_index + 1])
-
-    # 営業履歴・営業結果
-    sales_activities = SalesActivity.objects.filter(company=company).order_by('-activity_date')
+    # 営業履歴
+    sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
     sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
     context = {
