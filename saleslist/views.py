@@ -633,8 +633,10 @@ def company_detail(request, pk):
     corporation_name = request.GET.get("corporation_name", "")
     sales_person = request.GET.get("sales_person", "")
     result = request.GET.get("result", "")
-    sort = request.GET.get("sort", "id")
-    order = request.GET.get("order", "asc")
+
+    # ✅ クエリパラメータの多重指定対策（複数ある場合は後ろを採用）
+    sort = request.GET.getlist("sort")[-1] if request.GET.getlist("sort") else "id"
+    order = request.GET.getlist("order")[-1] if request.GET.getlist("order") else "asc"
 
     # 🔸 サブクエリで最新営業履歴を取得（company_listと統一）
     latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
