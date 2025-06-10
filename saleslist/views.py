@@ -825,14 +825,19 @@ def company_list(request):
     total_records = Company.objects.count()
     target_count = companies.count()
 
+    # ✅ next_order の計算を追加（ここがポイント！）
+    next_order = "desc" if order == "asc" else "asc"
+
     return render(request, "company_list.html", {
         "companies": page_obj,
         "page_obj": page_obj,
         "sort_column": sort,
         "sort_order": order,
+        "next_order": next_order,  # ← これを追加！
         "sales_persons": SalesActivity.objects.values("sales_person").distinct(),
         "results": ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"],
         "total_records": total_records,
         "target_count": target_count,
         **search_params,
     })
+
