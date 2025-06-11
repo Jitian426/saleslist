@@ -697,20 +697,18 @@ def company_detail(request, pk):
     sort_column = sort_map.get(sort, sort)
     sort_key = f"-{sort_column}" if order == "desc" else sort_column
 
-    qs = qs.order_by(sort_key)
-
-    # 対象ID一覧を取得
-    filtered_ids = list(qs.values_list("id", flat=True))
+    company_list = list(qs.select_related())  # 並び順付きのCompanyオブジェクトリスト
     total_count = Company.objects.count()
-    target_count = len(filtered_ids)
+    target_count = len(company_list)
 
     try:
-        current_index = filtered_ids.index(pk)
-    except ValueError:
+        current_index = next(i for i, c in enumerate(company_list) if c.id == company.id)
+    except StopIteration:
         current_index = 0
 
-    prev_company = Company.objects.get(id=filtered_ids[current_index - 1]) if current_index > 0 else None
-    next_company = Company.objects.get(id=filtered_ids[current_index + 1]) if current_index < target_count - 1 else None
+    prev_company = company_list[current_index - 1] if current_index > 0 else None
+    next_company = company_list[current_index + 1] if current_index < target_count - 1 else None
+
 
     # 営業履歴
     sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
