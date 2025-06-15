@@ -698,7 +698,7 @@ def company_detail(request, pk):
     sort_key = f"-{sort_column}" if order == "desc" else sort_column
 
     # 🔸 ソートを適用して会社リストを取得（これが最重要）
-    company_list = list(qs.order_by(sort_key).select_related())  # 並び順付きのCompanyオブジェクトリスト
+    company_list = list(qs.order_by(sort_key).select_related())
     total_count = Company.objects.count()
     target_count = len(company_list)
 
