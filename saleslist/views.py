@@ -700,6 +700,7 @@ def company_detail(request, pk):
     # 並び替えたクエリセットから ID リストを取得 # 🔸 ソートを適用して会社リストを取得（これが最重要）
     company_list = list(qs.order_by(sort_key).select_related())
     filtered_ids = [c.id for c in company_list]
+    target_count = len(company_list)
 
     try:
         current_index = filtered_ids.index(company.id)
