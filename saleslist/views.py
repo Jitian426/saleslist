@@ -756,6 +756,12 @@ def company_list(request):
         "corporation_name": request.GET.get("corporation_name", "").strip(),
         "sales_person": request.GET.get("sales_person", "").strip(),
         "result": request.GET.get("result", "").strip(),
+        "industry": request.GET.get("industry", "").strip(),  # ←追加
+        "sub_industry": request.GET.get("sub_industry", "").strip(),  # ←追加
+        "start_date": request.GET.get("start_date", "").strip(),  # ←追加
+        "end_date": request.GET.get("end_date", "").strip(),  # ←追加
+        "next_action_start": request.GET.get("next_action_start", "").strip(),  # ←追加
+        "next_action_end": request.GET.get("next_action_end", "").strip(),  # ←追加
     }
 
     # 🔸 ソートパラメータの取得
@@ -809,6 +815,20 @@ def company_list(request):
         filters &= Q(latest_sales_person__icontains=search_params["sales_person"])
     if search_params["result"]:
         filters &= Q(latest_result=search_params["result"])
+    if search_params["industry"]:
+        filters &= Q(industry__icontains=search_params["industry"])
+    if search_params["sub_industry"]:
+        filters &= Q(sub_industry__icontains=search_params["sub_industry"])
+
+    if search_params["start_date"]:
+        filters &= Q(latest_activity_date__date__gte=search_params["start_date"])
+    if search_params["end_date"]:
+        filters &= Q(latest_activity_date__date__lte=search_params["end_date"])
+    if search_params["next_action_start"]:
+        filters &= Q(latest_next_action_date__date__gte=search_params["next_action_start"])
+    if search_params["next_action_end"]:
+        filters &= Q(latest_next_action_date__date__lte=search_params["next_action_end"])
+
 
     companies = companies.filter(filters)
 
