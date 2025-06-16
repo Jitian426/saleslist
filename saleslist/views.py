@@ -701,6 +701,7 @@ def company_detail(request, pk):
     company_list = list(qs.order_by(sort_key).select_related())
     filtered_ids = [c.id for c in company_list]
     target_count = len(company_list)
+    total_count = Company.objects.count() 
 
     try:
         current_index = filtered_ids.index(company.id)
