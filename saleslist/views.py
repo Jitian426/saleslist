@@ -633,6 +633,13 @@ def company_detail(request, pk):
     corporation_name = request.GET.get("corporation_name", "")
     sales_person = request.GET.get("sales_person", "")
     result = request.GET.get("result", "")
+    industry = request.GET.get("industry", "")
+    sub_industry = request.GET.get("sub_industry", "")
+    start_date = request.GET.get("start_date", "")
+    end_date = request.GET.get("end_date", "")
+    next_action_start = request.GET.get("next_action_start", "")
+    next_action_end = request.GET.get("next_action_end", "")
+    exclude_query = request.GET.get("exclude_query", "")
 
     # ✅ クエリパラメータの多重指定対策（複数ある場合は後ろを採用）
     sort = request.GET.getlist("sort")[-1] if request.GET.getlist("sort") else "id"
@@ -676,6 +683,24 @@ def company_detail(request, pk):
         filters &= Q(latest_sales_person__icontains=sales_person)
     if result:
         filters &= Q(latest_result=result)
+    if industry:
+        filters &= Q(industry__icontains=industry)
+    if sub_industry:
+        filters &= Q(sub_industry__icontains=sub_industry)
+    if start_date:
+        filters &= Q(latest_activity_date__date__gte=start_date)
+    if end_date:
+        filters &= Q(latest_activity_date__date__lte=end_date)
+    if next_action_start:
+        filters &= Q(latest_next_action_date__date__gte=next_action_start)
+    if next_action_end:
+        filters &= Q(latest_next_action_date__date__lte=next_action_end)
+    if exclude_query:
+        filters &= ~(
+            Q(name__icontains=exclude_query) |
+            Q(address__icontains=exclude_query) |
+            Q(corporation_name__icontains=exclude_query)
+        )
 
     qs = qs.filter(filters)
 
@@ -731,6 +756,13 @@ def company_detail(request, pk):
             "corporation_name": corporation_name,
             "sales_person": sales_person,
             "result": result,
+            "industry": industry,
+            "sub_industry": sub_industry,
+            "start_date": start_date,
+            "end_date": end_date,
+            "next_action_start": next_action_start,
+            "next_action_end": next_action_end,
+            "exclude_query": exclude_query,
             "sort": sort,
             "order": order,
         })
