@@ -642,8 +642,8 @@ def company_detail(request, pk):
     exclude_query = request.GET.get("exclude_query", "")
 
     # ✅ クエリパラメータの多重指定対策（複数ある場合は後ろを採用）
-    sort = request.GET.getlist("sort")[-1] if request.GET.getlist("sort") else "id"
-    order = request.GET.getlist("order")[-1] if request.GET.getlist("order") else "asc"
+    sort = request.GET.getlist("sort")[-1] if request.GET.getlist("sort") and request.GET.getlist("sort")[-1] else "id"
+    order = request.GET.getlist("order")[-1] if request.GET.getlist("order") and request.GET.getlist("order")[-1] else "asc"
 
     # 🔸 サブクエリで最新営業履歴を取得（company_listと統一）
     latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
