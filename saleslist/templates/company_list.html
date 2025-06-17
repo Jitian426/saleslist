@@ -225,7 +225,8 @@
       {% for company in companies %}
         <tr>
           <td>
-            <a href="{% url 'saleslist:company_detail' company.id %}?{{ request.GET.urlencode }}">
+            {% url_params request.GET sort=sort_column order=sort_order as full_query %}
+            <a href="{% url 'saleslist:company_detail' company.id %}?{{ full_query }}">
               {{ company.name }}
             </a>
           </td>
