@@ -17,7 +17,7 @@ class Company(models.Model):
     license_number = models.CharField("許可番号", max_length=100, blank=True, null=True)  # 許可番号 ← 追加
     industry = models.CharField(max_length=100, verbose_name="大業種", blank=True, null=True)  # ✅ 修正
     sub_industry = models.CharField(max_length=100, verbose_name="小業種", blank=True, null=True)  # ✅ 修正
-
+    note = models.TextField(blank=True, null=True, verbose_name="会社メモ")  # ✅追加
 
     def __str__(self):
         return self.name

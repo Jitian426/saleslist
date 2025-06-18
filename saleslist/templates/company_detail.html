@@ -73,6 +73,18 @@
           </table>
         </div>
       </div>
+      <!-- 営業履歴の下など、わかりやすい位置に配置 -->
+      <div class="card mt-4">
+        <div class="card-header">会社メモ</div>
+        <div class="card-body">
+          <form method="post" action="{% url 'saleslist:update_company_note' company.id %}">
+            {% csrf_token %}
+            <textarea name="note" rows="5" class="form-control" style="font-size: 0.9rem;">{{ company.note }}</textarea>
+            <button type="submit" class="btn btn-sm btn-primary mt-2">💾 メモを保存</button>
+         </form>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

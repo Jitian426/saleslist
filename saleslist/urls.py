@@ -28,6 +28,7 @@ urlpatterns = [
     path('companies/delete_filtered/confirm/', views.confirm_delete_filtered_companies, name='confirm_delete_filtered_companies'),
     path('companies/delete_filtered/execute/', views.execute_delete_filtered_companies, name='execute_delete_filtered_companies'),
     path('companies/delete_filtered/download_csv/', views.download_filtered_companies_csv, name='download_filtered_companies_csv'),
+    path('company/<int:company_id>/update_note/', views.update_company_note, name='update_company_note'),
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),

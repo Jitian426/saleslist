@@ -892,3 +892,15 @@ def company_list(request):
         **search_params,
     })
 
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+
+@login_required
+@require_POST
+def update_company_note(request, company_id):
+    company = get_object_or_404(Company, id=company_id)
+    company.note = request.POST.get("note", "")
+    company.save()
+    messages.success(request, "✅ メモを保存しました。")
+    return redirect("saleslist:company_detail", pk=company.id)
+
