@@ -46,7 +46,9 @@
             ➕ 営業履歴を追加する
           </a>
         </div>
+
         <div class="card-body table-responsive">
+          <!-- 営業履歴テーブル -->
           <table class="table table-striped table-hover align-middle table-sm" style="font-size: 0.85rem;">
             <thead>
               <tr>
@@ -71,20 +73,20 @@
               {% endfor %}
             </tbody>
           </table>
-        </div>
-      </div>
-      <!-- 営業履歴の下など、わかりやすい位置に配置 -->
-      <div class="card mt-4">
-        <div class="card-header">会社メモ</div>
-        <div class="card-body">
+
+          <!-- 会社メモ欄 -->
+          <hr>
           <form method="post" action="{% url 'saleslist:update_company_note' company.id %}">
             {% csrf_token %}
-            <textarea name="note" rows="5" class="form-control" style="font-size: 0.9rem;">{{ company.note }}</textarea>
-            <button type="submit" class="btn btn-sm btn-primary mt-2">💾 メモを保存</button>
-         </form>
+            <div class="mb-2">
+              <label for="note" class="form-label fw-bold">会社メモ</label>
+              <textarea name="note" id="note" rows="5" class="form-control" style="font-size: 0.9rem;">{{ company.note }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">💾 メモを保存</button>
+          </form>
         </div>
       </div>
-
+      
     </div>
   </div>
 </div>
