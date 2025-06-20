@@ -8,6 +8,7 @@
       現レコード: {{ record_position }} ／ 対象レコード: {{ target_count }} ／ 総レコード: {{ total_count }}
     </div>
   </div>
+  <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
 
   <div class="row">
     <!-- 左：企業情報 -->
@@ -19,8 +20,8 @@
             <tbody>
               <tr><th>店舗名</th><td>{{ company.name }}</td></tr>
               <tr><th>店舗電話番号</th><td>{{ company.phone }}</td></tr>
-              <tr><th>携帯番号</th><td>{{ company.mobile_phone }}</td></tr>
               <tr><th>FAX番号</th><td>{{ company.fax }}</td></tr>
+              <tr><th>携帯番号</th><td>{{ company.mobile_phone }}</td></tr>
               <tr><th>店舗住所</th><td>{{ company.address }}</td></tr>
               <tr><th>法人名</th><td>{{ company.corporation_name }}</td></tr>
               <tr><th>法人電話番号</th><td>{{ company.corporation_phone }}</td></tr>
@@ -91,7 +92,6 @@
   </div>
 </div>
 
-    <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
 
     <hr>
     <h6 class="mt-4">編集履歴</h6>
