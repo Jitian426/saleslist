@@ -9,6 +9,7 @@ from .views import (
 from django.conf import settings
 from .views import CustomLoginView
 from . import views
+from .views import user_list
 
 app_name = 'saleslist'
 
@@ -29,6 +30,7 @@ urlpatterns = [
     path('companies/delete_filtered/execute/', views.execute_delete_filtered_companies, name='execute_delete_filtered_companies'),
     path('companies/delete_filtered/download_csv/', views.download_filtered_companies_csv, name='download_filtered_companies_csv'),
     path('company/<int:company_id>/update_note/', views.update_company_note, name='update_company_note'),
+    path("users/", user_list, name="user_list"),
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),

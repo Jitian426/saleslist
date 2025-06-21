@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">ユーザーリスト（受注顧客一覧）</h3>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>顧客名</th>
+          <th>電話番号</th>
+          <th>住所</th>
+          <th>受注日</th>
+          <th>販売店名</th>
+          <th>獲得商材</th>
+          <th>アポ担当</th>
+          <th>営業担当</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>
+            <a href="{% url 'saleslist:company_detail' user.company.id %}?from=users">
+              {{ user.customer_name }}
+            </a>
+          </td>
+          <td>{{ user.company.phone }}</td>
+          <td>{{ user.company.address }}</td>
+          <td>{{ user.order_date|date:"Y/m/d" }}</td>
+          <td>{{ user.shop_name }}</td>
+          <td>{{ user.product }}</td>
+          <td>{{ user.appointment_staff }}</td>
+          <td>{{ user.sales_staff }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center">受注ユーザーはまだ登録されていません。</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

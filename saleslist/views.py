@@ -597,6 +597,8 @@ from django.db.models import Q, OuterRef, Subquery, F, CharField
 from django.utils.http import urlencode
 from django.db.models.functions import Cast
 from .models import Company, SalesActivity
+from .models import Company, SalesActivity, UserProfile
+from .forms import UserProfileForm
 
 @login_required
 def company_detail(request, pk):
@@ -660,6 +662,21 @@ def company_detail(request, pk):
     sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
     sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
+    # --- ユーザー情報フォーム（最新履歴が「受注」かつ管理者のみ） ---
+    latest_result = sales_activities.first().result if sales_activities.exists() else None
+    show_user_form = latest_result == "受注" and request.user.is_superuser
+
+    user_profile, _ = UserProfile.objects.get_or_create(company=company)
+    if request.method == "POST" and show_user_form:
+        form = UserProfileForm(request.POST, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "✅ ユーザー情報を保存しました。")
+            return redirect("saleslist:company_detail", pk=company.id)
+    else:
+        form = UserProfileForm(instance=user_profile) if show_user_form else None
+
+    # --- パラメータ引継ぎ ---
     query_params = urlencode({
         "query": query,
         "phone": phone,
@@ -681,6 +698,9 @@ def company_detail(request, pk):
         "target_count": len(company_list),
         "total_count": Company.objects.count(),
         "query_params": query_params,
+        "show_user_form": show_user_form,
+        "user_form": form,
+        "user_profile": user_profile,
     })
 
 
@@ -826,3 +846,72 @@ def update_company_note(request, company_id):
     messages.success(request, "✅ メモを保存しました。")
     return redirect("saleslist:company_detail", pk=company.id)
 
+
+from django.db import models
+from django.utils import timezone
+from datetime import date
+
+class UserProfile(models.Model):
+    company = models.OneToOneField("Company", on_delete=models.CASCADE)
+
+    # 顧客情報
+    customer_name_kana = models.CharField("顧客名カナ", max_length=255, blank=True)
+    customer_name = models.CharField("顧客名", max_length=255, blank=True)
+    address = models.CharField("住所", max_length=255, blank=True)
+    representative_name_kana = models.CharField("代表者名カナ", max_length=255, blank=True)
+    representative_name = models.CharField("代表者名", max_length=255, blank=True)
+    representative_phone = models.CharField("代表者電話番号", max_length=20, blank=True)
+    representative_birthday = models.DateField("代表者生年月日", null=True, blank=True)
+    contact_name_kana = models.CharField("担当者名カナ", max_length=255, blank=True)
+    contact_name = models.CharField("担当者名", max_length=255, blank=True)
+    contact_phone = models.CharField("担当者電話番号", max_length=20, blank=True)
+
+    # 契約情報
+    order_date = models.DateField("受注日", null=True, blank=True)
+    shop_name = models.CharField("販売店名", max_length=255, blank=True)
+    distribution = models.CharField("商流", max_length=255, blank=True)
+    product = models.CharField("獲得商材", max_length=255, blank=True)
+    plan = models.CharField("獲得プラン", max_length=255, blank=True)
+    capacity = models.CharField("契約容量", max_length=255, blank=True)
+    appointment_staff = models.CharField("アポ担当", max_length=255, blank=True)
+    sales_staff = models.CharField("営業担当", max_length=255, blank=True)
+    complete_date = models.DateField("完了日", null=True, blank=True)
+
+    # 入出金情報
+    gross_profit = models.IntegerField("粗利(入金)", null=True, blank=True)
+    cashback = models.IntegerField("キャッシュバック", null=True, blank=True)
+    commission = models.IntegerField("手数料", null=True, blank=True)
+
+    # 書類データ
+    file_link = models.URLField("ファイル保存先リンク", max_length=500, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def representative_age(self):
+        if self.representative_birthday:
+            today = date.today()
+            return today.year - self.representative_birthday.year - (
+                (today.month, today.day) < (self.representative_birthday.month, self.representative_birthday.day)
+            )
+        return None
+
+    def __str__(self):
+        return f"ユーザー情報: {self.company.name}"
+
+
+from django.contrib.auth.decorators import login_required
+from .models import UserProfile
+
+@login_required
+def user_list(request):
+    # 顧客名 or 受注日 のいずれかが記載されているユーザー情報だけ抽出
+    users = UserProfile.objects.select_related("company").filter(
+        models.Q(customer_name__isnull=False) & ~models.Q(customer_name="") |
+        models.Q(order_date__isnull=False)
+    ).order_by("-order_date", "customer_name")
+
+    return render(request, "user_list.html", {
+        "users": users
+    })

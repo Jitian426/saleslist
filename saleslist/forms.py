@@ -84,7 +84,6 @@ class SalesPersonRegistrationForm(UserCreationForm):
         }
     
 
-
 class CustomUserCreationForm(UserCreationForm):
     username = forms.CharField(label="ユーザー名")
     email = forms.EmailField(label="メールアドレス")
@@ -94,3 +93,17 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
+
+
+from django import forms
+from .models import UserProfile
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        exclude = ['company', 'created_at', 'updated_at']
+        widgets = {
+            'representative_birthday': forms.DateInput(attrs={'type': 'date'}),
+            'order_date': forms.DateInput(attrs={'type': 'date'}),
+            'complete_date': forms.DateInput(attrs={'type': 'date'}),
+        }
