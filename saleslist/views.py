@@ -576,6 +576,9 @@ def add_sales_activity_ajax(request, pk):
                 next_action = make_aware(naive_dt)
             except Exception as dt_err:
                 print("❌ 日付のパース失敗:", dt_err)
+        
+        # ✅ メールアドレスが空なら request.user.email を補完
+        sales_person_email = data.get("sales_person_email") or user.email
 
         # ✅ 登録処理
         activity = SalesActivity.objects.create(
