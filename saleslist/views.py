@@ -632,9 +632,15 @@ def company_detail(request, pk):
     sort = request.GET.get("sort", "id")
     order = request.GET.get("order", "asc")
 
-    sort_key = f"-{sort}" if order == "desc" else sort
+    # 🔧 複合ソート対応（tie-breaker付き）
+    if sort == "established_date":
+        sort_keys = ["-established_date", "-id"] if order == "desc" else ["established_date", "id"]
+    elif sort == "name":
+        sort_keys = ["-name", "-id"] if order == "desc" else ["name", "id"]
+    else:
+        sort_keys = [f"-{sort}", "-id"] if order == "desc" else [sort, "id"]
 
-    # フィルター構築（素の Company フィールドのみ）
+    # フィルター構築
     filters = Q()
     if query:
         filters &= (
@@ -659,8 +665,8 @@ def company_detail(request, pk):
     if sub_industry:
         filters &= Q(sub_industry__icontains=sub_industry)
 
-    # クエリセット（annotateなしで並び替え）
-    company_list = list(Company.objects.filter(filters).order_by(sort_key))
+    # クエリセット取得（annotateなし、純粋なCompany + 複合ソート）
+    company_list = list(Company.objects.filter(filters).order_by(*sort_keys))
 
     try:
         index = [c.id for c in company_list].index(company.id)
