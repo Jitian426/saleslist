@@ -147,11 +147,11 @@
     <thead class="table-light">
       <tr>
         <th>
-          {% url_params request.GET sort="name" order=next_order as query_name %}
+          {% url_params request.GET sort="name" order=next_order|default:"asc" as query_name %}
           <a href="?{{ query_name }}">
-            店舗名 {% if sort_column == "name" %}{{ sort_order|yesno:"▲,▼" }}{% endif %}
+            店舗名 {% if sort_column == "name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
-        </th>    
+        </th>
         <th>
           {% url_params request.GET sort="phone" order=next_order|default:"asc" as query_phone %}
           <a href="?{{ query_phone }}">
@@ -164,34 +164,34 @@
             携帯番号 {% if sort_column == "mobile_phone" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
-        <th>
+        <th class="address">
           {% url_params request.GET sort="address" order=next_order as query_address %}
           <a href="?{{ query_address }}">
-            店舗住所 {% if sort_column == "address" %}{{ sort_order|yesno:"▲,▼" }}{% endif %}
+            店舗住所 {% if sort_column == "address" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>
           {% url_params request.GET sort="corporation_name" order=next_order as query_corp %}
           <a href="?{{ query_corp }}">
-            法人名 {% if sort_column == "corporation_name" %}{{ sort_order|yesno:"▲,▼" }}{% endif %}
+            法人名 {% if sort_column == "corporation_name" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>
-          {% url_params request.GET sort="established_date" order=next_order as query_established %}
-          <a href="?{{ query_established }}">
-            開業日 {% if sort_column == "established_date" %}{{ sort_order|yesno:"▲,▼" }}{% endif %}
+          {% url_params request.GET sort="established_date" order=next_order|default:"asc" as query_established_date %}
+          <a href="?{{ query_established_date }}">
+            開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>
           {% url_params request.GET sort="industry" order=next_order as query_industry %}
           <a href="?{{ query_industry }}">
-            大業種 {% if sort_column == "industry" %}{{ sort_order|yesno:"▲,▼" }}{% endif %}
+            大業種 {% if sort_column == "industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>
           {% url_params request.GET sort="sub_industry" order=next_order as query_sub_industry %}
           <a href="?{{ query_sub_industry }}">
-            小業種 {% if sort_column == "sub_industry" %}{{ sort_order|yesno:"▲,▼" }}{% endif %}
+            小業種 {% if sort_column == "sub_industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>
