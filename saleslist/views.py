@@ -798,8 +798,16 @@ def company_list(request):
 
     companies = companies.filter(filters)
 
-    # 🔸 並び順
-    companies = companies.order_by(sort_column)
+    # ✅ 並び順：複合キーによる安定化（company_detail との一致）
+    if sort in ["established_date", "name", "address", "corporation_name"]:
+        if order == "desc":
+            companies = companies.order_by(f"-{sort}", "-id")
+        else:
+            companies = companies.order_by(sort, "id")
+    else:
+        # annotate 項目などは単独ソート（元のまま）
+        companies = companies.order_by(sort_column)
+
 
     # 🔸 ページネーション
     paginator = Paginator(companies, 100)
