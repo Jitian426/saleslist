@@ -55,6 +55,7 @@
                 <th style="width: 120px;">日付</th>
                 <th style="width: 120px;">営業担当</th>
                 <th style="width: 80px;">結果</th>
+                <th style="width: 120px;">次回予定日</th>
                 <th>メモ</th>
               </tr>
             </thead>
@@ -64,11 +65,18 @@
                 <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
                 <td>{{ activity.sales_person }}</td>
                 <td>{{ activity.result }}</td>
+                <td>
+                  {% if activity.next_action_date %}
+                    {{ activity.next_action_date|date:"Y/m/d H:i" }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
                 <td>{{ activity.memo|default:"" }}</td>
               </tr>
               {% empty %}
               <tr>
-                <td colspan="4">営業履歴はまだ登録されていません。</td>
+                <td colspan="5">営業履歴はまだ登録されていません。</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -92,7 +100,7 @@
 </div>
 
     <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
-    
+
     <hr>
     <h6 class="mt-4">編集履歴</h6>
     <div class="text-muted" style="font-size: 0.85em;">
