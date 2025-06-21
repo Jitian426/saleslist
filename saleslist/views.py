@@ -145,14 +145,18 @@ def add_sales_activity(request, company_id):
         if form.is_valid():
             sales_activity = form.save(commit=False)
             sales_activity.company = company
-            sales_activity.activity_date = localtime(now())  # ✅ 日時を適用
-            # ✅ 氏名で保存（空なら fallback で username）
+            sales_activity.activity_date = localtime(now())
+
             full_name = f"{request.user.last_name}{request.user.first_name}"
             sales_activity.sales_person = full_name if full_name.strip() else request.user.username
-            sales_activity.sales_person_email = request.POST.get('sales_person_email')
+
+            # ✅ メールアドレス自動補完
+            input_email = request.POST.get('sales_person_email')
+            sales_activity.sales_person_email = input_email or request.user.email
+
             sales_activity.save()
-            
-            # ✅ メール送信の処理（次回営業予定がある場合のみ）
+
+            # ✅ メール送信スケジュール
             if sales_activity.next_action_date and sales_activity.sales_person_email:
                 EmailScheduledJob.objects.create(
                     recipient_email=sales_activity.sales_person_email,
@@ -166,15 +170,15 @@ def add_sales_activity(request, company_id):
                     scheduled_time=sales_activity.next_action_date
                 )
 
-                # ✅ メール送信をスケジュール
                 delay = (sales_activity.next_action_date - now()).total_seconds()
                 Timer(delay, send_scheduled_email).start()
 
-            return redirect("saleslist:company_detail", pk=company.id)  # ✅ リダイレクトを正しい位置に修正
+            return redirect("saleslist:company_detail", pk=company.id)
     else:
         form = SalesActivityForm()
 
     return render(request, 'add_sales_activity.html', {"form": form, "company": company})
+
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Company
@@ -572,9 +576,6 @@ def add_sales_activity_ajax(request, pk):
                 next_action = make_aware(naive_dt)
             except Exception as dt_err:
                 print("❌ 日付のパース失敗:", dt_err)
-
-        # ✅ メールアドレスが空なら None
-        sales_person_email = data.get("sales_person_email") or None
 
         # ✅ 登録処理
         activity = SalesActivity.objects.create(
