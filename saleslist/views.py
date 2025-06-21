@@ -910,7 +910,8 @@ def user_list(request):
     users = UserProfile.objects.select_related("company").filter(
         models.Q(customer_name__isnull=False) & ~models.Q(customer_name="") |
         models.Q(order_date__isnull=False)
-    ).order_by("-order_date", "customer_name")
+    ).order_by("-order_date", "customer_name")[:100]  # 最大100件だけ
+
 
     return render(request, "user_list.html", {
         "users": users
