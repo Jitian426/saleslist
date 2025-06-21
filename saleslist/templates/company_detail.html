@@ -8,7 +8,6 @@
       現レコード: {{ record_position }} ／ 対象レコード: {{ target_count }} ／ 総レコード: {{ total_count }}
     </div>
   </div>
-  <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
 
   <div class="row">
     <!-- 左：企業情報 -->
@@ -92,7 +91,8 @@
   </div>
 </div>
 
-
+    <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
+    
     <hr>
     <h6 class="mt-4">編集履歴</h6>
     <div class="text-muted" style="font-size: 0.85em;">

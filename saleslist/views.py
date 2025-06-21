@@ -626,7 +626,7 @@ def company_detail(request, pk):
 
     company = get_object_or_404(Company, id=pk)
 
-    # GETパラメータ取得（検索・ソート用）
+    # クエリパラメータ取得（検索・ソート用）
     query = request.GET.get("query", "")
     phone = request.GET.get("phone", "")
     address = request.GET.get("address", "")
@@ -640,12 +640,27 @@ def company_detail(request, pk):
     next_action_start = request.GET.get("next_action_start", "")
     next_action_end = request.GET.get("next_action_end", "")
     exclude_query = request.GET.get("exclude_query", "")
+    sort = request.GET.get("sort", "id")
+    order = request.GET.get("order", "asc")
 
-    # ✅ クエリパラメータの多重指定対策（複数ある場合は後ろを採用）
-    sort = request.GET.getlist("sort")[-1] if request.GET.getlist("sort") and request.GET.getlist("sort")[-1] else "id"
-    order = request.GET.getlist("order")[-1] if request.GET.getlist("order") and request.GET.getlist("order")[-1] else "asc"
+    # 並び順
+    sort_map = {
+        "activity_date": "latest_activity_date",
+        "next_action_date": "latest_next_action_date",
+        "sales_person": "latest_sales_person",
+        "result": "latest_result",
+        "name": "name",
+        "phone": "phone",
+        "address": "address",
+        "corporation_name": "corporation_name",
+        "established_date": "established_date",
+        "sub_industry": "sub_industry",
+        "industry": "industry",
+    }
+    sort_column = sort_map.get(sort, sort)
+    sort_key = f"-{sort_column}" if order == "desc" else sort_column
 
-    # 🔸 サブクエリで最新営業履歴を取得（company_listと統一）
+    # 営業履歴サブクエリ
     latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
 
     qs = Company.objects.annotate(
@@ -702,32 +717,14 @@ def company_detail(request, pk):
             Q(corporation_name__icontains=exclude_query)
         )
 
-    qs = qs.filter(filters)
-
-    # 並び順の設定
-    sort_map = {
-        "activity_date": "latest_activity_date",
-        "next_action_date": "latest_next_action_date",
-        "sales_person": "latest_sales_person",
-        "result": "latest_result",
-        "name": "name",
-        "phone": "phone",
-        "address": "address",
-        "corporation_name": "corporation_name",
-        "established_date": "established_date",  # ← 追加：開業日
-        "sub_industry": "sub_industry",          # ← 追加：小業種
-        "industry": "industry",                  # ← 追加：大業種（必要であれば）
-    }
-
-    sort_column = sort_map.get(sort, sort)
-    sort_key = f"-{sort_column}" if order == "desc" else sort_column
-
-    # 並び替えたクエリセットから ID リストを取得 # 🔸 ソートを適用して会社リストを取得（これが最重要）
-    company_list = list(qs.order_by(sort_key).select_related())
+    # 絞り込み＋ソート
+    qs = qs.filter(filters).order_by(sort_key)
+    company_list = list(qs)
     filtered_ids = [c.id for c in company_list]
     target_count = len(company_list)
-    total_count = Company.objects.count() 
+    total_count = Company.objects.count()
 
+    # インデックス位置取得
     try:
         current_index = filtered_ids.index(company.id)
     except ValueError:
@@ -740,7 +737,26 @@ def company_detail(request, pk):
     sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
     sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
-    context = {
+    # クエリパラメータを復元
+    query_params = urlencode({
+        "query": query,
+        "phone": phone,
+        "address": address,
+        "corporation_name": corporation_name,
+        "sales_person": sales_person,
+        "result": result,
+        "industry": industry,
+        "sub_industry": sub_industry,
+        "start_date": start_date,
+        "end_date": end_date,
+        "next_action_start": next_action_start,
+        "next_action_end": next_action_end,
+        "exclude_query": exclude_query,
+        "sort": sort,
+        "order": order,
+    })
+
+    return render(request, "company_detail.html", {
         "company": company,
         "sales_activities": sales_activities,
         "sales_results": sales_results,
@@ -749,26 +765,9 @@ def company_detail(request, pk):
         "record_position": current_index + 1,
         "target_count": target_count,
         "total_count": total_count,
-        "query_params": urlencode({
-            "query": query,
-            "phone": phone,
-            "address": address,
-            "corporation_name": corporation_name,
-            "sales_person": sales_person,
-            "result": result,
-            "industry": industry,
-            "sub_industry": sub_industry,
-            "start_date": start_date,
-            "end_date": end_date,
-            "next_action_start": next_action_start,
-            "next_action_end": next_action_end,
-            "exclude_query": exclude_query,
-            "sort": sort,
-            "order": order,
-        })
-    }
+        "query_params": query_params,
+    })
 
-    return render(request, "company_detail.html", context)
 
 
 from django.core.paginator import Paginator
