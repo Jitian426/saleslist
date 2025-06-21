@@ -622,52 +622,19 @@ from .models import Company, SalesActivity
 def company_detail(request, pk):
     company = get_object_or_404(Company, id=pk)
 
-    # クエリパラメータ取得（検索・ソート条件）
+    # クエリパラメータ取得
     query = request.GET.get("query", "")
     phone = request.GET.get("phone", "")
     address = request.GET.get("address", "")
     corporation_name = request.GET.get("corporation_name", "")
-    sales_person = request.GET.get("sales_person", "")
-    result = request.GET.get("result", "")
     industry = request.GET.get("industry", "")
     sub_industry = request.GET.get("sub_industry", "")
-    start_date = request.GET.get("start_date", "")
-    end_date = request.GET.get("end_date", "")
-    next_action_start = request.GET.get("next_action_start", "")
-    next_action_end = request.GET.get("next_action_end", "")
-    exclude_query = request.GET.get("exclude_query", "")
     sort = request.GET.get("sort", "id")
     order = request.GET.get("order", "asc")
 
-    # 🔸 ソート条件（ソートマップを適用）
-    sort = request.GET.get("sort", "id")
-    order = request.GET.get("order", "asc")
+    sort_key = f"-{sort}" if order == "desc" else sort
 
-    sort_map = {
-        "activity_date": "latest_activity_date",
-        "next_action_date": "latest_next_action_date",
-        "sales_person": "latest_sales_person",
-        "result": "latest_result",
-    }
-
-    sort_field = sort_map.get(sort, sort)  # ← 一覧と同じ変換処理を適用
-    sort_key = f"-{sort_field}" if order == "desc" else sort_field
-
-    # サブクエリ（最新営業履歴情報の注釈）
-    latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
-
-    qs = Company.objects.annotate(
-        latest_activity_date=Subquery(latest_activities.values("activity_date")[:1]),
-        latest_sales_person=Subquery(
-            latest_activities.annotate(
-                sales_person_str=Cast(F("sales_person"), output_field=CharField())
-            ).values("sales_person_str")[:1]
-        ),
-        latest_result=Subquery(latest_activities.values("result")[:1]),
-        latest_next_action_date=Subquery(latest_activities.values("next_action_date")[:1]),
-    )
-
-    # フィルター適用（company_list と同じフィルタ）
+    # フィルター構築（素の Company フィールドのみ）
     filters = Q()
     if query:
         filters &= (
@@ -687,32 +654,13 @@ def company_detail(request, pk):
         filters &= Q(address__icontains=address)
     if corporation_name:
         filters &= Q(corporation_name__icontains=corporation_name)
-    if sales_person:
-        filters &= Q(latest_sales_person__icontains=sales_person)
-    if result:
-        filters &= Q(latest_result=result)
     if industry:
         filters &= Q(industry__icontains=industry)
     if sub_industry:
         filters &= Q(sub_industry__icontains=sub_industry)
-    if start_date:
-        filters &= Q(latest_activity_date__date__gte=start_date)
-    if end_date:
-        filters &= Q(latest_activity_date__date__lte=end_date)
-    if next_action_start:
-        filters &= Q(latest_next_action_date__date__gte=next_action_start)
-    if next_action_end:
-        filters &= Q(latest_next_action_date__date__lte=next_action_end)
-    if exclude_query:
-        filters &= ~(
-            Q(name__icontains=exclude_query) |
-            Q(address__icontains=exclude_query) |
-            Q(corporation_name__icontains=exclude_query)
-        )
 
-    # 並び順付きで全件取得（ページネーション無視）
-    filtered_qs = qs.filter(filters).order_by(sort_key)
-    company_list = list(filtered_qs)
+    # クエリセット（annotateなしで並び替え）
+    company_list = list(Company.objects.filter(filters).order_by(sort_key))
 
     try:
         index = [c.id for c in company_list].index(company.id)
@@ -726,21 +674,13 @@ def company_detail(request, pk):
     sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
     sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
-    # クエリパラメータのURL復元
     query_params = urlencode({
         "query": query,
         "phone": phone,
         "address": address,
         "corporation_name": corporation_name,
-        "sales_person": sales_person,
-        "result": result,
         "industry": industry,
         "sub_industry": sub_industry,
-        "start_date": start_date,
-        "end_date": end_date,
-        "next_action_start": next_action_start,
-        "next_action_end": next_action_end,
-        "exclude_query": exclude_query,
         "sort": sort,
         "order": order,
     })
