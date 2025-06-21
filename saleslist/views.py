@@ -906,13 +906,27 @@ from .models import UserProfile
 
 @login_required
 def user_list(request):
-    # 顧客名 or 受注日 のいずれかが記載されているユーザー情報だけ抽出
     users = UserProfile.objects.select_related("company").filter(
         models.Q(customer_name__isnull=False) & ~models.Q(customer_name="") |
         models.Q(order_date__isnull=False)
-    ).order_by("-order_date", "customer_name")[:100]  # 最大100件だけ
+    ).order_by("-order_date", "customer_name")[:100]
 
+    user_data = [
+        {
+            "id": user.company.id,
+            "customer_name": user.customer_name,
+            "phone": user.company.phone,
+            "address": user.company.address,
+            "order_date": user.order_date,
+            "shop_name": user.shop_name,
+            "product": user.product,
+            "appointment_staff": user.appointment_staff,
+            "sales_staff": user.sales_staff,
+        }
+        for user in users
+    ]
 
     return render(request, "user_list.html", {
-        "users": users
+        "users": user_data
     })
+
