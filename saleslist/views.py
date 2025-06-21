@@ -254,55 +254,27 @@ def send_scheduled_email():
         except Exception as e:
             print(f"⚠️ メール送信失敗: {email_job.recipient_email} - {str(e)}")
 
+
 from django.utils.timezone import now, localtime, timedelta
+from .models import Company
+from datetime import timedelta
+from django.utils import timezone
+from django.db.models import Max
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import SalesActivity
-from .models import Company
-from django.db.models import Max
-from django.utils import timezone
-from datetime import timedelta
 
 @login_required
 def dashboard(request):
-    today = localtime(now()).date()
-    week_later = today + timedelta(days=7)
-
-    # ✅ 今日の営業予定
-    today_sales = SalesActivity.objects.filter(next_action_date__date=today)
-
-    # ✅ 期限超過の営業予定（次回営業予定が過ぎている & 未対応）
-    overdue_sales = SalesActivity.objects.filter(next_action_date__date__lt=today)
-
-    # ✅ 今週の営業予定
-    upcoming_sales = SalesActivity.objects.filter(next_action_date__date__range=[today, week_later])
-
-    context = {
-        'today_sales': today_sales,
-        'overdue_sales': overdue_sales,
-        'upcoming_sales': upcoming_sales,
-    }
-
-    latest_activities = (
-        SalesActivity.objects
-        .values("company_id")
-        .annotate(latest_time=Max("activity_date"))
-        .values_list("company_id", flat=True)
-    )
-
-    activities = (
-        SalesActivity.objects
-        .filter(company_id__in=latest_activities)
-        .order_by("-next_action_date")
-    )
-
-    # 各企業ごとに最新の営業履歴IDを取得
+    # 会社ごとに最新の営業履歴IDを取得
     latest_activity_ids = (
         SalesActivity.objects
         .values("company_id")
         .annotate(latest_id=Max("id"))
         .values_list("latest_id", flat=True)
     )
-    # 最新の営業履歴だけを取得（例：今日の予定）
+
+    # 今日の営業予定：最新履歴の中から今日の予定だけ
     today_sales = (
         SalesActivity.objects
         .filter(id__in=latest_activity_ids, next_action_date__date=timezone.now().date())
@@ -310,30 +282,34 @@ def dashboard(request):
         .order_by("next_action_date")
     )
 
-    overdue_activities = (
-        SalesActivity.objects
-        .filter(id__in=latest_activity_ids, next_action_date__lt=timezone.now())
-    )
-
+    # 期限超過の営業予定：最新履歴の中から期限超過しているもの
     overdue_sales = (
         SalesActivity.objects
-        .filter(id__in=latest_activity_ids, next_action_date__lt=timezone.now())
+        .filter(id__in=latest_activity_ids, next_action_date__lt=timezone.now().date())
         .select_related("company")
         .order_by("next_action_date")
     )
 
+    # 今週の営業予定：最新履歴の中から今後7日間の予定
     upcoming_sales = (
         SalesActivity.objects
         .filter(
             id__in=latest_activity_ids,
-            next_action_date__gte=timezone.now(),
-            next_action_date__lt=timezone.now() + timedelta(days=7)
+            next_action_date__date__gte=timezone.now().date(),
+            next_action_date__date__lte=(timezone.now().date() + timedelta(days=7))
         )
         .select_related("company")
         .order_by("next_action_date")
     )
 
-    return render(request, 'dashboard.html', context)
+    context = {
+        "today_sales": today_sales,
+        "overdue_sales": overdue_sales,
+        "upcoming_sales": upcoming_sales,
+    }
+
+    return render(request, "dashboard.html", context)
+
 
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
 def register(request):
