@@ -613,20 +613,16 @@ def add_sales_activity_ajax(request, pk):
 
 
 from django.shortcuts import get_object_or_404, render
-from django.db.models import Q
-from .models import Company, SalesActivity
-from django.contrib.auth.decorators import login_required
+from django.db.models import Q, OuterRef, Subquery, F, CharField
 from django.utils.http import urlencode
+from django.db.models.functions import Cast
+from .models import Company, SalesActivity
 
 @login_required
 def company_detail(request, pk):
-    from django.db.models import OuterRef, Subquery, F, CharField
-    from django.db.models.functions import Cast
-    from django.utils.http import urlencode
-
     company = get_object_or_404(Company, id=pk)
 
-    # クエリパラメータ取得（検索・ソート用）
+    # クエリパラメータ取得（検索・ソート条件）
     query = request.GET.get("query", "")
     phone = request.GET.get("phone", "")
     address = request.GET.get("address", "")
@@ -643,7 +639,7 @@ def company_detail(request, pk):
     sort = request.GET.get("sort", "id")
     order = request.GET.get("order", "asc")
 
-    # 並び順
+    # 並び順定義
     sort_map = {
         "activity_date": "latest_activity_date",
         "next_action_date": "latest_next_action_date",
@@ -660,7 +656,7 @@ def company_detail(request, pk):
     sort_column = sort_map.get(sort, sort)
     sort_key = f"-{sort_column}" if order == "desc" else sort_column
 
-    # 営業履歴サブクエリ
+    # サブクエリ（最新営業履歴情報の注釈）
     latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
 
     qs = Company.objects.annotate(
@@ -674,7 +670,7 @@ def company_detail(request, pk):
         latest_next_action_date=Subquery(latest_activities.values("next_action_date")[:1]),
     )
 
-    # フィルタ適用
+    # フィルター適用（company_list と同じフィルタ）
     filters = Q()
     if query:
         filters &= (
@@ -717,27 +713,23 @@ def company_detail(request, pk):
             Q(corporation_name__icontains=exclude_query)
         )
 
-    # 絞り込み＋ソート
-    qs = qs.filter(filters).order_by(sort_key)
-    company_list = list(qs)
-    filtered_ids = [c.id for c in company_list]
-    target_count = len(company_list)
-    total_count = Company.objects.count()
+    # 並び順付きで全件取得（ページネーション無視）
+    filtered_qs = qs.filter(filters).order_by(sort_key)
+    company_list = list(filtered_qs)
 
-    # インデックス位置取得
     try:
-        current_index = filtered_ids.index(company.id)
+        index = [c.id for c in company_list].index(company.id)
     except ValueError:
-        current_index = 0
+        index = 0
 
-    prev_company = company_list[current_index - 1] if current_index > 0 else None
-    next_company = company_list[current_index + 1] if current_index < len(company_list) - 1 else None
+    prev_company = company_list[index - 1] if index > 0 else None
+    next_company = company_list[index + 1] if index < len(company_list) - 1 else None
 
-    # 営業履歴
+    # 営業履歴・営業結果
     sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
     sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
 
-    # クエリパラメータを復元
+    # クエリパラメータのURL復元
     query_params = urlencode({
         "query": query,
         "phone": phone,
@@ -762,9 +754,9 @@ def company_detail(request, pk):
         "sales_results": sales_results,
         "prev_company": prev_company,
         "next_company": next_company,
-        "record_position": current_index + 1,
-        "target_count": target_count,
-        "total_count": total_count,
+        "record_position": index + 1,
+        "target_count": len(company_list),
+        "total_count": Company.objects.count(),
         "query_params": query_params,
     })
 
