@@ -639,7 +639,19 @@ def company_detail(request, pk):
     sort = request.GET.get("sort", "id")
     order = request.GET.get("order", "asc")
 
-    sort_key = f"-{sort}" if order == "desc" else sort
+    # 🔸 ソート条件（ソートマップを適用）
+    sort = request.GET.get("sort", "id")
+    order = request.GET.get("order", "asc")
+
+    sort_map = {
+        "activity_date": "latest_activity_date",
+        "next_action_date": "latest_next_action_date",
+        "sales_person": "latest_sales_person",
+        "result": "latest_result",
+    }
+
+    sort_field = sort_map.get(sort, sort)  # ← 一覧と同じ変換処理を適用
+    sort_key = f"-{sort_field}" if order == "desc" else sort_field
 
     # サブクエリ（最新営業履歴情報の注釈）
     latest_activities = SalesActivity.objects.filter(company=OuterRef("pk")).order_by("-activity_date")
