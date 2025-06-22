@@ -95,33 +95,42 @@ class CompanyEditLog(models.Model):
     def __str__(self):
         return f"{self.timestamp} - {self.action} by {self.user}"
 
+from django.db import models
+
 class UserProfile(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    customer_name_kana = models.CharField(
-        max_length=255, null=True, blank=True  # ← ここを追加
-    )
-    customer_name = models.CharField(max_length=255, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    representative_name_kana = models.CharField(max_length=255, blank=True, null=True)
-    representative_name = models.CharField(max_length=255, blank=True, null=True)
-    representative_phone = models.CharField(max_length=100, blank=True, null=True)
+
+    # 個人情報フィールド（文字列系）
+    customer_name_kana = models.CharField(max_length=255, blank=True)  # null=False（文字列系は''でOK）
+    customer_name = models.CharField(max_length=255, blank=True)
+    address = models.TextField(blank=True)
+    representative_name_kana = models.CharField(max_length=255, blank=True)
+    representative_name = models.CharField(max_length=255, blank=True)
+    representative_phone = models.CharField(max_length=100, blank=True)
     representative_birthday = models.DateField(blank=True, null=True)
-    contact_name_kana = models.CharField(max_length=255, blank=True, null=True)
-    contact_name = models.CharField(max_length=255, blank=True, null=True)
-    contact_phone = models.CharField(max_length=100, blank=True, null=True)
-    distribution = models.CharField(max_length=255, blank=True, null=True)
-    plan = models.CharField(max_length=255, blank=True, null=True)
+    contact_name_kana = models.CharField(max_length=255, blank=True)
+    contact_name = models.CharField(max_length=255, blank=True)
+    contact_phone = models.CharField(max_length=100, blank=True)
+
+    # 契約・商談情報フィールド（文字列／数値／日付）
+    distribution = models.CharField(max_length=255, blank=True)
+    plan = models.CharField(max_length=255, blank=True)
     capacity = models.IntegerField(blank=True, null=True)
+    order_date = models.DateField(blank=True, null=True)
     complete_date = models.DateField(blank=True, null=True)
+
+    # 金額フィールド（数値）
     gross_profit = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     cashback = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     commission = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    file_link = models.URLField(blank=True, null=True)
-    shop_name = models.CharField(max_length=255, blank=True, null=True)
-    product = models.CharField(max_length=255, blank=True, null=True)
-    appointment_staff = models.CharField(max_length=255, blank=True, null=True)
-    sales_staff = models.CharField(max_length=255, blank=True, null=True)
-    order_date = models.DateField(blank=True, null=True)
+
+    # その他
+    file_link = models.URLField(blank=True)
+    shop_name = models.CharField(max_length=255, blank=True)
+    product = models.CharField(max_length=255, blank=True)
+    appointment_staff = models.CharField(max_length=255, blank=True)
+    sales_staff = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return f"{self.customer_name} ({self.company.name})"
+        return f"{self.customer_name or '(未設定)'} ({self.company.name})"
+
