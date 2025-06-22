@@ -100,91 +100,106 @@
 </div>
 
 <!-- ユーザー情報フォーム -->
-<form method="post">
-  {% csrf_token %}
-
-  <!-- 顧客情報 -->
-  <h6 class="mt-3">■ 顧客情報</h6>
+{% if show_user_form %}
   <div class="row">
-    <div class="col-md-6 mb-2">
-      {{ user_form.customer_name_kana.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name_kana.name }}" value="{{ user_form.customer_name_kana.value|default_if_none:'' }}">
-    </div>
-    <div class="col-md-6 mb-2">
-      {{ user_form.customer_name.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name.name }}" value="{{ user_form.customer_name.value|default_if_none:'' }}">
+    <div class="col-12 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          ユーザー情報（受注情報）
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            <form method="post">
+              {% csrf_token %}
+            
+              <!-- 顧客情報 -->
+              <h6 class="mt-3">■ 顧客情報</h6>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  {{ user_form.customer_name_kana.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name_kana.name }}" value="{{ user_form.customer_name_kana.value|default_if_none:'' }}">
+                </div>
+                <div class="col-md-6 mb-2">
+                  {{ user_form.customer_name.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name.name }}" value="{{ user_form.customer_name.value|default_if_none:'' }}">
+                </div>
+              </div>
+            
+              <div class="row">
+                <div class="col-md-12 mb-2">
+                  {{ user_form.address.label }}：{{ user_form.address }}
+                </div>
+                <div class="col-md-4 mb-2">
+                  {{ user_form.contact_name_kana.label }}：{{ user_form.contact_name_kana }}
+                </div>
+                <div class="col-md-4 mb-2">
+                  {{ user_form.contact_name.label }}：{{ user_form.contact_name }}
+                </div>
+                <div class="col-md-4 mb-2">
+                  {{ user_form.contact_phone.label }}：{{ user_form.contact_phone }}
+                </div>
+              </div>
+            
+              <div class="row">
+                <div class="col-md-4 mb-2">
+                  {{ user_form.representative_name_kana.label }}：{{ user_form.representative_name_kana }}
+                </div>
+                <div class="col-md-4 mb-2">
+                  {{ user_form.representative_name.label }}：{{ user_form.representative_name }}
+                </div>
+                <div class="col-md-4 mb-2">
+                  {{ user_form.representative_phone.label }}：{{ user_form.representative_phone }}
+                </div>
+                <div class="col-md-4 mb-2">
+                  {{ user_form.representative_birthday.label }}：{{ user_form.representative_birthday }}
+                </div>
+                <div class="col-md-8 mb-2">
+                  <strong>代表者年齢：</strong> {% if user_profile.representative_age %}{{ user_profile.representative_age }}歳{% else %}-{% endif %}
+                </div>
+              </div>
+            
+              <!-- 契約情報 -->
+              <h6 class="mt-4">■ 契約情報</h6>
+              <div class="row">
+                <div class="col-md-3 mb-2">{{ user_form.order_date.label }}：{{ user_form.order_date }}</div>
+                <div class="col-md-3 mb-2">{{ user_form.complete_date.label }}：{{ user_form.complete_date }}</div>
+                <div class="col-md-3 mb-2">{{ user_form.appointment_staff.label }}：{{ user_form.appointment_staff }}</div>
+                <div class="col-md-3 mb-2">{{ user_form.sales_staff.label }}：{{ user_form.sales_staff }}</div>
+            
+                <div class="col-md-3 mb-2">{{ user_form.shop_name.label }}：{{ user_form.shop_name }}</div>
+                <div class="col-md-3 mb-2">{{ user_form.distribution.label }}：{{ user_form.distribution }}</div>
+                <div class="col-md-3 mb-2">{{ user_form.product.label }}：{{ user_form.product }}</div>
+                <div class="col-md-3 mb-2">{{ user_form.capacity.label }}：{{ user_form.capacity }}</div>
+            
+                <div class="col-md-12 mb-2">{{ user_form.plan.label }}：{{ user_form.plan }}</div>
+              </div>
+            
+              <!-- 入出金情報 -->
+              <h6 class="mt-4">■ 入出金情報</h6>
+              <div class="row">
+                <div class="col-md-4 mb-2">{{ user_form.gross_profit.label }}：{{ user_form.gross_profit }}</div>
+                <div class="col-md-4 mb-2">{{ user_form.cashback.label }}：{{ user_form.cashback }}</div>
+                <div class="col-md-4 mb-2">{{ user_form.commission.label }}：{{ user_form.commission }}</div>
+              </div>
+            
+              <!-- 書類データ -->
+              <h6 class="mt-4">■ 書類データ</h6>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  {{ user_form.file_link.label }}：{{ user_form.file_link }}
+                  {% if user_profile.file_link %}
+                    <p class="mt-1"><a href="{{ user_profile.file_link }}" target="_blank">▶ ファイルを開く</a></p>
+                  {% endif %}
+                </div>
+              </div>
+            
+              <button type="submit" class="btn btn-primary mt-3">💾 ユーザー情報を保存</button>
+            </form>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="row">
-    <div class="col-md-12 mb-2">
-      {{ user_form.address.label }}：{{ user_form.address }}
-    </div>
-    <div class="col-md-4 mb-2">
-      {{ user_form.contact_name_kana.label }}：{{ user_form.contact_name_kana }}
-    </div>
-    <div class="col-md-4 mb-2">
-      {{ user_form.contact_name.label }}：{{ user_form.contact_name }}
-    </div>
-    <div class="col-md-4 mb-2">
-      {{ user_form.contact_phone.label }}：{{ user_form.contact_phone }}
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-4 mb-2">
-      {{ user_form.representative_name_kana.label }}：{{ user_form.representative_name_kana }}
-    </div>
-    <div class="col-md-4 mb-2">
-      {{ user_form.representative_name.label }}：{{ user_form.representative_name }}
-    </div>
-    <div class="col-md-4 mb-2">
-      {{ user_form.representative_phone.label }}：{{ user_form.representative_phone }}
-    </div>
-    <div class="col-md-4 mb-2">
-      {{ user_form.representative_birthday.label }}：{{ user_form.representative_birthday }}
-    </div>
-    <div class="col-md-8 mb-2">
-      <strong>代表者年齢：</strong> {% if user_profile.representative_age %}{{ user_profile.representative_age }}歳{% else %}-{% endif %}
-    </div>
-  </div>
-
-  <!-- 契約情報 -->
-  <h6 class="mt-4">■ 契約情報</h6>
-  <div class="row">
-    <div class="col-md-3 mb-2">{{ user_form.order_date.label }}：{{ user_form.order_date }}</div>
-    <div class="col-md-3 mb-2">{{ user_form.complete_date.label }}：{{ user_form.complete_date }}</div>
-    <div class="col-md-3 mb-2">{{ user_form.appointment_staff.label }}：{{ user_form.appointment_staff }}</div>
-    <div class="col-md-3 mb-2">{{ user_form.sales_staff.label }}：{{ user_form.sales_staff }}</div>
-
-    <div class="col-md-3 mb-2">{{ user_form.shop_name.label }}：{{ user_form.shop_name }}</div>
-    <div class="col-md-3 mb-2">{{ user_form.distribution.label }}：{{ user_form.distribution }}</div>
-    <div class="col-md-3 mb-2">{{ user_form.product.label }}：{{ user_form.product }}</div>
-    <div class="col-md-3 mb-2">{{ user_form.capacity.label }}：{{ user_form.capacity }}</div>
-
-    <div class="col-md-12 mb-2">{{ user_form.plan.label }}：{{ user_form.plan }}</div>
-  </div>
-
-  <!-- 入出金情報 -->
-  <h6 class="mt-4">■ 入出金情報</h6>
-  <div class="row">
-    <div class="col-md-4 mb-2">{{ user_form.gross_profit.label }}：{{ user_form.gross_profit }}</div>
-    <div class="col-md-4 mb-2">{{ user_form.cashback.label }}：{{ user_form.cashback }}</div>
-    <div class="col-md-4 mb-2">{{ user_form.commission.label }}：{{ user_form.commission }}</div>
-  </div>
-
-  <!-- 書類データ -->
-  <h6 class="mt-4">■ 書類データ</h6>
-  <div class="row">
-    <div class="col-md-6 mb-2">
-      {{ user_form.file_link.label }}：{{ user_form.file_link }}
-      {% if user_profile.file_link %}
-        <p class="mt-1"><a href="{{ user_profile.file_link }}" target="_blank">▶ ファイルを開く</a></p>
-      {% endif %}
-    </div>
-  </div>
-
-  <button type="submit" class="btn btn-primary mt-3">💾 ユーザー情報を保存</button>
-</form>
-
+{% endif %}
 
 
 
