@@ -118,11 +118,12 @@
               <h6 class="mt-3">■ 顧客情報</h6>
               <div class="row">
                 <div class="col-md-6 mb-2">
-                  {{ user_form.customer_name_kana.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name_kana.name }}" value="{{ user_form.customer_name_kana.value|default_if_none:'' }}">
-                </div>
-                <div class="col-md-6 mb-2">
                   {{ user_form.customer_name.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name.name }}" value="{{ user_form.customer_name.value|default_if_none:'' }}">
                 </div>
+                <div class="col-md-6 mb-2">
+                  {{ user_form.customer_name_kana.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name_kana.name }}" value="{{ user_form.customer_name_kana.value|default_if_none:'' }}">
+                </div>
+
                 <div class="col-md-12 mb-2">
                   {{ user_form.address.label }}：
                   <input type="text" class="form-control" name="{{ user_form.address.name }}" value="{{ user_form.address.value|default_if_none:'' }}">
@@ -159,7 +160,7 @@
                     <label for="representative_phone">代表者電話番号：</label>
                     {{ user_form.representative_phone }}
                   </div>
-                  
+
                 </div>
 
                 <!-- 担当者情報ボックス -->
