@@ -907,14 +907,8 @@ from .models import UserProfile
 @login_required
 def user_list(request):
     users = UserProfile.objects.select_related("company").filter(
-        models.Q(customer_name__isnull=False) & ~models.Q(customer_name="") |
-        models.Q(order_date__isnull=False)
-    ).order_by("-order_date", "customer_name")[:100]
-
-    # ↑このフィルタ部分を括弧で囲んで明示的に結合順序を指定
-    users = UserProfile.objects.select_related("company").filter(
         (
-            models.Q(customer_name__isnull=False) & ~models.Q(customer_name="")
+            models.Q(customer_name__isnull=False) & ~models.Q(customer_name__exact="")
         ) | models.Q(order_date__isnull=False)
     ).order_by("-order_date", "customer_name")[:100]
 
