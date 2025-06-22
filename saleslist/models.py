@@ -94,3 +94,15 @@ class CompanyEditLog(models.Model):
 
     def __str__(self):
         return f"{self.timestamp} - {self.action} by {self.user}"
+
+class UserProfile(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    shop_name = models.CharField(max_length=255, blank=True, null=True)
+    product = models.CharField(max_length=255, blank=True, null=True)
+    appointment_staff = models.CharField(max_length=255, blank=True, null=True)
+    sales_staff = models.CharField(max_length=255, blank=True, null=True)
+    order_date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.customer_name} ({self.company.name})"
