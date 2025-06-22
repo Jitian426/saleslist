@@ -46,8 +46,9 @@
       <a href="{% url 'saleslist:export_companies_csv' %}" class="btn btn-outline-success btn-sm" style="font-size: 12px; padding: 2px 6px;">CSVエクスポート</a>
     {% endif %}
     {% if user.is_authenticated %}
-      <a href="{% url 'saleslist:dashboard' %}">ダッシュボード</a> /
-      <a href="{% url 'saleslist:password_reset' %}">パスワード変更</a> /
+      <a href="{% url 'saleslist:dashboard' %}">ダッシュボード</a>  /  
+      <a href="{% url 'saleslist:user_list' %}">ユーザーリスト</a>  /  
+      <a href="{% url 'saleslist:password_reset' %}">パスワード変更</a>  /  
       <form id="logout-form" action="{% url 'saleslist:logout' %}" method="post" style="display: inline;">
         {% csrf_token %}
         <button type="submit" style="all: unset; color: blue; cursor: pointer;">ログアウト</button>
