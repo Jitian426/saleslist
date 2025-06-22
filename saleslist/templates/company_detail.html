@@ -129,36 +129,58 @@
                 </div>                
               </div>
             
+              <!-- 担当者情報 & 代表者情報 横並び2枠 -->
               <div class="row">
-                <div class="col-md-4 mb-2">
-                  {{ user_form.representative_name_kana.label }}：{{ user_form.representative_name_kana }}
-                </div>
-                <div class="col-md-4 mb-2">
-                  {{ user_form.representative_name.label }}：{{ user_form.representative_name }}
-                </div>
-                <div class="col-md-4 mb-2">
-                  {{ user_form.representative_phone.label }}：{{ user_form.representative_phone }}
-                </div>
-                <div class="col-md-4 mb-2">
-                  {{ user_form.representative_birthday.label }}：{{ user_form.representative_birthday }}
-                </div>
-                <div class="col-md-8 mb-2">
-                  <strong>代表者年齢：</strong> {% if user_profile.representative_age %}{{ user_profile.representative_age }}歳{% else %}-{% endif %}
-                </div>
-              </div>
 
-              <div class="row">
-                <div class="col-md-4 mb-2">
-                  {{ user_form.contact_name_kana.label }}：{{ user_form.contact_name_kana }}
+                <!-- 代表者情報ボックス -->
+                <div class="col-md-6 border p-3">
+                  <h6>■ 代表者情報</h6>
+                  <div class="row mb-2">
+                    <div class="col">
+                      <label for="representative_name_kana">代表者名カナ：</label>
+                      {{ user_form.representative_name_kana }}
+                    </div>
+                    <div class="col">
+                      <label for="representative_birthday">代表者生年月日：</label>
+                      {{ user_form.representative_birthday }}
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col">
+                      <label for="representative_name">代表者名：</label>
+                      {{ user_form.representative_name }}
+                    </div>
+                    <div class="col">
+                      <label for="age">代表者年齢：</label>
+                      <strong>{{ age_display }}</strong>
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <label for="representative_phone">代表者電話番号：</label>
+                    {{ user_form.representative_phone }}
+                  </div>
+                  
                 </div>
-                <div class="col-md-4 mb-2">
-                  {{ user_form.contact_name.label }}：{{ user_form.contact_name }}
-                </div>
-                <div class="col-md-4 mb-2">
-                  {{ user_form.contact_phone.label }}：{{ user_form.contact_phone }}
+
+                <!-- 担当者情報ボックス -->
+                <div class="col-md-6 border p-3">
+                  <h6>■ 担当者情報</h6>
+                  <div class="mb-2">
+                    <label for="contact_name_kana">担当者名カナ：</label>
+                    {{ user_form.contact_name_kana }}
+                  </div>
+                  <div class="mb-2">
+                    <label for="contact_name">担当者名：</label>
+                    {{ user_form.contact_name }}
+                  </div>
+                  <div class="mb-2">
+                    <label for="contact_phone">担当者電話番号：</label>
+                    {{ user_form.contact_phone }}
+                  </div>
                 </div>
               </div>
             
+
               <!-- 契約情報 -->
               <h6 class="mt-4">■ 契約情報</h6>
               <div class="row">
