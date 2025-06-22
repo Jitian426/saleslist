@@ -97,7 +97,26 @@ class CompanyEditLog(models.Model):
 
 class UserProfile(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    customer_name_kana = models.CharField(
+        max_length=255, null=True, blank=True  # ← ここを追加
+    )
     customer_name = models.CharField(max_length=255, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    representative_name_kana = models.CharField(max_length=255, blank=True, null=True)
+    representative_name = models.CharField(max_length=255, blank=True, null=True)
+    representative_phone = models.CharField(max_length=100, blank=True, null=True)
+    representative_birthday = models.DateField(blank=True, null=True)
+    contact_name_kana = models.CharField(max_length=255, blank=True, null=True)
+    contact_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_phone = models.CharField(max_length=100, blank=True, null=True)
+    distribution = models.CharField(max_length=255, blank=True, null=True)
+    plan = models.CharField(max_length=255, blank=True, null=True)
+    capacity = models.IntegerField(blank=True, null=True)
+    complete_date = models.DateField(blank=True, null=True)
+    gross_profit = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    cashback = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    commission = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    file_link = models.URLField(blank=True, null=True)
     shop_name = models.CharField(max_length=255, blank=True, null=True)
     product = models.CharField(max_length=255, blank=True, null=True)
     appointment_staff = models.CharField(max_length=255, blank=True, null=True)
