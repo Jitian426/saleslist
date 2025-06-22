@@ -123,12 +123,12 @@
                 <div class="col-md-6 mb-2">
                   {{ user_form.customer_name.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name.name }}" value="{{ user_form.customer_name.value|default_if_none:'' }}">
                 </div>
+                <div class="col-md-12 mb-2">
+                  {{ user_form.address.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.address }}" value="{{ user_form.address.value|default_if_none:'' }}">
+                </div>                
               </div>
             
               <div class="row">
-                <div class="col-md-12 mb-2">
-                  {{ user_form.address.label }}：{{ user_form.address }}
-                </div>
                 <div class="col-md-4 mb-2">
                   {{ user_form.contact_name_kana.label }}：{{ user_form.contact_name_kana }}
                 </div>
