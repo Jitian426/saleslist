@@ -907,9 +907,10 @@ from .models import UserProfile
 @login_required
 def user_list(request):
     users = UserProfile.objects.select_related("company").filter(
-        (
-            models.Q(customer_name__isnull=False) & ~models.Q(customer_name__exact="")
-        ) | models.Q(order_date__isnull=False)
+        Q(company__isnull=False) & (
+            Q(customer_name__isnull=False) & ~Q(customer_name__exact="") |
+            Q(order_date__isnull=False)
+        )
     ).order_by("-order_date", "customer_name")[:100]
 
     user_data = [
@@ -930,5 +931,6 @@ def user_list(request):
     return render(request, "user_list.html", {
         "users": user_data
     })
+
 
 
