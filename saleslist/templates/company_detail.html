@@ -114,134 +114,12 @@
   </style>
 </div>
 
-<!-- ユーザー情報フォーム -->
-{% if show_user_form %}
-  <div class="row">
-    <div class="col-12 mb-4">
-      <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-          ユーザー情報（受注情報）
-        </div>
-        <div class="card-body">
-          <form method="post">
-            {% csrf_token %}
-
-            <form method="post">
-              {% csrf_token %}
-            
-              <!-- 顧客情報 -->
-              <h6 class="mt-3">■ 顧客情報</h6>
-              <div class="row">
-                <div class="col-md-6 mb-2">
-                  {{ user_form.customer_name.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name.name }}" value="{{ user_form.customer_name.value|default_if_none:'' }}">
-                </div>
-                <div class="col-md-6 mb-2">
-                  {{ user_form.customer_name_kana.label }}：<input type="text" class="form-control" style="width:100%;" name="{{ user_form.customer_name_kana.name }}" value="{{ user_form.customer_name_kana.value|default_if_none:'' }}">
-                </div>
-
-                <div class="col-md-12 mb-2">
-                  {{ user_form.address.label }}：
-                  <input type="text" class="form-control" name="{{ user_form.address.name }}" value="{{ user_form.address.value|default_if_none:'' }}">
-                </div>                
-              </div>
-            
-              <!-- 担当者情報 & 代表者情報 横並び2枠 -->
-              <div class="row">
-
-                <!-- 代表者情報ボックス -->
-                <div class="col-md-6 border p-3">
-                  <h6>■ 代表者情報</h6>
-                  <div class="row mb-2">
-                    <div class="col">
-                      <label for="representative_name_kana">代表者名カナ：</label>
-                      {{ user_form.representative_name_kana }}
-                    </div>
-                    <div class="col">
-                      <label for="representative_birthday">代表者生年月日：</label>
-                      {{ user_form.representative_birthday }}
-                    </div>
-                  </div>
-                  <div class="row mb-2">
-                    <div class="col">
-                      <label for="representative_name">代表者名：</label>
-                      {{ user_form.representative_name }}
-                    </div>
-                    <div class="col">
-                      <label for="age">代表者年齢：</label>
-                      <strong>{{ age_display }}</strong>
-                    </div>
-                  </div>
-                  <div class="mb-2">
-                    <label for="representative_phone">代表者電話番号：</label>
-                    {{ user_form.representative_phone }}
-                  </div>
-
-                </div>
-
-                <!-- 担当者情報ボックス -->
-                <div class="col-md-6 border p-3">
-                  <h6>■ 担当者情報</h6>
-                  <div class="mb-2">
-                    <label for="contact_name_kana">担当者名カナ：</label>
-                    {{ user_form.contact_name_kana }}
-                  </div>
-                  <div class="mb-2">
-                    <label for="contact_name">担当者名：</label>
-                    {{ user_form.contact_name }}
-                  </div>
-                  <div class="mb-2">
-                    <label for="contact_phone">担当者電話番号：</label>
-                    {{ user_form.contact_phone }}
-                  </div>
-                </div>
-              </div>
-            
-
-              <!-- 契約情報 -->
-              <h6 class="mt-4">■ 契約情報</h6>
-              <div class="row">
-                <div class="col-md-3 mb-2">{{ user_form.order_date.label }}：{{ user_form.order_date }}</div>
-                <div class="col-md-3 mb-2">{{ user_form.complete_date.label }}：{{ user_form.complete_date }}</div>
-                <div class="col-md-3 mb-2">{{ user_form.appointment_staff.label }}：{{ user_form.appointment_staff }}</div>
-                <div class="col-md-3 mb-2">{{ user_form.sales_staff.label }}：{{ user_form.sales_staff }}</div>
-            
-                <div class="col-md-3 mb-2">{{ user_form.shop_name.label }}：{{ user_form.shop_name }}</div>
-                <div class="col-md-3 mb-2">{{ user_form.distribution.label }}：{{ user_form.distribution }}</div>
-                <div class="col-md-3 mb-2">{{ user_form.product.label }}：{{ user_form.product }}</div>
-                <div class="col-md-3 mb-2">{{ user_form.plan.label }}：{{ user_form.plan }}</div>
-
-                <div class="col-md-3 mb-2">{{ user_form.capacity.label }}：{{ user_form.capacity }}</div>
-              </div>
-            
-              <!-- 入出金情報 -->
-              <h6 class="mt-4">■ 入出金情報</h6>
-              <div class="row">
-                <div class="col-md-4 mb-2">{{ user_form.gross_profit.label }}：{{ user_form.gross_profit }}</div>
-                <div class="col-md-4 mb-2">{{ user_form.cashback.label }}：{{ user_form.cashback }}</div>
-                <div class="col-md-4 mb-2">{{ user_form.commission.label }}：{{ user_form.commission }}</div>
-              </div>
-            
-              <!-- 書類データ -->
-              <h6 class="mt-4">■ 書類データ</h6>
-              <div class="row">
-                <div class="col-md-6 mb-2">
-                  {{ user_form.file_link.label }}：{{ user_form.file_link }}
-                  {% if user_profile.file_link %}
-                    <p class="mt-1"><a href="{{ user_profile.file_link }}" target="_blank">▶ ファイルを開く</a></p>
-                  {% endif %}
-                </div>
-              </div>
-            
-              <button type="submit" class="btn btn-primary mt-3">💾 ユーザー情報を保存</button>
-            </form>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endif %}
 
 {% if user_profiles %}
   <h5 class="mt-4">■ 登録済みユーザー情報一覧</h5>
+  <a href="{% url 'saleslist:edit_user_profile' user_profile.id %}" class="btn btn-sm btn-outline-primary">
+    🖊 編集
+  </a>
   {% for user_profile in user_profiles %}
   <div class="card mb-4">
     <div class="card-body">
@@ -255,13 +133,13 @@
           <strong>代表者電話番号：</strong> {{ user_profile.representative_phone }}<br>
           <strong>代表者生年月日：</strong> {{ user_profile.representative_birthday|date:"Y/m/d" }}<br>
           <strong>代表者年齢：</strong>
+          {% if user_profile.representative_birthday %}
+            {{ user_profile.representative_age }}歳
+          {% else %}-{% endif %}
           <br><br> <!-- ✅ 1行あける -->
           <strong>担当者名カナ：</strong> {{ user_profile.contact_name_kana }}<br>
           <strong>担当者名：</strong> {{ user_profile.contact_name }}<br>
           <strong>担当者電話番号：</strong> {{ user_profile.contact_phone }}<br>
-          {% if user_profile.representative_birthday %}
-            {{ user_profile.representative_age }}歳
-          {% else %}-{% endif %}
         </div>
         <div class="col-md-6">
           <strong>商流：</strong> {{ user_profile.distribution }}<br>

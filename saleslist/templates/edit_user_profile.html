@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <!-- Bootstrap 5 のCDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} の詳細</title>
+    <style>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+        }
+        th {
+            width: 180px;  /* ✅ 左側のラベル（項目名）の幅を固定 */
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+            background-color: #f2f2f2;  /* ✅ 左側の背景を少しグレーに */
+            font-weight: bold;
+        }
+        td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+            word-wrap: break-word;
+            max-width: 600px;  /* ✅ 右側のデータ部分を広めにする */
+        }
+    </style>
+</head>
+<body>
+    <h2>{{ company.name }} の詳細情報</h2>
+
+    <table>
+        <tr><th>店舗名</th><td>{{ company.name }}</td></tr>
+        <tr><th>店舗電話番号</th><td>{{ company.phone }}</td></tr>
+        <tr><th>FAX番号</th><td>{{ company.fax }}</td></tr>
+        <tr><th>携帯番号</th><td>{{ company.mobile_phone }}</td></tr>
+        <tr><th>店舗住所</th><td>{{ company.address }}</td></tr>
+        <tr><th>法人名</th><td>{{ company.corporation_name }}</td></tr>
+        <tr><th>法人電話番号</th><td>{{ company.corporation_phone }}</td></tr>
+        <tr><th>法人所在地</th><td>{{ company.corporation_address }}</td></tr>
+        <tr><th>代表者名</th><td>{{ company.representative }}</td></tr>
+        <tr><th>開業日</th><td>{{ company.established_date|date:"Y/m/d" }}</td></tr>
+        <tr><th>許可番号</th><td>{{ company.license_number }}</td></tr>
+        <tr><th>大業種</th><td>{{ company.industry }}</td></tr>
+        <tr><th>小業種</th><td>{{ company.sub_industry }}</td></tr>
+    </table>
+    <p><a href="{% url 'saleslist:edit_company' company.id %}">✏️ 企業情報を編集</a></p>
+      
+
+    <h4 class="mt-4">営業履歴</h4> <p class="mt-3">
+        <a href="{% url 'saleslist:add_sales_activity' company.id %}" class="btn btn-success btn-sm">
+          ➕ 営業履歴を追加する
+        </a>
+    </p>
+    <table class="table table-striped table-hover align-middle mt-2">
+      <thead>
+        <tr>
+          <th style="width: 100px;">営業担当者</th>         <!-- コンパクト -->  
+          <th style="width: 140px;">活動日</th>               <!-- 半角16文字分 -->
+          <th style="width: 80px;">営業結果</th>             <!-- 全角4文字分 -->
+          <th style="width: 160px;">次回営業予定日</th>       <!-- 半角16文字分 -->
+          <th style="width: 400px;">コメント</th>              <!-- 残りを広く -->
+        </tr>
+      </thead>
+      <tbody>
+        {% for activity in sales_activities %}
+          <tr>
+            <td>{{ activity.sales_person }}</td>
+            <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
+            <td>{{ activity.result }}</td>
+            <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
+            <td>{{ activity.memo }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">営業履歴はまだ登録されていません。</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+</table>
+
+    
+    <p><a href="{% url 'saleslist:company_list' %}">← 企業リストへ戻る</a></p>
+
+    <hr>
+    <h6 class="mt-4">編集履歴</h6>
+    <div class="text-muted" style="font-size: 0.85em;">
+      {% for log in company.edit_logs.all %}
+        <p>
+          [{{ log.timestamp|date:"Y-m-d H:i" }}] 
+          レコード{{ log.action }}{% if log.changed_fields %} ({{ log.changed_fields|join:", " }}){% endif %}　
+          ユーザー: {{ log.user.username }}
+        </p>
+      {% empty %}
+        <p>編集履歴はまだありません。</p>
+     {% endfor %}
+    </div>
+
+  <!-- 営業結果ボタン群（画面下固定） -->
+  <div id="sales-result-buttons" style="position: fixed; bottom: 0; left: 0; right: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ccc; z-index: 9999;" class="text-center">
+    {% for result in sales_results %}
+      <button
+        class="btn btn-outline-primary btn-sm mx-1 open-modal-btn"
+        data-result="{{ result }}"
+        data-bs-toggle="modal"
+        data-bs-target="#salesActivityModal"
+        onclick="document.getElementById('sales_result').value = this.dataset.result"
+      >
+        {{ result }}
+      </button>
+
+    {% endfor %}
+  </div>
+
+<!-- モーダル（Bootstrapを使用） -->
+<div class="modal fade" id="salesActivityModal" tabindex="-1" aria-labelledby="salesActivityModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="salesActivityForm">
+        {% csrf_token %}
+        <!-- ✅ Ajax用エンドポイントをhiddenで渡す -->
+        <input type="hidden" id="ajax_endpoint" value="{% url 'saleslist:add_sales_activity_ajax' company.id %}">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="salesActivityModalLabel">営業履歴の追加</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="sales_result" id="sales_result">
+          <div class="mb-3">
+            <label for="next_scheduled_date" class="form-label">次回営業予定日時</label>
+            <input type="datetime-local" class="form-control" name="next_scheduled_date" id="next_scheduled_date">
+          </div>
+          <div class="mb-3">
+            <label for="memo" class="form-label">メモ</label>
+            <textarea class="form-control" name="memo" id="memo" rows="3"></textarea>
+            <label for="sales_person_email" class="form-label">営業担当者メールアドレス</label>
+            <input type="email" class="form-control" name="sales_person_email" id="sales_person_email">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">登録</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('salesActivityForm');
+
+  // ✅ CSRFトークンを取得
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // モーダル開くとき営業結果をセット
+  document.querySelectorAll('.open-modal-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.getElementById('sales_result').value = button.dataset.result;
+    });
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const data = {
+      sales_result: form.sales_result.value,
+      next_scheduled_date: form.next_scheduled_date.value,
+      memo: form.memo.value,
+      sales_person_email: form.sales_person_email.value  // ← 追加された項目
+    };
+
+    const endpoint = document.getElementById('ajax_endpoint').value;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken  // ✅ これで解決
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      alert("営業履歴を登録しました！");
+      const modalEl = document.getElementById('salesActivityModal');
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+      location.reload();
+    } else {
+      alert("登録に失敗しました。");
+    }
+  });
+});
+</script>
+
+<!-- Bootstrap 5 JS（CDN）+ Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+</body>
+</html>

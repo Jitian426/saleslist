@@ -931,3 +931,25 @@ def add_user_profile(request, company_id):
         "company": company
     })
 
+
+from django.shortcuts import get_object_or_404
+
+@login_required
+def edit_user_profile(request, pk):
+    user_profile = get_object_or_404(UserProfile, pk=pk)
+    company = user_profile.company
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "✅ ユーザー情報を更新しました。")
+            return redirect("saleslist:company_detail", pk=company.id)
+    else:
+        form = UserProfileForm(instance=user_profile)
+
+    return render(request, "edit_user_profile.html", {
+        "form": form,
+        "company": company,
+        "user_profile": user_profile,
+    })

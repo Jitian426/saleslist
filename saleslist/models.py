@@ -109,6 +109,15 @@ class UserProfile(models.Model):
     representative_phone = models.CharField(max_length=100, blank=True)
     representative_birthday = models.DateField(blank=True, null=True)
     contact_name_kana = models.CharField(max_length=255, blank=True)
+    @property
+    def representative_age(self):
+        if self.representative_birthday:
+            today = date.today()
+            age = today.year - self.representative_birthday.year
+            if (today.month, today.day) < (self.representative_birthday.month, self.representative_birthday.day):
+                age -= 1
+            return age
+        return None    
     contact_name = models.CharField(max_length=255, blank=True)
     contact_phone = models.CharField(max_length=100, blank=True)
 

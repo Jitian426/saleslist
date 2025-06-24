@@ -23,6 +23,7 @@ urlpatterns = [
     path("company/<int:company_id>/edit/", edit_company, name="edit_company"),
     path("company/<int:pk>/add_sales_activity_ajax/", views.add_sales_activity_ajax, name="add_sales_activity_ajax"),
     path('company/<int:company_id>/add_user/', views.add_user_profile, name='add_user_profile'),
+    path("user_profile/<int:pk>/edit/", views.edit_user_profile, name="edit_user_profile"),
     path("dashboard/", dashboard, name="dashboard"),
     path("", company_list, name="home"),  # ✅ ホーム画面を企業リストにする
     path('export_csv/', views.export_companies_csv, name='export_companies_csv'),
