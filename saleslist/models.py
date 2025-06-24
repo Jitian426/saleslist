@@ -98,7 +98,7 @@ class CompanyEditLog(models.Model):
 from django.db import models
 
 class UserProfile(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="user_profiles")  # ← 追加
 
     # 個人情報フィールド（文字列系）
     customer_name_kana = models.CharField(max_length=255, blank=True)  # null=False（文字列系は''でOK）
@@ -130,6 +130,9 @@ class UserProfile(models.Model):
     product = models.CharField(max_length=255, blank=True)
     appointment_staff = models.CharField(max_length=255, blank=True)
     sales_staff = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.customer_name or '(未設定)'} ({self.company.name})"

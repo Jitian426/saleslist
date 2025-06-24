@@ -884,4 +884,47 @@ def user_list(request):
     })
 
 
+from django.contrib.auth.decorators import login_required
+from .models import Company, UserProfile
+from .forms import UserProfileForm
+
+@login_required
+def add_user_profile(request, company_id):
+    company = get_object_or_404(Company, id=company_id)
+
+    # 直近の既存ユーザー情報を取得（あれば）
+    latest_profile = (
+        UserProfile.objects.filter(company=company)
+        .order_by("-created_at")
+        .first()
+    )
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST)
+        if form.is_valid():
+            new_profile = form.save(commit=False)
+            new_profile.company = company
+            new_profile.save()
+            messages.success(request, "✅ 新しいユーザー情報を追加しました。")
+            return redirect("saleslist:company_detail", pk=company.id)
+    else:
+        if latest_profile:
+            # 既存の最新データから初期値をセット（必要項目のみ）
+            initial_data = {
+                field.name: getattr(latest_profile, field.name)
+                for field in UserProfile._meta.fields
+                if field.name in [
+                    "customer_name_kana", "customer_name", "address",
+                    "representative_name_kana", "representative_name", "representative_phone", "representative_birthday",
+                    "contact_name_kana", "contact_name", "contact_phone"
+                ]
+            }
+            form = UserProfileForm(initial=initial_data)
+        else:
+            form = UserProfileForm()
+
+    return render(request, "add_user_profile.html", {
+        "form": form,
+        "company": company
+    })
 

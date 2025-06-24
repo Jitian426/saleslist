@@ -33,6 +33,7 @@
             </tbody>
           </table>
           <p><a href="{% url 'saleslist:edit_company' company.id %}">✏️ 企業情報を編集</a></p>
+
         </div>
       </div>
     </div>
@@ -97,6 +98,12 @@
       
     </div>
   </div>
+</div>
+
+<div class="mt-3">
+  <a href="{% url 'saleslist:add_user_profile' company.id %}" class="btn btn-outline-primary btn-sm w-100">
+    ➕ 受注情報を追加
+  </a>
 </div>
 
 <!-- ユーザー情報フォーム -->
