@@ -255,14 +255,15 @@
           <strong>代表者電話番号：</strong> {{ user_profile.representative_phone }}<br>
           <strong>代表者生年月日：</strong> {{ user_profile.representative_birthday|date:"Y/m/d" }}<br>
           <strong>代表者年齢：</strong>
+          <br><br> <!-- ✅ 1行あける -->
+          <strong>担当者名カナ：</strong> {{ user_profile.contact_name_kana }}<br>
+          <strong>担当者名：</strong> {{ user_profile.contact_name }}<br>
+          <strong>担当者電話番号：</strong> {{ user_profile.contact_phone }}<br>
           {% if user_profile.representative_birthday %}
             {{ user_profile.representative_age }}歳
           {% else %}-{% endif %}
         </div>
         <div class="col-md-6">
-          <strong>担当者名カナ：</strong> {{ user_profile.contact_name_kana }}<br>
-          <strong>担当者名：</strong> {{ user_profile.contact_name }}<br>
-          <strong>担当者電話番号：</strong> {{ user_profile.contact_phone }}<br>
           <strong>商流：</strong> {{ user_profile.distribution }}<br>
           <strong>獲得プラン：</strong> {{ user_profile.plan }}<br>
           <strong>契約容量：</strong> {{ user_profile.capacity }}<br>
