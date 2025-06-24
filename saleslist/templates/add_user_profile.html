@@ -3,24 +3,92 @@
 <div class="container mt-4">
   <h3 class="mb-4">ユーザー情報の追加</h3>
 
-  <div class="card p-4">
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {{ form.non_field_errors }}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
 
-      {% for field in form %}
-        <div class="mb-3">
-          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}
-            <div class="text-danger small">{{ field.errors }}</div>
-          {% endif %}
+        <!-- 顧客情報 -->
+        <h6 class="mt-3">■ 顧客情報</h6>
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            {{ form.customer_name.label }}：{{ form.customer_name }}
+          </div>
+          <div class="col-md-6 mb-2">
+            {{ form.customer_name_kana.label }}：{{ form.customer_name_kana }}
+          </div>
+          <div class="col-md-12 mb-2">
+            {{ form.address.label }}：{{ form.address }}
+          </div>
         </div>
-      {% endfor %}
 
-      <button type="submit" class="btn btn-primary">保存する</button>
-      <a href="{% url 'saleslist:company_detail' company.id %}" class="btn btn-secondary">キャンセル</a>
-    </form>
+        <!-- 代表者情報 & 担当者情報 -->
+        <div class="row">
+          <div class="col-md-6 border p-3">
+            <h6>■ 代表者情報</h6>
+            <div class="row mb-2">
+              <div class="col">{{ form.representative_name_kana.label }}：{{ form.representative_name_kana }}</div>
+              <div class="col">{{ form.representative_birthday.label }}：{{ form.representative_birthday }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col">{{ form.representative_name.label }}：{{ form.representative_name }}</div>
+              <div class="col">代表者年齢：-</div>
+            </div>
+            <div class="mb-2">
+              {{ form.representative_phone.label }}：{{ form.representative_phone }}
+            </div>
+          </div>
+
+          <div class="col-md-6 border p-3">
+            <h6>■ 担当者情報</h6>
+            <div class="mb-2">{{ form.contact_name_kana.label }}：{{ form.contact_name_kana }}</div>
+            <div class="mb-2">{{ form.contact_name.label }}：{{ form.contact_name }}</div>
+            <div class="mb-2">{{ form.contact_phone.label }}：{{ form.contact_phone }}</div>
+          </div>
+        </div>
+
+        <!-- 契約情報 -->
+        <h6 class="mt-4">■ 契約情報</h6>
+        <div class="row">
+          <div class="col-md-3 mb-2">{{ form.order_date.label }}：{{ form.order_date }}</div>
+          <div class="col-md-3 mb-2">{{ form.complete_date.label }}：{{ form.complete_date }}</div>
+          <div class="col-md-3 mb-2">{{ form.appointment_staff.label }}：{{ form.appointment_staff }}</div>
+          <div class="col-md-3 mb-2">{{ form.sales_staff.label }}：{{ form.sales_staff }}</div>
+
+          <div class="col-md-3 mb-2">{{ form.shop_name.label }}：{{ form.shop_name }}</div>
+          <div class="col-md-3 mb-2">{{ form.distribution.label }}：{{ form.distribution }}</div>
+          <div class="col-md-3 mb-2">{{ form.product.label }}：{{ form.product }}</div>
+          <div class="col-md-3 mb-2">{{ form.plan.label }}：{{ form.plan }}</div>
+          <div class="col-md-3 mb-2">{{ form.capacity.label }}：{{ form.capacity }}</div>
+        </div>
+
+        <!-- 入出金 -->
+        <h6 class="mt-4">■ 入出金情報</h6>
+        <div class="row">
+          <div class="col-md-4 mb-2">{{ form.gross_profit.label }}：{{ form.gross_profit }}</div>
+          <div class="col-md-4 mb-2">{{ form.cashback.label }}：{{ form.cashback }}</div>
+          <div class="col-md-4 mb-2">{{ form.commission.label }}：{{ form.commission }}</div>
+        </div>
+
+        <!-- 書類 -->
+        <h6 class="mt-4">■ 書類データ</h6>
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            {{ form.file_link.label }}：{{ form.file_link }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">💾 ユーザー情報を保存</button>
+        <a href="{% url 'saleslist:company_detail' company.id %}" class="btn btn-secondary mt-3">キャンセル</a>
+      </form>
+    </div>
   </div>
 </div>
+
+<style>
+.custom-hover-purple:hover {
+  background-color: #c2a4ff !important;
+  color: white !important;
+}
+</style>
 {% endblock %}
