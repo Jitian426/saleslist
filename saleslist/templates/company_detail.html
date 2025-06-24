@@ -116,7 +116,7 @@
 
 
 {% if user_profiles %}
-  <h5 class="mt-4">■ 登録済みユーザー情報一覧</h5>
+  <h5 class="mt-4">■ 登録済み受注情報一覧</h5>
 
   {% for user_profile in user_profiles %}
   <div class="card mb-4">
@@ -128,12 +128,12 @@
       </div>
       <div class="row mb-2">
         <div class="col-md-6">
-          <strong>顧客名カナ：</strong> {{ user_profile.customer_name_kana }}<br>
-          <strong>顧客名：</strong> {{ user_profile.customer_name }}<br>
-          <strong>顧客住所：</strong> {{ user_profile.address }}<br>
-          <strong>代表者名カナ：</strong> {{ user_profile.representative_name_kana }}<br>
-          <strong>代表者名：</strong> {{ user_profile.representative_name }}<br>
-          <strong>代表者電話番号：</strong> {{ user_profile.representative_phone }}<br>
+          <strong>顧客名カナ：</strong> {{ user_profile.customer_name_kana|default_if_none:"" }}<br>
+          <strong>顧客名：</strong> {{ user_profile.customer_name|default_if_none:"" }}<br>
+          <strong>顧客住所：</strong> {{ user_profile.address|default_if_none:"" }}<br>
+          <strong>代表者名カナ：</strong> {{ user_profile.representative_name_kana|default_if_none:"" }}<br>
+          <strong>代表者名：</strong> {{ user_profile.representative_name|default_if_none:"" }}<br>
+          <strong>代表者電話番号：</strong> {{ user_profile.representative_phone|default_if_none:"" }}<br>
           <strong>代表者生年月日：</strong> {{ user_profile.representative_birthday|date:"Y/m/d" }}<br>
           <strong>代表者年齢：</strong>
           {% if user_profile.representative_birthday %}
@@ -145,18 +145,18 @@
           <strong>担当者電話番号：</strong> {{ user_profile.contact_phone }}<br>
         </div>
         <div class="col-md-6">
-          <strong>商流：</strong> {{ user_profile.distribution }}<br>
-          <strong>獲得プラン：</strong> {{ user_profile.plan }}<br>
-          <strong>契約容量：</strong> {{ user_profile.capacity }}<br>
+          <strong>販売店名：</strong> {{ user_profile.shop_name }}<br>
+          <strong>商流：</strong> {{ user_profile.distribution|default_if_none:"" }}<br>
+          <strong>獲得商材：</strong> {{ user_profile.product }}<br>
+          <strong>獲得プラン：</strong> {{ user_profile.plan|default_if_none:"" }}<br>
+          <strong>契約容量：</strong> {{ user_profile.capacity|default_if_none:"" }}<br>
           <strong>申込日：</strong> {{ user_profile.order_date|date:"Y/m/d" }}<br>
           <strong>完了日：</strong> {{ user_profile.complete_date|date:"Y/m/d" }}<br>
-          <strong>販売店名：</strong> {{ user_profile.shop_name }}<br>
-          <strong>獲得商材：</strong> {{ user_profile.product }}<br>
           <strong>アポ担当：</strong> {{ user_profile.appointment_staff }}<br>
           <strong>営業担当：</strong> {{ user_profile.sales_staff }}<br>
-          <strong>粗利：</strong> {{ user_profile.gross_profit }}<br>
-          <strong>ｷｬｯｼｭﾊﾞｯｸ：</strong> {{ user_profile.cashback }}<br>
-          <strong>手数料：</strong> {{ user_profile.commission }}<br>
+          <strong>粗利：</strong> {{ user_profile.gross_profit|default_if_none:"" }}<br>
+          <strong>ｷｬｯｼｭﾊﾞｯｸ：</strong> {{ user_profile.cashback|default_if_none:"" }}<br>
+          <strong>手数料：</strong> {{ user_profile.commission|default_if_none:"" }}<br>
           <strong>獲得書類データ：</strong>
           {% if user_profile.file_link %}
             <a href="{{ user_profile.file_link }}" target="_blank">▶ 開く</a>

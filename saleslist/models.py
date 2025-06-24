@@ -126,7 +126,7 @@ class UserProfile(models.Model):
     # 契約・商談情報フィールド（文字列／数値／日付）
     distribution = models.CharField(max_length=255, blank=True)
     plan = models.CharField(max_length=255, blank=True)
-    capacity = models.IntegerField(blank=True, null=True)
+    capacity = models.CharField(max_length=100, blank=True, null=True)
     order_date = models.DateField(blank=True, null=True)
     complete_date = models.DateField(blank=True, null=True)
 
