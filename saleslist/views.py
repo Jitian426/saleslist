@@ -667,15 +667,18 @@ def company_detail(request, pk):
     latest_result = sales_activities.first().result if sales_activities.exists() else None
     show_user_form = latest_result == "受注" and request.user.is_superuser
 
-    user_profile, _ = UserProfile.objects.get_or_create(company=company)
+    user_profiles = UserProfile.objects.filter(company=company).order_by("-created_at")
+
     if request.method == "POST" and show_user_form:
-        form = UserProfileForm(request.POST, instance=user_profile)
+        form = UserProfileForm(request.POST)
         if form.is_valid():
-            form.save()
+            user_profile = form.save(commit=False)
+            user_profile.company = company  # ← 必須
+            user_profile.save()
             messages.success(request, "✅ ユーザー情報を保存しました。")
             return redirect("saleslist:company_detail", pk=company.id)
     else:
-        form = UserProfileForm(instance=user_profile) if show_user_form else None
+        form = UserProfileForm() if show_user_form else None
 
     # --- パラメータ引継ぎ ---
     query_params = urlencode({
@@ -701,7 +704,7 @@ def company_detail(request, pk):
         "query_params": query_params,
         "show_user_form": show_user_form,
         "user_form": form,
-        "user_profile": user_profile,
+        "user_profiles": user_profiles,
     })
 
 
