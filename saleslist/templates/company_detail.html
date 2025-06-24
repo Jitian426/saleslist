@@ -117,9 +117,12 @@
 
 {% if user_profiles %}
   <h5 class="mt-4">■ 登録済みユーザー情報一覧</h5>
-  <a href="{% url 'saleslist:edit_user_profile' user_profile.id %}" class="btn btn-sm btn-outline-primary">
-    🖊 編集
-  </a>
+  {% if user_profile.id %}
+    <a href="{% url 'saleslist:edit_user_profile' user_profile.id %}" class="btn btn-sm btn-outline-primary">
+      🖊 編集
+    </a>
+  {% endif %}
+  
   {% for user_profile in user_profiles %}
   <div class="card mb-4">
     <div class="card-body">
