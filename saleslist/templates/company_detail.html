@@ -113,6 +113,14 @@
     color: white !important;
   }
   </style>
+  <style>
+  .custom-prev-next {
+    background-color: #e0e0e0 !important;  /* 薄いグレー */
+    color: #333 !important;
+    border-color: #ccc !important;
+  }
+  </style>
+
 </div>
 
 
@@ -194,9 +202,9 @@
 
       <!-- 前へボタン -->
       {% if prev_company %}
-        <a href="{% url 'saleslist:company_detail' prev_company.id %}?{{ query_params }}" class="btn btn-secondary btn-sm">← 前へ</a>
+        <a href="{% url 'saleslist:company_detail' prev_company.id %}?{{ query_params }}" class="btn btn-lightgray btn-sm">← 前へ</a>
       {% else %}
-        <button class="btn btn-secondary btn-sm" disabled>← 前へ</button>
+        <button class="btn btn-lightgray btn-sm" disabled>← 前へ</button>
       {% endif %}
 
       <!-- 営業結果ボタン群 -->
@@ -214,11 +222,10 @@
   
       <!-- 次へボタン -->
       {% if next_company %}
-        <a href="{% url 'saleslist:company_detail' next_company.id %}?{{ query_params }}" class="btn btn-secondary btn-sm">次へ →</a>
+        <a href="{% url 'saleslist:company_detail' next_company.id %}?{{ query_params }}" class="btn btn-lightgray btn-sm">次へ →</a>
       {% else %}
-        <button class="btn btn-secondary btn-sm" disabled>次へ →</button>
+        <button class="btn btn-lightgray btn-sm" disabled>次へ →</button>
       {% endif %}
-  
     </div>
   </div>
 
