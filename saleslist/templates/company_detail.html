@@ -189,20 +189,17 @@
     </div>
 
   <!-- 営業結果ボタン群（画面下固定） -->
-  <div id="sales-result-buttons" style="position: fixed; bottom: 0; left: 0; right: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ccc; z-index: 9999;">
-    <div class="d-flex justify-content-between align-items-center flex-wrap">
+  <div id="sales-result-buttons" style="position: fixed; bottom: 0; left: 0; right: 0; background: #f8f9fa; padding: 12px 20px; border-top: 1px solid #ccc; z-index: 9999;">
+    <div class="d-flex flex-wrap justify-content-center align-items-center gap-2">
 
-    <!-- 前へボタン -->
-    <div class="flex-shrink-0 me-2">
+      <!-- 前へボタン -->
       {% if prev_company %}
         <a href="{% url 'saleslist:company_detail' prev_company.id %}?{{ query_params }}" class="btn btn-secondary btn-sm">← 前へ</a>
       {% else %}
         <button class="btn btn-secondary btn-sm" disabled>← 前へ</button>
       {% endif %}
-    </div>
 
-    <!-- 営業結果ボタン群（中央） -->
-    <div class="flex-grow-1 text-center">
+      <!-- 営業結果ボタン群 -->
       {% for result in sales_results %}
         <button
           class="btn btn-sm mx-1 open-modal-btn {{ result|result_color_class }}"
@@ -214,15 +211,14 @@
           {{ result }}
         </button>
       {% endfor %}
-    </div>
-
-    <!-- 次へボタン -->
-    <div class="flex-shrink-0 ms-2">
+  
+      <!-- 次へボタン -->
       {% if next_company %}
         <a href="{% url 'saleslist:company_detail' next_company.id %}?{{ query_params }}" class="btn btn-secondary btn-sm">次へ →</a>
       {% else %}
         <button class="btn btn-secondary btn-sm" disabled>次へ →</button>
       {% endif %}
+  
     </div>
   </div>
 
