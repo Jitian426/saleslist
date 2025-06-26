@@ -88,6 +88,15 @@
           <input type="date" class="form-control form-control-sm" name="end_date" value="{{ end_date }}">
         </div>
         <div class="col-sm-2">
+          <label class="form-label mb-0 small">営業結果</label>
+          <select name="result" class="form-select form-select-sm">
+            <option value="">すべて</option>
+            {% for res in results %}
+              <option value="{{ res }}" {% if result == res %}selected{% endif %}>{{ res }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-sm-2">
           <label class="form-label mb-0 small">営業担当者</label>
           <select name="sales_person" class="form-select form-select-sm">
             <option value="">すべて</option>
@@ -95,15 +104,6 @@
               <option value="{{ activity.sales_person }}" {% if sales_person == activity.sales_person %}selected{% endif %}>
                 {{ activity.sales_person }}
               </option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-sm-2">
-          <label class="form-label mb-0 small">営業結果</label>
-          <select name="result" class="form-select form-select-sm">
-            <option value="">すべて</option>
-            {% for res in results %}
-              <option value="{{ res }}" {% if result == res %}selected{% endif %}>{{ res }}</option>
             {% endfor %}
           </select>
         </div>
@@ -195,6 +195,7 @@
             小業種 {% if sort_column == "sub_industry" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
+
         <th>
           {% url_params request.GET sort="latest_activity_date" order=next_order as query_act %}
           <a href="?{{ query_act }}">
@@ -202,15 +203,15 @@
           </a>
         </th>
         <th>
-          {% url_params request.GET sort="latest_sales_person" order=next_order as query_person %}
-          <a href="?{{ query_person }}">
-            営業担当者 {% if sort_column == "latest_sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-          </a>
-        </th>
-        <th>
           {% url_params request.GET sort="latest_result" order=next_order as query_result %}
           <a href="?{{ query_result }}">
             営業結果 {% if sort_column == "latest_result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+          </a>
+        </th>
+        <th>
+          {% url_params request.GET sort="latest_sales_person" order=next_order as query_person %}
+          <a href="?{{ query_person }}">
+            営業担当者 {% if sort_column == "latest_sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>

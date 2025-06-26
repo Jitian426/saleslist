@@ -2,6 +2,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+{% load custom_filters %}
 <div class="container mt-4">
     <div class="row mb-2">
     <div class="col text-muted" style="font-size: 0.9em;">
@@ -198,15 +199,16 @@
     {% endif %}
 
     {% for result in sales_results %}
-      <button
-        class="btn btn-outline-primary btn-sm mx-1 open-modal-btn"
-        data-result="{{ result }}"
-        data-bs-toggle="modal"
-        data-bs-target="#salesActivityModal"
-        onclick="document.getElementById('sales_result').value = this.dataset.result"
-      >
-        {{ result }}
-      </button>
+    <button
+      class="btn btn-sm mx-1 open-modal-btn {{ result|result_color_class }}"
+      data-result="{{ result }}"
+      data-bs-toggle="modal"
+      data-bs-target="#salesActivityModal"
+      onclick="document.getElementById('sales_result').value = this.dataset.result"
+    >
+      {{ result }}
+    </button>
+
 
     {% endfor %}
 
@@ -236,7 +238,7 @@
           <input type="hidden" name="sales_result" id="sales_result">
           <div class="mb-3">
             <label for="next_scheduled_date" class="form-label">次回営業予定日時</label>
-            <input type="datetime-local" class="form-control" name="next_scheduled_date" id="next_scheduled_date">
+            <input type="datetime-local" class="form-control" name="next_scheduled_date" id="next_scheduled_date" step="600">
           </div>
           <div class="mb-3">
             <label for="memo" class="form-label">メモ</label>
