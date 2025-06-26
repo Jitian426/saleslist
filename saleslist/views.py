@@ -661,7 +661,10 @@ def company_detail(request, pk):
 
     # 営業履歴・営業結果
     sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
-    sales_results = ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"]
+    # 営業履歴・営業結果（順番を固定）
+    sales_results = [
+        "再コール", "見込", "アポ成立", "受注", "失注", "追わない", "担当不在", "不通留守"
+    ]
 
     # --- ユーザー情報フォーム（最新履歴が「受注」かつ管理者のみ） ---
     latest_result = sales_activities.first().result if sales_activities.exists() else None

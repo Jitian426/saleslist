@@ -191,9 +191,9 @@
   <!-- 営業結果ボタン群（画面下固定） -->
   <div id="sales-result-buttons" style="position: fixed; bottom: 0; left: 0; right: 0; background: #f8f9fa; padding: 10px 0 14px 0; border-top: 1px solid #ccc; z-index: 9999;" class="text-center">
 
-  <!-- 営業結果ボタン：指定順に個別で記述 -->
+  <!-- 営業結果ボタン：指定順に個別でループ -->
   <div class="mb-3">
-    {% for result in "再コール,見込,アポ成立,受注,失注,追わない,担当不在,不通留守".split(',') %}
+    {% for result in sales_result_ordered %}
       <button
         class="btn btn-sm mx-1 open-modal-btn {{ result|result_color_class }}"
         data-result="{{ result }}"
