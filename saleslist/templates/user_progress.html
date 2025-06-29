@@ -44,7 +44,7 @@
     </thead>
     <tbody>
       {% for profile in profiles %}
-      <tr {% if progress_dict|default:{}|dictkey:profile.id == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
+      <tr {% if profile.progress == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
         <td>{{ profile.order_date }}</td>
         <td>{{ profile.complete_date }}</td>
         <td>{{ profile.customer_name }}</td>
@@ -60,6 +60,7 @@
         <td>
           <form method="POST">
             {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ profile.id }}">
             <div class="d-flex align-items-center gap-1">
               <select name="progress" class="form-select form-select-sm" style="width: auto;">
                 {% for option in progress_choices %}
