@@ -134,3 +134,20 @@ class UserProfileForm(forms.ModelForm):
             'appointment_staff': 'アポ担当',
             'sales_staff': '営業担当',
         }
+
+
+from django import forms
+
+class UserProgressForm(forms.Form):
+    progress = forms.ChoiceField(
+        choices=[
+            ("", "------"),
+            ("発注前", "発注前"),
+            ("後確待ち", "後確待ち"),
+            ("設置待ち", "設置待ち"),
+            ("マッチング待ち", "マッチング待ち"),
+            ("完了", "完了"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select form-select-sm"})
+    )
