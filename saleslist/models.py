@@ -127,6 +127,7 @@ class UserProfile(models.Model):
     distribution = models.CharField(max_length=255, blank=True)
     plan = models.CharField(max_length=255, blank=True)
     capacity = models.CharField(max_length=100, blank=True, null=True)
+    acquired_usage = models.PositiveIntegerField(null=True, blank=True, verbose_name="獲得使用量（kWh）")
     order_date = models.DateField(blank=True, null=True)
     complete_date = models.DateField(blank=True, null=True)
 

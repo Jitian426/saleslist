@@ -956,3 +956,54 @@ def edit_user_profile(request, pk):
         "company": company,
         "user_profile": user_profile,
     })
+
+from django.shortcuts import render
+from django.db.models import Q
+from .models import UserProfile
+from datetime import datetime
+
+def user_progress_view(request):
+    query = request.GET.get("q", "")
+    month_str = request.GET.get("month", "")  # 書式例: "2025-06"
+    
+    profiles = UserProfile.objects.all()
+
+    # 検索キーワード（複数項目に対してQオブジェクト）
+    if query:
+        profiles = profiles.filter(
+            Q(customer_name__icontains=query) |
+            Q(appointment_staff__icontains=query) |
+            Q(sales_staff__icontains=query) |
+            Q(product__icontains=query) |
+            Q(plan__icontains=query) |
+            Q(capacity__icontains=query) |
+            Q(acquired_usage__icontains=query) |
+            Q(gross_profit__icontains=query) |
+            Q(cashback__icontains=query) |
+            Q(commission__icontains=query)
+        )
+
+    # 月別フィルタ（受注日または完了日のどちらかが該当月に含まれる）
+    if month_str:
+        try:
+            year, month = map(int, month_str.split("-"))
+            start_date = datetime(year, month, 1).date()
+            if month == 12:
+                end_date = datetime(year + 1, 1, 1).date()
+            else:
+                end_date = datetime(year, month + 1, 1).date()
+            profiles = profiles.filter(
+                Q(order_date__range=(start_date, end_date)) |
+                Q(complete_date__range=(start_date, end_date))
+            )
+        except:
+            pass  # 無効な形式なら無視
+
+    profiles = profiles.order_by("-order_date")
+
+    context = {
+        "profiles": profiles,
+        "query": query,
+        "month": month_str,
+    }
+    return render(request, "user_progress.html", context)

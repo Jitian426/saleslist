@@ -33,6 +33,8 @@ urlpatterns = [
     path('companies/delete_filtered/download_csv/', views.download_filtered_companies_csv, name='download_filtered_companies_csv'),
     path('company/<int:company_id>/update_note/', views.update_company_note, name='update_company_note'),
     path("users/", user_list, name="user_list"),
+    path("user_progress/", views.user_progress_view, name="user_progress"),
+
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3>進捗管理（ユーザーリスト）</h3>
+
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+      <label for="month">対象月:</label>
+      <input type="month" class="form-control" name="month" id="month" value="{{ month }}">
+    </div>
+    <div class="col-md-5">
+      <label for="q">キーワード検索:</label>
+      <input type="text" class="form-control" name="q" placeholder="顧客名や商材など" value="{{ query }}">
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">検索</button>
+    </div>
+  </form>
+
+  <table class="table table-striped table-bordered table-sm">
+    <thead class="table-light">
+      <tr>
+        <th>受注日</th>
+        <th>完了日</th>
+        <th>顧客名</th>
+        <th>アポ担当</th>
+        <th>営業担当</th>
+        <th>獲得商材</th>
+        <th>獲得プラン</th>
+        <th>契約容量</th>
+        <th>獲得使用量</th>
+        <th>粗利</th>
+        <th>ｷｬｯｼｭﾊﾞｯｸ</th>
+        <th>手数料</th>
+        <th>進捗</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for profile in profiles %}
+      <tr>
+        <td>{{ profile.order_date }}</td>
+        <td>{{ profile.complete_date }}</td>
+        <td>{{ profile.customer_name }}</td>
+        <td>{{ profile.appointment_staff }}</td>
+        <td>{{ profile.sales_staff }}</td>
+        <td>{{ profile.product }}</td>
+        <td>{{ profile.plan }}</td>
+        <td>{{ profile.capacity }}</td>
+        <td>{{ profile.acquired_usage }}</td>
+        <td>{{ profile.gross_profit }}</td>
+        <td>{{ profile.cashback }}</td>
+        <td>{{ profile.commission }}</td>
+        <td><!-- ここに進捗選択肢を今後追加 --></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="13">該当するデータがありません</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
