@@ -17,7 +17,6 @@
     <div class="col-md-2">
       <button type="submit" class="btn btn-primary w-100">検索</button>
     </div>
-    {% if gross_profit_sum > 0 %}
     <div class="alert alert-info d-flex align-items-center" role="alert">
       <i class="bi bi-check-circle-fill me-2"></i>
       ✅ この月の完了粗利合計：{{ gross_profit_sum|intcomma }} 円

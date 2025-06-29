@@ -159,7 +159,7 @@
           <strong>獲得商材：</strong> {{ user_profile.product }}<br>
           <strong>獲得プラン：</strong> {{ user_profile.plan|default_if_none:"" }}<br>
           <strong>契約容量：</strong> {{ user_profile.capacity|default_if_none:"" }}<br>
-          <strong>獲得使用量：</strong> {{ user_profile.acquired_usage|default_if_none:"" }}<br>
+          <strong>獲得使用量：</strong> {{ user_profile.acquired_usage|default_if_none:"" }} kWh<br>
           <strong>申込日：</strong> {{ user_profile.order_date|date:"Y/m/d" }}<br>
           <strong>完了日：</strong> {{ user_profile.complete_date|date:"Y/m/d" }}<br>
           <strong>アポ担当：</strong> {{ user_profile.appointment_staff }}<br>
