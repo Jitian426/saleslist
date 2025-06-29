@@ -121,6 +121,7 @@ class UserProfileForm(forms.ModelForm):
             'distribution': '商流',
             'plan': '獲得プラン',
             'capacity': '契約容量',
+            "acquired_usage": '獲得使用量',
             'order_date': '申込日',
             'complete_date': '完了日',
             'gross_profit': '粗利',
