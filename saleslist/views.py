@@ -1036,6 +1036,7 @@ def user_progress_view(request):
         "month": month_str,
         "gross_profit_sum": gross_profit_sum,
         "progress_choices": progress_choices,
+        "progress_dict": request.session.get("progress_dict", {}),
         }
     
     return render(request, "user_progress.html", context)
