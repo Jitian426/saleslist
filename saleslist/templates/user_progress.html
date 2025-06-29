@@ -55,7 +55,7 @@
             {% csrf_token %}
             <input type="hidden" name="user_id" value="{{ profile.id }}">
             <select name="progress" class="form-select form-select-sm">
-              {% for option in "発注前|後確待ち|設置待ち|マッチング待ち|完了".split:"|" %}
+              {% for option in progress_choices %}
                 <option value="{{ option }}" {% if profile.progress == option %}selected{% endif %}>{{ option }}</option>
               {% endfor %}
             </select>

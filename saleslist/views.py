@@ -1019,9 +1019,13 @@ def user_progress_view(request):
 
     profiles = profiles.order_by("-order_date")
 
+    progress_choices = ["発注前", "後確待ち", "設置待ち", "マッチング待ち", "完了"]
+
     context = {
         "profiles": profiles,
         "query": query,
         "month": month_str,
-    }
+        "progress_choices": progress_choices,
+        }
+    
     return render(request, "user_progress.html", context)
