@@ -1021,6 +1021,15 @@ def user_progress_view(request):
 
     progress_choices = ["発注前", "後確待ち", "設置待ち", "マッチング待ち", "完了"]
 
+    # profiles はすでにフィルタ・検索・月指定済みのデータ
+    complete_profiles = profiles.filter(progress="完了")
+
+    # 完了粗利を集計（None は 0 扱い）
+    gross_profit_sum = sum(
+        (p.gross_profit or 0) - (p.cashback or 0) - (p.commission or 0)
+        for p in complete_profiles
+    )
+
     complete_total_profit = 0
     for profile in profiles:
         if profile.progress == "完了":
@@ -1036,6 +1045,7 @@ def user_progress_view(request):
         "profiles": profiles,
         "query": query,
         "month": month_str,
+        "gross_profit_sum": gross_profit_sum,
         "progress_choices": progress_choices,
         "complete_total_profit": complete_total_profit,
         }

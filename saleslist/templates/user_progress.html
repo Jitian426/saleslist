@@ -17,10 +17,11 @@
     <div class="col-md-2">
       <button type="submit" class="btn btn-primary w-100">検索</button>
     </div>
-    {% if complete_total_profit > 0 %}
-      <div class="alert alert-info mt-3">
-        ✅ この月の <strong>完了粗利合計</strong>：<strong>{{ complete_total_profit|intcomma }} 円</strong>
-      </div>
+    {% if gross_profit_sum > 0 %}
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      ✅ この月の完了粗利合計：{{ gross_profit_sum|intcomma }} 円
+    </div>
     {% endif %}
   </form>
 
