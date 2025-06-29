@@ -16,9 +16,5 @@ def result_color_class(result):
         return 'btn-danger'
     return 'btn-outline-primary'
 
-from django import template
-register = template.Library()
-
-@register.filter
 def dictkey(d, key):
     return d.get(str(key))
