@@ -44,11 +44,7 @@
     </thead>
     <tbody>
       {% for profile in profiles %}
-        {% if profile.progress|default_if_none:"" == "完了" %}
-          <tr style="background-color: #d1ecf1;">
-        {% else %}
-          <tr>
-        {% endif %}
+        <tr {% if profile.progress|default_if_none:"" == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
             <td>{{ profile.order_date }}</td>
             <td>{{ profile.complete_date }}</td>
             <td>{{ profile.customer_name }}</td>
@@ -76,8 +72,6 @@
               </form>
             </td>
           </tr>
-      {% endfor %}
-      
       {% empty %}
       <tr><td colspan="13">該当するデータがありません</td></tr>
       {% endfor %}
