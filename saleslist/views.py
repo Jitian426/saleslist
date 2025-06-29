@@ -1021,11 +1021,23 @@ def user_progress_view(request):
 
     progress_choices = ["発注前", "後確待ち", "設置待ち", "マッチング待ち", "完了"]
 
+    complete_total_profit = 0
+    for profile in profiles:
+        if profile.progress == "完了":
+            try:
+                gp = profile.gross_profit or 0
+                cb = profile.cashback or 0
+                cm = profile.commission or 0
+                complete_total_profit += gp - cb - cm
+            except:
+                pass
+        
     context = {
         "profiles": profiles,
         "query": query,
         "month": month_str,
         "progress_choices": progress_choices,
+        "complete_total_profit": complete_total_profit,
         }
     
     return render(request, "user_progress.html", context)

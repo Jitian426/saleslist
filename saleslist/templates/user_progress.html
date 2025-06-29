@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+{% load humanize %}
+
 <div class="container mt-4">
   <h3>進捗管理（ユーザーリスト）</h3>
 
@@ -15,6 +17,11 @@
     <div class="col-md-2">
       <button type="submit" class="btn btn-primary w-100">検索</button>
     </div>
+    {% if complete_total_profit > 0 %}
+      <div class="alert alert-info mt-3">
+        ✅ この月の <strong>完了粗利合計</strong>：<strong>{{ complete_total_profit|intcomma }} 円</strong>
+      </div>
+    {% endif %}
   </form>
 
   <table class="table table-striped table-bordered table-sm">
