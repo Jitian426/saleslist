@@ -961,10 +961,28 @@ from django.shortcuts import render
 from django.db.models import Q
 from .models import UserProfile
 from datetime import datetime
+from django.shortcuts import redirect
+from django.contrib import messages
+from .forms import UserProgressForm
 
 def user_progress_view(request):
     query = request.GET.get("q", "")
     month_str = request.GET.get("month", "")  # 書式例: "2025-06"
+    
+    # POST処理で進捗を更新
+    if request.method == "POST":
+        form = UserProgressForm(request.POST)
+        if form.is_valid():
+            user_id = request.POST.get("user_id")
+            try:
+                profile = UserProfile.objects.get(pk=user_id)
+                profile.progress = form.cleaned_data["progress"]
+                profile.save()
+                messages.success(request, "✅ 進捗を更新しました。")
+            except UserProfile.DoesNotExist:
+                messages.error(request, "⚠️ 対象のユーザーが見つかりませんでした。")
+        return redirect("saleslist:user_progress")
+    
     
     profiles = UserProfile.objects.all()
 

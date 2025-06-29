@@ -149,3 +149,12 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.customer_name or '(未設定)'} ({self.company.name})"
 
+    PROGRESS_CHOICES = [
+        ('発注前', '発注前'),
+        ('後確待ち', '後確待ち'),
+        ('設置待ち', '設置待ち'),
+        ('マッチング待ち', 'マッチング待ち'),
+        ('完了', '完了'),
+    ]
+
+    progress = models.CharField(max_length=20, choices=PROGRESS_CHOICES, blank=True, null=True)

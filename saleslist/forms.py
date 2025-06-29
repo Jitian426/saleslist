@@ -101,6 +101,7 @@ from .models import UserProfile
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
+        fields = ['progress']
         exclude = ['company', 'created_at', 'updated_at']
         widgets = {
             'representative_birthday': forms.DateInput(attrs={'type': 'date'}),
