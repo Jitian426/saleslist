@@ -44,7 +44,7 @@
     </thead>
     <tbody>
       {% for profile in profiles %}
-      <tr {% if profile.progress == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
+      <tr {% if profile.progress|default_if_none:""|trim == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
         <td>{{ profile.order_date }}</td>
         <td>{{ profile.complete_date }}</td>
         <td>{{ profile.customer_name }}</td>
