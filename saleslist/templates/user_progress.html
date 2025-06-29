@@ -44,34 +44,40 @@
     </thead>
     <tbody>
       {% for profile in profiles %}
-      <tr {% if profile.progress|default_if_none:"" == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
-        <td>{{ profile.order_date }}</td>
-        <td>{{ profile.complete_date }}</td>
-        <td>{{ profile.customer_name }}</td>
-        <td>{{ profile.appointment_staff }}</td>
-        <td>{{ profile.sales_staff }}</td>
-        <td>{{ profile.product }}</td>
-        <td>{{ profile.plan }}</td>
-        <td>{{ profile.capacity }}</td>
-        <td>{{ profile.acquired_usage }}</td>
-        <td>{{ profile.gross_profit }}</td>
-        <td>{{ profile.cashback }}</td>
-        <td>{{ profile.commission }}</td>
-        <td>
-          <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="user_id" value="{{ profile.id }}">
-            <div class="d-flex align-items-center gap-1">
-              <select name="progress" class="form-select form-select-sm" style="width: auto;">
-                {% for option in progress_choices %}
-                  <option value="{{ option }}" {% if profile.progress == option %}selected{% endif %}>{{ option }}</option>
-                {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-sm btn-primary" style="min-width: 50px;">更新</button>
-            </div>
-          </form>
-        </td>
-      </tr>
+        {% if profile.progress|default_if_none:"" == "完了" %}
+          <tr style="background-color: #d1ecf1;">
+        {% else %}
+          <tr>
+        {% endif %}
+            <td>{{ profile.order_date }}</td>
+            <td>{{ profile.complete_date }}</td>
+            <td>{{ profile.customer_name }}</td>
+            <td>{{ profile.appointment_staff }}</td>
+            <td>{{ profile.sales_staff }}</td>
+            <td>{{ profile.product }}</td>
+            <td>{{ profile.plan }}</td>
+            <td>{{ profile.capacity }}</td>
+            <td>{{ profile.acquired_usage }}</td>
+            <td>{{ profile.gross_profit }}</td>
+            <td>{{ profile.cashback }}</td>
+            <td>{{ profile.commission }}</td>
+            <td>
+              <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ profile.id }}">
+                <div class="d-flex align-items-center gap-1">
+                  <select name="progress" class="form-select form-select-sm" style="width: auto;">
+                    {% for option in progress_choices %}
+                      <option value="{{ option }}" {% if profile.progress == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-primary">更新</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+      {% endfor %}
+      
       {% empty %}
       <tr><td colspan="13">該当するデータがありません</td></tr>
       {% endfor %}
