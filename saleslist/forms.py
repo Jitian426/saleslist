@@ -101,8 +101,17 @@ from .models import UserProfile
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['progress']
-        exclude = ['company', 'created_at', 'updated_at']
+        fields = [
+            'customer_name_kana', 'customer_name', 'address',
+            'representative_name_kana', 'representative_name', 'representative_phone', 'representative_birthday',
+            'contact_name_kana', 'contact_name', 'contact_phone',
+            'distribution', 'plan', 'capacity', 'acquired_usage',
+            'order_date', 'complete_date',
+            'gross_profit', 'cashback', 'commission',
+            'file_link', 'shop_name', 'product',
+            'appointment_staff', 'sales_staff',
+            'progress'
+        ]
         widgets = {
             'representative_birthday': forms.DateInput(attrs={'type': 'date'}),
             'order_date': forms.DateInput(attrs={'type': 'date'}),
