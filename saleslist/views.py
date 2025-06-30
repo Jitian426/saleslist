@@ -964,6 +964,8 @@ from datetime import datetime
 from django.shortcuts import redirect
 from django.contrib import messages
 from .forms import UserProgressForm
+from django.db.models import F
+from django.db.models.functions import Coalesce
 
 def user_progress_view(request):
     query = request.GET.get("q", "")
@@ -1016,6 +1018,11 @@ def user_progress_view(request):
             )
         except:
             pass  # 無効な形式なら無視
+
+    # 並び順変更：受注日があるものを上に（降順）・ないものを最後に
+    profiles = profiles.annotate(
+        has_order_date=Coalesce('order_date', None)
+    ).order_by(F('has_order_date').desc(nulls_last=True))
 
     profiles = profiles.order_by("-order_date")
 
