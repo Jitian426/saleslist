@@ -968,6 +968,7 @@ from django.db.models import F
 from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect
 from urllib.parse import urlencode
+from django.urls import reverse
 
 def user_progress_view(request):
     query = request.GET.get("q", "")
