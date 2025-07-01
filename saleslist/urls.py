@@ -34,7 +34,6 @@ urlpatterns = [
     path('company/<int:company_id>/update_note/', views.update_company_note, name='update_company_note'),
     path("users/", user_list, name="user_list"),
     path("user_progress/", views.user_progress_view, name="user_progress"),
-    path("user_progress/", views.user_progress_view, name="user_progress_view"),
 
 
     # ✅ ログイン・ログアウト

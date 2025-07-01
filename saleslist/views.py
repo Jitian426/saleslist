@@ -22,6 +22,7 @@ from django.contrib.auth.decorators import user_passes_test
 from .forms import CompanyForm  # ← 次に作るフォーム
 from django.utils import timezone
 from .models import UserProfile
+from django.urls import reverse
 
 
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
@@ -982,7 +983,7 @@ def user_progress_view(request):
         profile.save()
     
         # 🔽 現在のGETパラメータを保持してリダイレクト
-        base_url = reverse('user_progress_view')
+        base_url = reverse('saleslist:user_progress')
         query_string = urlencode(request.GET)  # 現在の検索条件を維持
         url = f"{base_url}?{query_string}" if query_string else base_url
         return HttpResponseRedirect(url)
