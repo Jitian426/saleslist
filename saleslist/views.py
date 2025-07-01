@@ -972,7 +972,24 @@ from urllib.parse import urlencode
 from django.urls import reverse
 
 def user_progress_view(request):
-    query = request.GET.get("q", "")
+    customer = request.GET.get("customer", "")
+    appointment_staff = request.GET.get("appointment_staff", "")
+    sales_staff = request.GET.get("sales_staff", "")
+    product = request.GET.get("product", "")
+    plan = request.GET.get("plan", "")
+
+    # 絞り込み処理
+    if customer:
+        profiles = profiles.filter(customer_name__icontains=customer)
+    if appointment_staff:
+        profiles = profiles.filter(appointment_staff__icontains=appointment_staff)
+    if sales_staff:
+        profiles = profiles.filter(sales_staff__icontains=sales_staff)
+    if product:
+        profiles = profiles.filter(product__icontains=product)
+    if plan:
+        profiles = profiles.filter(plan__icontains=plan)
+
     month_str = request.GET.get("month", "")  # 書式例: "2025-06"
     
     if request.method == "POST":
@@ -1041,8 +1058,12 @@ def user_progress_view(request):
         
     context = {
         "profiles": profiles,
-        "query": query,
         "month": month_str,
+        "customer": customer,
+        "appointment_staff": appointment_staff,
+        "sales_staff": sales_staff,
+        "product": product,
+        "plan": plan,
         "gross_profit_sum": gross_profit_sum,
         "progress_choices": progress_choices,
         "progress_dict": request.session.get("progress_dict", {}),

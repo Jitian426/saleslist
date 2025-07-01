@@ -11,9 +11,20 @@
       <label for="month">対象月:</label>
       <input type="month" class="form-control" name="month" id="month" value="{{ month }}">
     </div>
-    <div class="col-md-5">
-      <label for="q">キーワード検索:</label>
-      <input type="text" class="form-control" name="q" placeholder="顧客名や商材など" value="{{ query }}">
+    <div class="col-md-2">
+      <input type="text" name="customer" class="form-control" placeholder="顧客名" value="{{ request.GET.customer }}">
+    </div>
+    <div class="col-md-2">
+      <input type="text" name="appointment_staff" class="form-control" placeholder="アポ担当" value="{{ request.GET.appointment_staff }}">
+    </div>
+    <div class="col-md-2">
+      <input type="text" name="sales_staff" class="form-control" placeholder="営業担当" value="{{ request.GET.sales_staff }}">
+    </div>
+    <div class="col-md-2">
+      <input type="text" name="product" class="form-control" placeholder="獲得商材" value="{{ request.GET.product }}">
+    </div>
+    <div class="col-md-2">
+      <input type="text" name="plan" class="form-control" placeholder="獲得プラン" value="{{ request.GET.plan }}">
     </div>
     <div class="col-md-2">
       <button type="submit" class="btn btn-primary w-100">検索</button>
