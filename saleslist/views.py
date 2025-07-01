@@ -970,6 +970,7 @@ from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect
 from urllib.parse import urlencode
 from django.urls import reverse
+from django.db.models.expressions import OrderBy
 
 def user_progress_view(request):
     customer = request.GET.get("customer", "")
@@ -1044,7 +1045,9 @@ def user_progress_view(request):
         has_order_date=Coalesce('order_date', None)
     ).order_by(F('has_order_date').desc(nulls_last=True))
 
-    profiles = profiles.order_by("-order_date")
+    profiles = profiles.order_by(
+        OrderBy(F("order_date"), descending=True, nulls_last=True)
+    )
 
     progress_choices = ["発注前", "後確待ち", "設置待ち", "マッチング待ち", "完了"]
 
