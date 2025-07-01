@@ -966,25 +966,25 @@ from django.contrib import messages
 from .forms import UserProgressForm
 from django.db.models import F
 from django.db.models.functions import Coalesce
+from django.http import HttpResponseRedirect
+from urllib.parse import urlencode
 
 def user_progress_view(request):
     query = request.GET.get("q", "")
     month_str = request.GET.get("month", "")  # 書式例: "2025-06"
     
-    # POST処理で進捗を更新
     if request.method == "POST":
-        form = UserProgressForm(request.POST)
-        if form.is_valid():
-            user_id = request.POST.get("user_id")
-            try:
-                profile = UserProfile.objects.get(pk=user_id)
-                profile.progress = form.cleaned_data["progress"]
-                profile.save()
-                messages.success(request, "✅ 進捗を更新しました。")
-            except UserProfile.DoesNotExist:
-                messages.error(request, "⚠️ 対象のユーザーが見つかりませんでした。")
-        return redirect("saleslist:user_progress")
+        profile_id = request.POST.get("profile_id")
+        new_progress = request.POST.get("progress")
+        profile = UserProfile.objects.get(id=profile_id)
+        profile.progress = new_progress
+        profile.save()
     
+        # 🔽 現在のGETパラメータを保持してリダイレクト
+        base_url = reverse('user_progress_view')
+        query_string = urlencode(request.GET)  # 現在の検索条件を維持
+        url = f"{base_url}?{query_string}" if query_string else base_url
+        return HttpResponseRedirect(url)
     
     profiles = UserProfile.objects.all()
 

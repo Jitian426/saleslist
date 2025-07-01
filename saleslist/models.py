@@ -157,4 +157,6 @@ class UserProfile(models.Model):
         ('完了', '完了'),
     ]
 
-    progress = models.CharField(max_length=20, choices=PROGRESS_CHOICES, blank=True, null=True)
+    progress = models.CharField(
+        max_length=20, choices=PROGRESS_CHOICES, blank=True, null=True
+    )

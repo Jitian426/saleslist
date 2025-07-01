@@ -44,7 +44,7 @@
     </thead>
     <tbody>
       {% for profile in profiles %}
-        <tr {% if profile.progress|default_if_none:"" == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
+        <tr {% if profile.progress|default_if_none:""|cut:" "|cut:"　" == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
             <td>{{ profile.order_date }}</td>
             <td>{{ profile.complete_date }}</td>
             <td>{{ profile.customer_name }}</td>
@@ -67,6 +67,13 @@
                       <option value="{{ option }}" {% if profile.progress == option %}selected{% endif %}>{{ option }}</option>
                     {% endfor %}
                   </select>
+                  <input type="hidden" name="profile_id" value="{{ profile.id }}">
+
+                  <!-- 🔽 現在のGETパラメータを hidden で保持 -->
+                  {% for key, value in request.GET.items %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                  {% endfor %}
+
                   <button type="submit" class="btn btn-sm btn-primary">更新</button>
                 </div>
               </form>
