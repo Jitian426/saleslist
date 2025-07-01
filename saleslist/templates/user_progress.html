@@ -58,7 +58,11 @@
         <tr {% if profile.progress|default_if_none:""|cut:" "|cut:"　" == "完了" %} style="background-color: #d1ecf1;" {% endif %}>
             <td>{{ profile.order_date }}</td>
             <td>{{ profile.complete_date }}</td>
-            <td>{{ profile.customer_name }}</td>
+            <td>
+              <a href="{% url 'saleslist:company_detail' profile.company.id %}" target="_blank">
+                {{ profile.customer_name }}
+              </a>
+            </td>
             <td>{{ profile.appointment_staff }}</td>
             <td>{{ profile.sales_staff }}</td>
             <td>{{ profile.product }}</td>
