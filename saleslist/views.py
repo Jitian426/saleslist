@@ -977,6 +977,7 @@ def user_progress_view(request):
     sales_staff = request.GET.get("sales_staff", "")
     product = request.GET.get("product", "")
     plan = request.GET.get("plan", "")
+    query = request.GET.get("q", "") 
 
     # 絞り込み処理
     if customer:
