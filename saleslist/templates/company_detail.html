@@ -16,87 +16,53 @@
       <div class="card h-100 shadow-sm">
         <div class="card-header">企業情報</div>
         <div class="card-body">
+          <style>
+            .google-link {
+              color: black;
+              text-decoration: none;
+            }
+            .google-link:hover {
+              text-decoration: underline;
+            }
+          </style>
+
           <table class="table table-bordered table-sm">
             <tbody>
               <tr>
                 <th>店舗名</th>
-                <td>
-                  {% if company.name %}
-                    <a href="https://www.google.com/search?q={{ company.name|urlencode }}" target="_blank">{{ company.name }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.name %}<a href="https://www.google.com/search?q={{ company.name|urlencode }}" target="_blank" class="google-link">{{ company.name }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>店舗電話番号</th>
-                <td>
-                  {% if company.phone %}
-                    <a href="https://www.google.com/search?q={{ company.phone|urlencode }}" target="_blank">{{ company.phone }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.phone %}<a href="https://www.google.com/search?q={{ company.phone|urlencode }}" target="_blank" class="google-link">{{ company.phone }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>FAX番号</th>
-                <td>
-                  {% if company.fax %}
-                    <a href="https://www.google.com/search?q={{ company.fax|urlencode }}" target="_blank">{{ company.fax }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.fax %}<a href="https://www.google.com/search?q={{ company.fax|urlencode }}" target="_blank" class="google-link">{{ company.fax }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>携帯番号</th>
-                <td>
-                  {% if company.mobile_phone %}
-                    <a href="https://www.google.com/search?q={{ company.mobile_phone|urlencode }}" target="_blank">{{ company.mobile_phone }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.mobile_phone %}<a href="https://www.google.com/search?q={{ company.mobile_phone|urlencode }}" target="_blank" class="google-link">{{ company.mobile_phone }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>店舗住所</th>
-                <td>
-                  {% if company.address %}
-                    <a href="https://www.google.com/search?q={{ company.address|urlencode }}" target="_blank">{{ company.address }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.address %}<a href="https://www.google.com/search?q={{ company.address|urlencode }}" target="_blank" class="google-link">{{ company.address }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>法人名</th>
-                <td>
-                  {% if company.corporation_name %}
-                    <a href="https://www.google.com/search?q={{ company.corporation_name|urlencode }}" target="_blank">{{ company.corporation_name }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.corporation_name %}<a href="https://www.google.com/search?q={{ company.corporation_name|urlencode }}" target="_blank" class="google-link">{{ company.corporation_name }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>法人電話番号</th>
-                <td>
-                  {% if company.corporation_phone %}
-                    <a href="https://www.google.com/search?q={{ company.corporation_phone|urlencode }}" target="_blank">{{ company.corporation_phone }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.corporation_phone %}<a href="https://www.google.com/search?q={{ company.corporation_phone|urlencode }}" target="_blank" class="google-link">{{ company.corporation_phone }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>法人住所</th>
-                <td>
-                  {% if company.corporation_address %}
-                    <a href="https://www.google.com/search?q={{ company.corporation_address|urlencode }}" target="_blank">{{ company.corporation_address }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.corporation_address %}<a href="https://www.google.com/search?q={{ company.corporation_address|urlencode }}" target="_blank" class="google-link">{{ company.corporation_address }}</a>{% endif %}</td>
               </tr>
-              
               <tr>
                 <th>代表者名</th>
-                <td>
-                  {% if company.representative_name %}
-                    <a href="https://www.google.com/search?q={{ company.representative_name|urlencode }}" target="_blank">{{ company.representative_name }}</a>
-                  {% endif %}
-                </td>
+                <td>{% if company.representative_name %}<a href="https://www.google.com/search?q={{ company.representative_name|urlencode }}" target="_blank" class="google-link">{{ company.representative_name }}</a>{% endif %}</td>
               </tr>
 
               <tr><th>開業日</th><td>{{ company.established_date|date:"Y/m/d" }}</td></tr>
@@ -105,6 +71,7 @@
               <tr><th>小業種</th><td>{{ company.sub_industry }}</td></tr>
             </tbody>
           </table>
+          
           <p><a href="{% url 'saleslist:edit_company' company.id %}">✏️ 企業情報を編集</a></p>
 
         </div>
