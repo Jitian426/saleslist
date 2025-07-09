@@ -1024,6 +1024,25 @@ def user_progress_view(request):
         except:
             pass
 
+    if request.method == "POST":
+        profile_id = request.POST.get("profile_id")
+        new_progress = request.POST.get("progress")
+    
+        try:
+            profile = UserProfile.objects.get(id=profile_id)
+            profile.progress = new_progress
+            profile.save()
+            messages.success(request, f"✅ {profile.customer_name} の進捗を「{new_progress}」に更新しました。")
+        except UserProfile.DoesNotExist:
+            messages.error(request, "❌ 該当ユーザーが見つかりませんでした。")
+
+        # パラメータ保持してリダイレクト
+        base_url = reverse('saleslist:user_progress')
+        query_string = urlencode(request.GET)
+        url = f"{base_url}?{query_string}" if query_string else base_url
+        return HttpResponseRedirect(url)
+
+
     # ⑤ 並び順
     profiles = profiles.annotate(
         has_order_date=Coalesce('order_date', None)
