@@ -1084,3 +1084,95 @@ def user_progress_view(request):
     }
 
     return render(request, "user_progress.html", context)
+
+
+# ✅ views.py に追加
+import csv
+from django.http import HttpResponse
+from .models import UserProfile
+from datetime import datetime
+from urllib.parse import urlencode
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def export_completed_progress_csv(request):
+    # GETパラメータ取得
+    month_str = request.GET.get("month", "")
+    customer = request.GET.get("customer", "")
+    appointment_staff = request.GET.get("appointment_staff", "")
+    sales_staff = request.GET.get("sales_staff", "")
+    product = request.GET.get("product", "")
+    plan = request.GET.get("plan", "")
+
+    # クエリ作成
+    profiles = UserProfile.objects.filter(progress="完了")
+
+    if customer:
+        profiles = profiles.filter(customer_name__icontains=customer)
+    if appointment_staff:
+        profiles = profiles.filter(appointment_staff__icontains=appointment_staff)
+    if sales_staff:
+        profiles = profiles.filter(sales_staff__icontains=sales_staff)
+    if product:
+        profiles = profiles.filter(product__icontains=product)
+    if plan:
+        profiles = profiles.filter(plan__icontains=plan)
+
+    # 月フィルタ
+    if month_str:
+        try:
+            year, month = map(int, month_str.split("-"))
+            start_date = datetime(year, month, 1).date()
+            end_date = datetime(year + (month // 12), (month % 12) + 1, 1).date()
+            profiles = profiles.filter(complete_date__gte=start_date, complete_date__lt=end_date)
+        except:
+            pass
+
+    # 完了粗利合計
+    gross_profit_sum = sum(
+        (p.gross_profit or 0) - (p.cashback or 0) - (p.commission or 0)
+        for p in profiles
+    )
+
+    # CSV作成
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="completed_progress.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([f"この月の完了粗利合計：{gross_profit_sum} 円"])
+    writer.writerow([])  # 空行
+
+    headers = [
+        "受注日", "完了日", "顧客名", "アポ担当", "営業担当", "獲得商材",
+        "獲得プラン", "契約容量", "獲得使用量", "粗利", "キャッシュバック", "手数料"
+    ]
+    writer.writerow(headers)
+
+    for p in profiles:
+        writer.writerow([
+            p.order_date,
+            p.complete_date,
+            p.customer_name,
+            p.appointment_staff,
+            p.sales_staff,
+            p.product,
+            p.plan,
+            p.capacity,
+            p.acquired_usage,
+            p.gross_profit,
+            p.cashback,
+            p.commission,
+        ])
+
+    return response
+
+
+# ✅ urls.py に追加
+# path('user_progress/export_completed/', views.export_completed_progress_csv, name='export_completed_progress'),
+
+
+# ✅ user_progress.html にダウンロードボタン追加
+# <a href="{% url 'saleslist:export_completed_progress' %}?month={{ month }}&customer={{ customer }}&appointment_staff={{ appointment_staff }}&sales_staff={{ sales_staff }}&product={{ product }}&plan={{ plan }}" class="btn btn-success mb-3">
+#   完了データをCSV出力
+# </a>

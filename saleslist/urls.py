@@ -35,6 +35,7 @@ urlpatterns = [
     path("users/", user_list, name="user_list"),
     path("user_progress/", views.user_progress_view, name="user_progress"),
     path("company/<int:pk>/", views.company_detail, name="company_detail"),
+    path('user_progress/export_completed/', views.export_completed_progress_csv, name='export_completed_progress'),
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),
