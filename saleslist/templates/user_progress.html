@@ -29,9 +29,15 @@
     <div class="col-md-2">
       <button type="submit" class="btn btn-primary w-100">検索</button>
     </div>
+
     <div class="alert alert-info d-flex align-items-center" role="alert">
       <i class="bi bi-check-circle-fill me-2"></i>
       ✅ この月の完了粗利合計：{{ gross_profit_sum|intcomma }} 円
+    </div>
+
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+      <i class="bi bi-info-circle-fill me-2"></i>
+      ✅ この月の完了見込粗利合計：{{ expected_gross_profit_sum|intcomma }} 円
     </div>
   </form>
 
@@ -83,12 +89,9 @@
                     {% endfor %}
                   </select>
                   <input type="hidden" name="profile_id" value="{{ profile.id }}">
-
-                  <!-- 🔽 現在のGETパラメータを hidden で保持 -->
                   {% for key, value in request.GET.items %}
                     <input type="hidden" name="{{ key }}" value="{{ value }}">
                   {% endfor %}
-
                   <button type="submit" class="btn btn-sm btn-primary">更新</button>
                 </div>
               </form>

@@ -971,16 +971,22 @@ from django.http import HttpResponseRedirect
 from urllib.parse import urlencode
 from django.urls import reverse
 from django.db.models.expressions import OrderBy
+from django.db.models import Q, F, Value, IntegerField
 
 def user_progress_view(request):
+    # ① GETパラメータ取得
+    month_str = request.GET.get("month", "")
     customer = request.GET.get("customer", "")
     appointment_staff = request.GET.get("appointment_staff", "")
     sales_staff = request.GET.get("sales_staff", "")
     product = request.GET.get("product", "")
     plan = request.GET.get("plan", "")
-    query = request.GET.get("q", "") 
+    query = request.GET.get("q", "")
 
-    # 絞り込み処理
+    # ② ベースクエリ
+    profiles = UserProfile.objects.all()
+
+    # ③ 絞り込み
     if customer:
         profiles = profiles.filter(customer_name__icontains=customer)
     if appointment_staff:
@@ -991,40 +997,16 @@ def user_progress_view(request):
         profiles = profiles.filter(product__icontains=product)
     if plan:
         profiles = profiles.filter(plan__icontains=plan)
-
-    month_str = request.GET.get("month", "")  # 書式例: "2025-06"
-    
-    if request.method == "POST":
-        profile_id = request.POST.get("profile_id")
-        new_progress = request.POST.get("progress")
-        profile = UserProfile.objects.get(id=profile_id)
-        profile.progress = new_progress
-        profile.save()
-    
-        # 🔽 現在のGETパラメータを保持してリダイレクト
-        base_url = reverse('saleslist:user_progress')
-        query_string = urlencode(request.GET)  # 現在の検索条件を維持
-        url = f"{base_url}?{query_string}" if query_string else base_url
-        return HttpResponseRedirect(url)
-    
-    profiles = UserProfile.objects.all()
-
-    # 検索キーワード（複数項目に対してQオブジェクト）
     if query:
         profiles = profiles.filter(
             Q(customer_name__icontains=query) |
             Q(appointment_staff__icontains=query) |
             Q(sales_staff__icontains=query) |
             Q(product__icontains=query) |
-            Q(plan__icontains=query) |
-            Q(capacity__icontains=query) |
-            Q(acquired_usage__icontains=query) |
-            Q(gross_profit__icontains=query) |
-            Q(cashback__icontains=query) |
-            Q(commission__icontains=query)
+            Q(plan__icontains=query)
         )
 
-    # 月別フィルタ（受注日または完了日のどちらかが該当月に含まれる）
+    # ④ 月別絞り込み（当月受注 or 完了、もしくは過去未完了）
     if month_str:
         try:
             year, month = map(int, month_str.split("-"))
@@ -1033,33 +1015,36 @@ def user_progress_view(request):
                 end_date = datetime(year + 1, 1, 1).date()
             else:
                 end_date = datetime(year, month + 1, 1).date()
+
             profiles = profiles.filter(
                 Q(order_date__range=(start_date, end_date)) |
-                Q(complete_date__range=(start_date, end_date))
+                Q(complete_date__range=(start_date, end_date)) |
+                Q(order_date__lt=start_date, complete_date__isnull=True)
             )
         except:
-            pass  # 無効な形式なら無視
+            pass
 
-    # 並び順変更：受注日があるものを上に（降順）・ないものを最後に
+    # ⑤ 並び順
     profiles = profiles.annotate(
         has_order_date=Coalesce('order_date', None)
-    ).order_by(F('has_order_date').desc(nulls_last=True))
-
-    profiles = profiles.order_by(
-        OrderBy(F("order_date"), descending=True, nulls_last=True)
-    )
+    ).order_by(F('has_order_date').desc(nulls_last=True), F('order_date').desc(nulls_last=True))
 
     progress_choices = ["発注前", "後確待ち", "設置待ち", "マッチング待ち", "完了"]
 
-    # 「完了」だけを抽出（検索や月の条件が反映された profiles ベース）
+    # ⑥ 完了案件だけ抽出
     complete_profiles = profiles.filter(progress="完了")
 
-    # 完了粗利の合計を算出（Noneは0として扱う）
     gross_profit_sum = sum(
         (p.gross_profit or 0) - (p.cashback or 0) - (p.commission or 0)
         for p in complete_profiles
     )
-        
+
+    # ⑦ 完了見込粗利（全検索結果対象）
+    expected_gross_profit_sum = sum(
+        (p.gross_profit or 0) - (p.cashback or 0) - (p.commission or 0)
+        for p in profiles
+    )
+
     context = {
         "profiles": profiles,
         "month": month_str,
@@ -1069,8 +1054,8 @@ def user_progress_view(request):
         "product": product,
         "plan": plan,
         "gross_profit_sum": gross_profit_sum,
+        "expected_gross_profit_sum": expected_gross_profit_sum,
         "progress_choices": progress_choices,
-        "progress_dict": request.session.get("progress_dict", {}),
-        }
-    
+    }
+
     return render(request, "user_progress.html", context)
