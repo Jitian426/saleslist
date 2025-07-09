@@ -1053,9 +1053,15 @@ def user_progress_view(request):
     # ⑥ 完了案件だけ抽出
     complete_profiles = profiles.filter(progress="完了")
 
+    # ✅ 完了粗利 → 完了日が当月内の案件に限定
+    complete_profiles_in_month = complete_profiles.filter(
+        complete_date__gte=start_date,
+        complete_date__lt=end_date
+    )
+
     gross_profit_sum = sum(
         (p.gross_profit or 0) - (p.cashback or 0) - (p.commission or 0)
-        for p in complete_profiles
+        for p in complete_profiles_in_month
     )
 
     # ⑦ 完了見込粗利（全検索結果対象）
