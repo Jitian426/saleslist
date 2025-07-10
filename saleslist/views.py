@@ -972,10 +972,22 @@ from urllib.parse import urlencode
 from django.urls import reverse
 from django.db.models.expressions import OrderBy
 from django.db.models import Q, F, Value, IntegerField
+from datetime import datetime, date
 
 def user_progress_view(request):
     # ① GETパラメータ取得
     month_str = request.GET.get("month", "")
+    if not month_str:
+        # 月指定がない場合は現在年月を初期値に
+        month_str = datetime.today().strftime("%Y-%m")
+
+    year, month = map(int, month_str.split("-"))
+    start_date = date(year, month, 1)
+    if month == 12:
+        end_date = date(year + 1, 1, 1)
+    else:
+        end_date = date(year, month + 1, 1)
+    
     customer = request.GET.get("customer", "")
     appointment_staff = request.GET.get("appointment_staff", "")
     sales_staff = request.GET.get("sales_staff", "")
@@ -1140,7 +1152,7 @@ def export_completed_progress_csv(request):
     response['Content-Disposition'] = 'attachment; filename="completed_progress.csv"'
 
     writer = csv.writer(response)
-    writer.writerow([f"この月の完了粗利合計：{gross_profit_sum} 円"])
+    writer.writerow([f"合計報酬：{gross_profit_sum} 円"])
     writer.writerow([])  # 空行
 
     headers = [
