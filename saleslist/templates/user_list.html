@@ -3,9 +3,11 @@
 <div class="container mt-4">
   <h3 class="mb-4">ユーザーリスト（受注顧客一覧）</h3>
 
-  <a href="{% url 'saleslist:user_progress' %}" class="btn btn-outline-primary btn-sm">
-    進捗管理ページへ
-  </a>
+  {% if can_view_user_info %}
+    <a href="{% url 'saleslist:user_progress' %}" class="btn btn-outline-primary btn-sm">
+      進捗管理ページへ
+    </a>
+  {% endif %}
 
   <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover align-middle">

@@ -673,6 +673,8 @@ def company_detail(request, pk):
 
     user_profiles = UserProfile.objects.filter(company=company).order_by("-created_at")
 
+    can_view_user_info = request.user.groups.filter(name="user_info_viewers").exists()
+
     if request.method == "POST" and show_user_form:
         form = UserProfileForm(request.POST)
         if form.is_valid():
@@ -709,6 +711,7 @@ def company_detail(request, pk):
         "show_user_form": show_user_form,
         "user_form": form,
         "user_profiles": user_profiles,
+        "can_view_user_info": can_view_user_info,
     })
 
 
@@ -858,7 +861,6 @@ def update_company_note(request, company_id):
 from django.db import models
 from django.utils import timezone
 from datetime import date
-
 from django.contrib.auth.decorators import login_required
 from .models import UserProfile
 
@@ -886,8 +888,12 @@ def user_list(request):
         for user in users
     ]
 
+    can_view_user_info = request.user.groups.filter(name="user_info_viewers").exists()
+
+
     return render(request, "user_list.html", {
-        "users": user_data
+        "users": user_data,
+        "can_view_user_info": can_view_user_info,
     })
 
 
