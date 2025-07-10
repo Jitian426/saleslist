@@ -890,7 +890,6 @@ def user_list(request):
 
     can_view_user_info = request.user.groups.filter(name="user_info_viewers").exists()
 
-
     return render(request, "user_list.html", {
         "users": user_data,
         "can_view_user_info": can_view_user_info,
