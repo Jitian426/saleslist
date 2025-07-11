@@ -50,8 +50,6 @@ class CompanyForm(forms.ModelForm):
         return date_input
 
 
-
-
 class SalesActivityForm(forms.ModelForm):
     sales_person_email = forms.EmailField(required=False, label="営業担当者のメールアドレス")
     
@@ -61,6 +59,7 @@ class SalesActivityForm(forms.ModelForm):
         widgets = {
             "next_action_date": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             'result': forms.Select(choices=SalesActivity.RESULT_CHOICES),  # ✅ 選択肢を適用
+            'step': '600',
         }
 
 class SalesPersonRegistrationForm(UserCreationForm):
