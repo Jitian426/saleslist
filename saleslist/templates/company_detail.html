@@ -291,12 +291,10 @@
           <input type="hidden" name="sales_result" id="sales_result">
           <div class="mb-3">
             <label for="next_scheduled_date" class="form-label">次回営業予定日時</label>
-            <input type="datetime-local"
+            <input type="text"
                    class="form-control"
                    name="next_scheduled_date"
-                   id="next_scheduled_date"
-                   step="600"
-                   min="2025-01-01T00:00">
+                   id="next_scheduled_date">
           </div>
           <div class="mb-3">
             <label for="memo" class="form-label">メモ</label>
@@ -312,6 +310,10 @@
     </div>
   </div>
 </div>
+
+<!-- Flatpickr CSS & JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -357,6 +359,15 @@ document.addEventListener('DOMContentLoaded', function () {
       alert("登録に失敗しました。");
     }
   });
+});
+</script>
+
+<script>
+flatpickr("#next_scheduled_date", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    time_24hr: true,
+    minuteIncrement: 10
 });
 </script>
 
