@@ -832,6 +832,8 @@ def company_list(request):
     # ✅ next_order の計算を追加（ここがポイント！）
     next_order = "desc" if order == "asc" else "asc"
 
+    can_view_user_info = request.user.groups.filter(name="user_info_viewers").exists()
+
     return render(request, "company_list.html", {
         "companies": page_obj,
         "page_obj": page_obj,
@@ -842,6 +844,7 @@ def company_list(request):
         "results": ["再コール", "追わない", "見込", "アポ成立", "受注", "失注", "不通留守", "担当不在"],
         "total_records": total_records,
         "target_count": target_count,
+        "can_view_user_info": can_view_user_info,
         **search_params,
     })
 
