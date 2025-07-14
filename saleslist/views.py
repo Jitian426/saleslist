@@ -601,9 +601,24 @@ from django.db.models.functions import Cast
 from .models import Company, SalesActivity
 from .models import Company, SalesActivity, UserProfile
 from .forms import UserProfileForm
+from django.shortcuts import redirect
+from django.urls import reverse
 
 @login_required
 def company_detail(request, pk):
+    # 不要なクエリパラメータ一覧
+    allowed_sorts = {"latest_activity_date", "latest_result", "latest_sales_person", "latest_next_action_date"}
+
+    # 無効なパラメータが含まれていたらリダイレクト
+    if (
+        ("sort" in request.GET and request.GET["sort"] not in allowed_sorts)
+        or "activity_date" in request.GET
+        or "result" in request.GET
+        or "sales_person" in request.GET
+        or "next_action_date" in request.GET
+    ):
+        return redirect(reverse("saleslist:company_detail", args=[pk]))
+    
     company = get_object_or_404(Company, id=pk)
 
     # クエリパラメータ取得

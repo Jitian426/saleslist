@@ -205,15 +205,15 @@
           </a>
         </th>
         <th>
-          {% url_params request.GET sort="latest_result" order=next_order as query_result %}
-          <a href="?{{ query_result }}">
-            営業結果 {% if sort_column == "latest_result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
-          </a>
-        </th>
-        <th>
           {% url_params request.GET sort="latest_sales_person" order=next_order as query_person %}
           <a href="?{{ query_person }}">
             営業担当者 {% if sort_column == "latest_sales_person" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+          </a>
+        </th>
+        <th>
+          {% url_params request.GET sort="latest_result" order=next_order as query_result %}
+          <a href="?{{ query_result }}">
+            営業結果 {% if sort_column == "latest_result" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>
