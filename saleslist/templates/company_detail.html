@@ -62,7 +62,7 @@
               </tr>
               <tr>
                 <th>代表者名</th>
-                <td>{% if company.representative_name %}<a href="https://www.google.com/search?q={{ company.representative_name|urlencode }}" target="_blank" class="google-link">{{ company.representative_name }}</a>{% endif %}</td>
+                <td>{% if company.representative %}<a href="https://www.google.com/search?q={{ company.representative_name|urlencode }}" target="_blank" class="google-link">{{ company.representative }}</a>{% endif %}</td>
               </tr>
 
               <tr><th>開業日</th><td>{{ company.established_date|date:"Y/m/d" }}</td></tr>
