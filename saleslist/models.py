@@ -8,7 +8,7 @@ from datetime import date
 class Company(models.Model):
     name = models.CharField("店舗名", max_length=255, db_index=True)  # 🔹 店舗名にインデックスを追加
     phone = models.CharField("店舗電話番号", max_length=100, db_index=True, default="なし")  # ✅ 「未設定」を「なし」に変更  # 🔹 電話番号にもインデックスを追加
-    fax = models.CharField("FAX番号", max_length=20, blank=True, null=True)  # ←追加 
+    fax = models.CharField("FAX番号", max_length=50, blank=True, null=True)  # ←追加 
     mobile_phone = models.CharField("携帯番号", max_length=20, blank=True, null=True)  # ←追加   
     address = models.TextField("店舗住所",)
     corporation_name = models.CharField("法人名", max_length=255, blank=True)  # 🔹 法人名にもインデックス
