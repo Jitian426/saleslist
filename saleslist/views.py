@@ -1223,6 +1223,11 @@ def kpi_view(request):
     form = KPIFilterForm(request.GET or None)
     activities = SalesActivity.objects.all()
 
+    # 🟢 初期化しておく（ここが重要）
+    sales_person = None
+    date = None
+    month = None
+    
     # フィルター処理
     if form.is_valid():
         sales_person = form.cleaned_data.get('sales_person')
