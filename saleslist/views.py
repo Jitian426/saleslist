@@ -1211,3 +1211,62 @@ def export_completed_progress_csv(request):
 # <a href="{% url 'saleslist:export_completed_progress' %}?month={{ month }}&customer={{ customer }}&appointment_staff={{ appointment_staff }}&sales_staff={{ sales_staff }}&product={{ product }}&plan={{ plan }}" class="btn btn-success mb-3">
 #   完了データをCSV出力
 # </a>
+
+
+from django.shortcuts import render
+from django.db.models import Count, Q, Max
+from .models import SalesActivity, Company
+from .forms import KPIFilterForm
+from datetime import datetime
+
+def kpi_view(request):
+    form = KPIFilterForm(request.GET or None)
+    activities = SalesActivity.objects.all()
+
+    # フィルター処理
+    if form.is_valid():
+        sales_person = form.cleaned_data.get('sales_person')
+        date = form.cleaned_data.get('date')
+        month = form.cleaned_data.get('month')
+
+        if sales_person:
+            activities = activities.filter(sales_person=sales_person)
+        if date:
+            activities = activities.filter(activity_date=date)
+        elif month:
+            activities = activities.filter(activity_date__year=month.year, activity_date__month=month.month)
+
+    total_calls = activities.count()
+    valid_calls = activities.filter(result__in=["再コール", "見込", "アポ成立", "追わない", "担当者不在", "不通留守"]).count()
+    decision_makers = activities.filter(result__in=["再コール", "見込", "アポ成立", "追わない"]).count()
+    prospect_count = activities.filter(result="見込").count()
+    appointment_count = activities.filter(result="アポ成立").count()
+
+    # 現状見込数（最新の履歴が「見込」の会社）
+    latest_results = (
+        SalesActivity.objects
+        .order_by('company', '-activity_date')
+        .distinct('company')
+    )
+    if sales_person:
+        latest_results = latest_results.filter(sales_person=sales_person)
+    prospect_now_count = latest_results.filter(result="見込").count()
+
+    # 割合
+    decision_rate = round(decision_makers / total_calls * 100, 1) if total_calls else 0
+    appointment_rate = round(appointment_count / valid_calls * 100, 1) if valid_calls else 0
+
+    context = {
+        "form": form,
+        "kpi": {
+            "コール数": total_calls,
+            "有効コール数": valid_calls,
+            "決裁者数": decision_makers,
+            "見込件数": prospect_count,
+            "アポ件数": appointment_count,
+            "現状見込数": prospect_now_count,
+            "決裁者率": f"{decision_rate}%",
+            "アポ率": f"{appointment_rate}%",
+        },
+    }
+    return render(request, "kpi.html", context)

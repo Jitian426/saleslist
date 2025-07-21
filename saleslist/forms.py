@@ -159,3 +159,18 @@ class UserProgressForm(forms.Form):
         required=False,
         widget=forms.Select(attrs={"class": "form-select form-select-sm"})
     )
+
+
+from django import forms
+from .models import SalesActivity
+
+class KPIFilterForm(forms.Form):
+    sales_person = forms.ChoiceField(label="営業担当者", required=False)
+    date = forms.DateField(label="日付（単日）", required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    month = forms.DateField(label="月（年月単位）", required=False, widget=forms.DateInput(attrs={'type': 'month'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        persons = SalesActivity.objects.values_list('sales_person', flat=True).distinct()
+        choices = [('', '--- 全員 ---')] + [(p, p) for p in persons if p]
+        self.fields['sales_person'].choices = choices
