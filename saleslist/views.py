@@ -1235,11 +1235,13 @@ def kpi_view(request):
         month = form.cleaned_data.get('month')
 
         if sales_person:
+            sales_person = sales_person.strip()
             activities = activities.filter(sales_person=sales_person)
         if date:
             activities = activities.filter(activity_date=date)
         elif month:
             activities = activities.filter(activity_date__year=month.year, activity_date__month=month.month)
+
 
     total_calls = activities.count()
     valid_calls = activities.filter(result__in=["再コール", "見込", "アポ成立", "追わない", "担当者不在", "不通留守"]).count()
