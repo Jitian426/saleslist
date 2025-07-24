@@ -60,8 +60,8 @@ def upload_csv(request):
                 phone = row["電話番号"].strip()
                 address = row["住所"].strip()
 
-                # ❗名前・電話番号・住所いずれかが空欄ならスキップ
-                if not name or not phone or not address:
+                # 名前と住所があれば登録対象（電話番号は空欄でも可）
+                if not name or not address:
                     continue
 
                 key = (name, phone, address)
