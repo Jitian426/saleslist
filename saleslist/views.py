@@ -56,10 +56,20 @@ def upload_csv(request):
             existing_keys = set(Company.objects.values_list("name", "phone", "address"))
 
             for row in reader:
-                key = (row["店舗名"].strip(), row["電話番号"].strip(), row["住所"].strip())
+                name = row["店舗名"].strip()
+                phone = row["電話番号"].strip()
+                address = row["住所"].strip()
+
+                # ❗名前・電話番号・住所いずれかが空欄ならスキップ
+                if not name or not phone or not address:
+                    continue
+
+                key = (name, phone, address)
 
                 if key in existing_keys:
-                    company = Company.objects.get(name=key[0], phone=key[1], address=key[2])
+                    company = Company.objects.filter(name=name, phone=phone, address=address).first()
+                    if not company:
+                        continue  # 念のため安全に
                 else:
                     formatted_date = None
                     if row["開業日"]:
@@ -72,9 +82,9 @@ def upload_csv(request):
                                 continue  # スキップ
 
                     company = Company(
-                        name=key[0],
-                        phone=key[1],
-                        address=key[2],
+                        name=name,
+                        phone=phone,
+                        address=address,
                         fax=row.get("FAX番号", "").strip(),
                         mobile_phone=row.get("携帯番号", "").strip(),
                         corporation_name=row.get("法人名", "").strip(),
@@ -89,25 +99,35 @@ def upload_csv(request):
                     companies_to_create.append(company)
                     existing_keys.add(key)
 
-            # ✅ 一括作成（200件ずつ）
+            # ✅ 一括登録（200件ずつ）
             created_companies = []
             with transaction.atomic():
                 for i in range(0, len(companies_to_create), 200):
                     created = Company.objects.bulk_create(companies_to_create[i:i+200])
                     created_companies.extend(created)
 
-            # ✅ 再度取得（新規作成＋既存）
+            # ✅ 全Company取得しなおしてMap化（キー：name+phone+address）
             company_map = {
                 (c.name, c.phone, c.address): c
-                for c in Company.objects.filter(name__in=[c.name for c in companies_to_create])
+                for c in Company.objects.filter(
+                    name__in=[c.name for c in companies_to_create]
+                )
             }
 
+            # ファイルを先頭に戻して再走査
             decoded_file.seek(0)
-            next(reader)  # skip header
-            for row in reader:
-                key = (row["店舗名"].strip(), row["電話番号"].strip(), row["住所"].strip())
-                company = company_map.get(key)
+            next(reader)
 
+            for row in reader:
+                name = row["店舗名"].strip()
+                phone = row["電話番号"].strip()
+                address = row["住所"].strip()
+                if not name or not phone or not address:
+                    continue
+                key = (name, phone, address)
+                company = company_map.get(key)
+                if not company:
+                    company = Company.objects.filter(name=name, phone=phone, address=address).first()
                 if company and row.get("営業結果"):
                     activities_to_create.append(SalesActivity(
                         company=company,
@@ -117,7 +137,7 @@ def upload_csv(request):
                         next_action_date=None
                     ))
 
-            # ✅ 営業履歴も一括登録
+            # ✅ 営業履歴を一括登録
             with transaction.atomic():
                 for i in range(0, len(activities_to_create), 200):
                     SalesActivity.objects.bulk_create(activities_to_create[i:i+200])
@@ -130,6 +150,7 @@ def upload_csv(request):
         return redirect('saleslist:upload_csv')
 
     return render(request, 'upload_csv.html')
+
 
 
 
