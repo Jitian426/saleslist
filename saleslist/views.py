@@ -23,6 +23,7 @@ from .forms import CompanyForm  # ← 次に作るフォーム
 from django.utils import timezone
 from .models import UserProfile
 from django.urls import reverse
+from django.db import transaction
 
 
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
@@ -32,79 +33,104 @@ def upload_csv(request):
 
         if not csv_file:
             messages.error(request, 'ファイルが選択されていません')
-            return redirect('upload_csv')
+            return redirect('saleslist:upload_csv')
 
         if not csv_file.name.endswith('.csv'):
             messages.error(request, 'CSVファイルをアップロードしてください')
-            return redirect('upload_csv')
+            return redirect('saleslist:upload_csv')
 
         try:
-            decoded_file = io.StringIO(csv_file.read().decode('utf-8-sig'))  # ✅ BOM削除
+            decoded_file = io.StringIO(csv_file.read().decode('utf-8-sig'))
             reader = csv.DictReader(decoded_file)
 
             expected_columns = [
                 "店舗名", "電話番号", "FAX番号", "携帯番号", "住所", "法人名", "法人電話番号",
                 "法人所在地", "代表者名", "開業日", "許可番号", "大業種", "小業種", "営業担当者", "営業結果", "コメント"
             ]
-            actual_columns = list(reader.fieldnames)
+            if list(reader.fieldnames) != expected_columns:
+                messages.error(request, f'CSVのヘッダーが正しくありません。\n期待: {expected_columns}\n実際: {reader.fieldnames}')
+                return redirect('saleslist:upload_csv')
 
-            if actual_columns != expected_columns:
-                messages.error(request, f'CSVのヘッダーが正しくありません。\n期待するヘッダー: {expected_columns}\nCSVのヘッダー: {actual_columns}')
-                return redirect('upload_csv')
+            companies_to_create = []
+            activities_to_create = []
+            existing_keys = set(Company.objects.values_list("name", "phone", "address"))
 
             for row in reader:
-                print(f"データ確認: {row}")  # ✅ 取得データを確認
+                key = (row["店舗名"].strip(), row["電話番号"].strip(), row["住所"].strip())
 
-                # **日付フォーマットの変換**
-                formatted_date = None
-                if row["開業日"]:
-                    try:
-                        formatted_date = datetime.strptime(row["開業日"], '%Y/%m/%d').strftime('%Y-%m-%d')
-                    except ValueError:
+                if key in existing_keys:
+                    company = Company.objects.get(name=key[0], phone=key[1], address=key[2])
+                else:
+                    formatted_date = None
+                    if row["開業日"]:
                         try:
-                            formatted_date = datetime.strptime(row["開業日"], '%Y-%m-%d').strftime('%Y-%m-%d')
+                            formatted_date = datetime.strptime(row["開業日"], '%Y/%m/%d').date()
                         except ValueError:
-                            messages.error(request, f'日付フォーマットが間違っています（行: {row}）')
-                            continue  # この行はスキップ
+                            try:
+                                formatted_date = datetime.strptime(row["開業日"], '%Y-%m-%d').date()
+                            except ValueError:
+                                continue  # スキップ
 
-                # **企業がすでに存在するかチェック**
-                company, created = Company.objects.get_or_create(
-                    name=row["店舗名"].strip(),  
-                    phone=row["電話番号"].strip(),
-                    address=row["住所"].strip(),
-                    defaults={  # 新規作成時のみ適用
-                        "fax": row.get("FAX番号", "").strip(),
-                        "mobile_phone": row.get("携帯番号", "").strip(),
-                        "corporation_name": row.get("法人名", "").strip(),
-                        "corporation_phone": row.get("法人電話番号", "").strip(),
-                        "corporation_address": row.get("法人所在地", "").strip(),
-                        "representative": row.get("代表者名", "").strip(),
-                        "established_date": formatted_date,
-                        "license_number": row.get("許可番号", "").strip(),
-                        "industry": row.get("大業種", "").strip(),
-                        "sub_industry": row.get("小業種", "").strip(),
-                    }
-                )
+                    company = Company(
+                        name=key[0],
+                        phone=key[1],
+                        address=key[2],
+                        fax=row.get("FAX番号", "").strip(),
+                        mobile_phone=row.get("携帯番号", "").strip(),
+                        corporation_name=row.get("法人名", "").strip(),
+                        corporation_phone=row.get("法人電話番号", "").strip(),
+                        corporation_address=row.get("法人所在地", "").strip(),
+                        representative=row.get("代表者名", "").strip(),
+                        established_date=formatted_date,
+                        license_number=row.get("許可番号", "").strip(),
+                        industry=row.get("大業種", "").strip(),
+                        sub_industry=row.get("小業種", "").strip(),
+                    )
+                    companies_to_create.append(company)
+                    existing_keys.add(key)
 
-                # **営業履歴の登録**
-                if row.get("営業結果"):
-                    SalesActivity.objects.create(
+            # ✅ 一括作成（200件ずつ）
+            created_companies = []
+            with transaction.atomic():
+                for i in range(0, len(companies_to_create), 200):
+                    created = Company.objects.bulk_create(companies_to_create[i:i+200])
+                    created_companies.extend(created)
+
+            # ✅ 再度取得（新規作成＋既存）
+            company_map = {
+                (c.name, c.phone, c.address): c
+                for c in Company.objects.filter(name__in=[c.name for c in companies_to_create])
+            }
+
+            decoded_file.seek(0)
+            next(reader)  # skip header
+            for row in reader:
+                key = (row["店舗名"].strip(), row["電話番号"].strip(), row["住所"].strip())
+                company = company_map.get(key)
+
+                if company and row.get("営業結果"):
+                    activities_to_create.append(SalesActivity(
                         company=company,
-                        sales_person=row.get("営業担当者", "CSVインポート").strip(),  # ← 修正点
+                        sales_person=row.get("営業担当者", "CSVインポート").strip(),
                         result=row.get("営業結果", "見込"),
                         memo=row.get("コメント", ""),
                         next_action_date=None
-                    )
-                    
+                    ))
 
-            messages.success(request, 'CSVデータが正常に取り込まれました！')
+            # ✅ 営業履歴も一括登録
+            with transaction.atomic():
+                for i in range(0, len(activities_to_create), 200):
+                    SalesActivity.objects.bulk_create(activities_to_create[i:i+200])
+
+            messages.success(request, f'{len(companies_to_create)} 件の会社と {len(activities_to_create)} 件の営業履歴を登録しました。')
 
         except Exception as e:
             messages.error(request, f'エラーが発生しました: {str(e)}')
 
-        return redirect('saleslist:upload_csv')  # ✅ 名前空間を明示する
+        return redirect('saleslist:upload_csv')
 
     return render(request, 'upload_csv.html')
+
 
 
 import logging
