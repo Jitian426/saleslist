@@ -1315,9 +1315,9 @@ def export_companies_csv(request):
             company.phone,
             company.address,
             company.corporation_name,
-            company.representative_name,
-            company.industry_large,
-            company.industry_small
+            company.representative,
+            company.industry,
+            company.sub_industry
         ])
 
     return response
