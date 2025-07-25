@@ -103,13 +103,8 @@
                 <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
                 <td>{{ activity.sales_person }}</td>
                 <td>{{ activity.result }}</td>
-                <td>
-                  {% if activity.next_action_date %}
-                    {{ activity.next_action_date|date:"Y/m/d H:i" }}
-                  {% else %}
-                    -
-                  {% endif %}
-                </td>
+                <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
+
                 <td>{{ activity.memo|default:"" }}</td>
               </tr>
               {% empty %}
