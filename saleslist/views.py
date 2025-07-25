@@ -384,44 +384,6 @@ class CustomLoginView(LoginView):
     template_name = "registration/login.html"
 
 
-from django.http import HttpResponse
-import csv
-from django.contrib.auth.decorators import user_passes_test
-
-@user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
-def export_companies_csv(request):
-    # BOM付きUTF-8で文字化けを防止
-    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-    response['Content-Disposition'] = 'attachment; filename=companies.csv'
-
-    writer = csv.writer(response)
-    writer.writerow([
-        "店舗名", "電話番号", "FAX番号", "携帯番号", "住所", "法人名", "法人電話番号",
-        "法人所在地", "代表者名", "開業日", "許可番号", "大業種", "小業種"
-    ])
-
-    for company in Company.objects.all():
-        writer.writerow([
-            company.name,
-            company.phone,
-            company.fax,
-            company.mobile_phone,
-            company.address,
-            company.corporation_name,
-            company.corporation_phone,
-            company.corporation_address,
-            company.representative,
-            company.established_date.strftime('%Y/%m/%d') if company.established_date else '',
-            company.license_number,
-            company.industry,
-            company.sub_industry,
-        ])
-
-    return response
-
-
-from .models import CompanyEditLog
-
 @login_required
 def company_create(request):
     if request.method == "POST":
@@ -1324,3 +1286,62 @@ def kpi_view(request):
         },
     }
     return render(request, "kpi.html", context)
+
+
+from django.contrib.auth.decorators import user_passes_test
+from django.http import HttpResponse
+import csv
+from .models import Company, SalesActivity
+
+
+# superuser または username='ryuji' のみ許可
+def is_superuser_or_ryuji(user):
+    return user.is_superuser or user.username == 'ryuji'
+
+
+@user_passes_test(is_superuser_or_ryuji)
+def export_companies_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="companies_backup.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['ID', '店舗名', '店舗電話番号', '住所', '法人名', '代表者名', '大業種', '小業種'])
+
+    companies = Company.objects.all()
+    for company in companies:
+        writer.writerow([
+            company.id,
+            company.name,
+            company.phone,
+            company.address,
+            company.corporation_name,
+            company.representative_name,
+            company.industry_large,
+            company.industry_small
+        ])
+
+    return response
+
+
+@user_passes_test(is_superuser_or_ryuji)
+def export_salesactivities_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="salesactivities_backup.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['営業ID', 'company_id', '店舗名', '活動日', '営業結果', '営業担当者', 'メモ', '次回営業予定日'])
+
+    activities = SalesActivity.objects.select_related('company').all()
+    for activity in activities:
+        writer.writerow([
+            activity.id,
+            activity.company.id if activity.company else '',
+            activity.company.name if activity.company else '',
+            activity.date,
+            activity.result,
+            activity.sales_person,
+            activity.memo,
+            activity.next_scheduled_date,
+        ])
+
+    return response

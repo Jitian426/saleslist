@@ -15,7 +15,8 @@ app_name = 'saleslist'
 
 urlpatterns = [
     path("upload/", upload_csv, name="upload_csv"),
-    path('export_csv/', export_companies_csv, name='export_csv'),
+    path('export/companies/', views.export_companies_csv, name='export_companies_csv'),
+    path('export/salesactivities/', views.export_salesactivities_csv, name='export_salesactivities_csv'),
     path("companies/", company_list, name="company_list"),
     path("sales_activities/", sales_activity_list, name="sales_activity_list"),
     path("company/<int:pk>/", company_detail, name="company_detail"),
