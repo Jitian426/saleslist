@@ -1337,11 +1337,11 @@ def export_salesactivities_csv(request):
             activity.id,
             activity.company.id if activity.company else '',
             activity.company.name if activity.company else '',
-            activity.date,
+            activity.activity_date,
             activity.result,
             activity.sales_person,
             activity.memo,
-            activity.next_scheduled_date,
+            activity.next_action_date,
         ])
 
     return response
