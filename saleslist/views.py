@@ -1301,7 +1301,7 @@ def is_superuser_or_ryuji(user):
 
 @user_passes_test(is_superuser_or_ryuji)
 def export_companies_csv(request):
-    response = HttpResponse(content_type='text/csv')
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
     response['Content-Disposition'] = 'attachment; filename="companies_backup.csv"'
 
     writer = csv.writer(response)
@@ -1325,7 +1325,7 @@ def export_companies_csv(request):
 
 @user_passes_test(is_superuser_or_ryuji)
 def export_salesactivities_csv(request):
-    response = HttpResponse(content_type='text/csv')
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
     response['Content-Disposition'] = 'attachment; filename="salesactivities_backup.csv"'
 
     writer = csv.writer(response)
