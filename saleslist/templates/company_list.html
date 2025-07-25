@@ -44,8 +44,8 @@
     {% if user.is_superuser or user.username == 'ryuji' %}
       <a href="{% url 'saleslist:upload_csv' %}" class="btn btn-outline-primary btn-sm" style="font-size: 12px; padding: 2px 6px;">CSVインポート</a>
       <div class="mb-3">
-        <a href="{% url 'export_companies_csv' %}" class="btn btn-outline-primary btn-sm">会社情報CSV出力</a>
-        <a href="{% url 'export_salesactivities_csv' %}" class="btn btn-outline-secondary btn-sm">営業履歴CSV出力</a>
+        <a href="{% url 'saleslist:export_companies_csv' %}" class="btn btn-outline-primary btn-sm">会社情報CSV出力</a>
+        <a href="{% url 'saleslist:export_salesactivities_csv' %}" class="btn btn-outline-secondary btn-sm">営業履歴CSV出力</a>
       </div>
     {% endif %}
     {% if user.is_authenticated %}
