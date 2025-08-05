@@ -789,6 +789,10 @@ def company_list(request):
         ),
         latest_result=Subquery(latest_activities.values("result")[:1]),
         latest_next_action_date=Subquery(latest_activities.values("next_action_date")[:1]),
+    ).only(
+        'id', 'name', 'phone', 'mobile_phone', 'address',
+        'corporation_name', 'established_date',
+        'industry', 'sub_industry'
     )
 
     # 🔸 フィルタ適用
