@@ -1331,7 +1331,11 @@ def export_salesactivities_csv(request):
     writer = csv.writer(response)
     writer.writerow(['営業ID', 'company_id', '店舗名', '活動日', '営業結果', '営業担当者', 'メモ', '次回営業予定日'])
 
-    activities = SalesActivity.objects.select_related('company').all()
+    activities = SalesActivity.objects.select_related('company').only(
+        'id', 'company__id', 'company__name', 'activity_date',
+        'result', 'sales_person', 'memo', 'next_action_date'
+    )
+
     for activity in activities:
         writer.writerow([
             activity.id,
