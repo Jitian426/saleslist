@@ -833,6 +833,10 @@ def company_list(request):
 
     companies = companies.filter(filters)
 
+    # ✅ 初期表示の負荷軽減（検索条件なしのみ制限）
+    if not any(search_params.values()):
+        companies = companies.order_by("-id")[:1000]
+
     # ✅ 並び順：複合キーによる安定化（company_detail との一致）
     if sort in ["established_date", "name", "address", "corporation_name"]:
         if order == "desc":
