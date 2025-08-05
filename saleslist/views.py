@@ -831,21 +831,21 @@ def company_list(request):
         filters &= Q(latest_next_action_date__date__lte=search_params["next_action_end"])
 
 
+    # 🔸 フィルター適用
     companies = companies.filter(filters)
 
-    # ✅ 初期表示の負荷軽減（検索条件なしのみ制限）
-    if not any(search_params.values()):
-        companies = companies.order_by("-id")[:1000]
-
-    # ✅ 並び順：複合キーによる安定化（company_detail との一致）
+    # 🔸 並び順を定義（スライス前に順序決定）
     if sort in ["established_date", "name", "address", "corporation_name"]:
         if order == "desc":
             companies = companies.order_by(f"-{sort}", "-id")
         else:
             companies = companies.order_by(sort, "id")
     else:
-        # annotate 項目などは単独ソート（元のまま）
         companies = companies.order_by(sort_column)
+
+    # ✅ 初期表示だけ最大1000件に制限（検索条件が空のとき）
+    if not any(search_params.values()):
+        companies = companies[:1000]
 
 
     # 🔸 ページネーション
