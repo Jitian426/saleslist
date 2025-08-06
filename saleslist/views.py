@@ -614,8 +614,8 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 @login_required
-def company_detail(request, company_id):
-    company = get_object_or_404(Company, id=company_id)
+def company_detail(request, pk):
+    company = get_object_or_404(Company, id=pk)
 
     # ✅ 検索・ソートパラメータを取得
     search_params = request.GET.copy()
