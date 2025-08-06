@@ -614,129 +614,57 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 @login_required
-def company_detail(request, pk):
-    # 不要なクエリパラメータ一覧
-    allowed_sorts = {"latest_activity_date", "latest_result", "latest_sales_person", "latest_next_action_date"}
+def company_detail(request, company_id):
+    company = get_object_or_404(Company, id=company_id)
 
-    # 無効なパラメータが含まれていたらリダイレクト
-    if (
-        ("sort" in request.GET and request.GET["sort"] not in allowed_sorts)
-        or "activity_date" in request.GET
-        or "result" in request.GET
-        or "sales_person" in request.GET
-        or "next_action_date" in request.GET
-    ):
-        return redirect(reverse("saleslist:company_detail", args=[pk]))
-    
-    company = get_object_or_404(Company, id=pk)
+    # ✅ 検索・ソートパラメータを取得
+    search_params = request.GET.copy()
+    sort = search_params.get("sort", "id")
+    order = search_params.get("order", "asc")
+    ordering = sort if order == "asc" else f"-{sort}"
 
-    # クエリパラメータ取得
-    query = request.GET.get("query", "")
-    phone = request.GET.get("phone", "")
-    address = request.GET.get("address", "")
-    corporation_name = request.GET.get("corporation_name", "")
-    industry = request.GET.get("industry", "")
-    sub_industry = request.GET.get("sub_industry", "")
-    sort = request.GET.get("sort", "id")
-    order = request.GET.get("order", "asc")
-
-    # 🔧 複合ソート対応（tie-breaker付き）
-    if sort == "established_date":
-        sort_keys = ["-established_date", "-id"] if order == "desc" else ["established_date", "id"]
-    elif sort == "name":
-        sort_keys = ["-name", "-id"] if order == "desc" else ["name", "id"]
-    else:
-        sort_keys = [f"-{sort}", "-id"] if order == "desc" else [sort, "id"]
-
-    # フィルター構築
-    filters = Q()
-    if query:
-        filters &= (
+    # ✅ 検索条件を反映したベースクエリ（全件取得を回避）
+    company_queryset = Company.objects.all()
+    if "query" in search_params and search_params["query"]:
+        query = search_params["query"]
+        company_queryset = company_queryset.filter(
             Q(name__icontains=query) |
             Q(phone__icontains=query) |
             Q(address__icontains=query) |
             Q(corporation_name__icontains=query)
         )
-    if phone:
-        filters &= (
-            Q(phone__icontains=phone) |
-            Q(corporation_phone__icontains=phone) |
-            Q(fax__icontains=phone) |
-            Q(mobile_phone__icontains=phone)
-        )
-    if address:
-        filters &= Q(address__icontains=address)
-    if corporation_name:
-        filters &= Q(corporation_name__icontains=corporation_name)
-    if industry:
-        filters &= Q(industry__icontains=industry)
-    if sub_industry:
-        filters &= Q(sub_industry__icontains=sub_industry)
+    if "address" in search_params and search_params["address"]:
+        company_queryset = company_queryset.filter(address__icontains=search_params["address"])
+    if "corporation_name" in search_params and search_params["corporation_name"]:
+        company_queryset = company_queryset.filter(corporation_name__icontains=search_params["corporation_name"])
+    if "industry" in search_params and search_params["industry"]:
+        company_queryset = company_queryset.filter(industry=search_params["industry"])
+    if "sub_industry" in search_params and search_params["sub_industry"]:
+        company_queryset = company_queryset.filter(sub_industry=search_params["sub_industry"])
 
-    # クエリセット取得（annotateなし、純粋なCompany + 複合ソート）
-    company_list = list(Company.objects.filter(filters).order_by(*sort_keys))
+    # ✅ 並び順に従ってIDリストを取得（会社全件を保持しない）
+    company_ids = list(company_queryset.order_by(ordering).values_list("id", flat=True))
+    current_index = company_ids.index(company.id)
+    prev_id = company_ids[current_index - 1] if current_index > 0 else None
+    next_id = company_ids[current_index + 1] if current_index < len(company_ids) - 1 else None
 
-    try:
-        index = [c.id for c in company_list].index(company.id)
-    except ValueError:
-        index = 0
-
-    prev_company = company_list[index - 1] if index > 0 else None
-    next_company = company_list[index + 1] if index < len(company_list) - 1 else None
-
-    # 営業履歴・営業結果
+    # ✅ 営業履歴・編集ログ・ユーザー情報を取得（元のまま）
     sales_activities = SalesActivity.objects.filter(company=company).order_by("-activity_date")
-    # 営業履歴・営業結果（順番を固定）
-    sales_results = [
-        "再コール", "見込", "アポ成立", "受注", "失注", "追わない", "担当不在", "不通留守"
-    ]
+    edit_logs = CompanyEditLog.objects.filter(company=company).order_by("-timestamp")
+    user_profiles = UserProfile.objects.filter(company=company)
 
-    # --- ユーザー情報フォーム（最新履歴が「受注」かつ管理者のみ） ---
-    latest_result = sales_activities.first().result if sales_activities.exists() else None
-    show_user_form = latest_result == "受注" and request.user.is_superuser
-
-    user_profiles = UserProfile.objects.filter(company=company).order_by("-created_at")
-
-    can_view_user_info = request.user.groups.filter(name="user_info_viewers").exists()
-
-    if request.method == "POST" and show_user_form:
-        form = UserProfileForm(request.POST)
-        if form.is_valid():
-            user_profile = form.save(commit=False)
-            user_profile.company = company  # ← 必須
-            user_profile.save()
-            messages.success(request, "✅ ユーザー情報を保存しました。")
-            return redirect("saleslist:company_detail", pk=company.id)
-    else:
-        form = UserProfileForm() if show_user_form else None
-
-    # --- パラメータ引継ぎ ---
-    query_params = urlencode({
-        "query": query,
-        "phone": phone,
-        "address": address,
-        "corporation_name": corporation_name,
-        "industry": industry,
-        "sub_industry": sub_industry,
-        "sort": sort,
-        "order": order,
-    })
-
-    return render(request, "company_detail.html", {
+    # ✅ コンテキスト設定
+    context = {
         "company": company,
         "sales_activities": sales_activities,
-        "sales_results": sales_results,
-        "prev_company": prev_company,
-        "next_company": next_company,
-        "record_position": index + 1,
-        "target_count": len(company_list),
-        "total_count": Company.objects.count(),
-        "query_params": query_params,
-        "show_user_form": show_user_form,
-        "user_form": form,
+        "edit_logs": edit_logs,
         "user_profiles": user_profiles,
-        "can_view_user_info": can_view_user_info,
-    })
+        "prev_id": prev_id,
+        "next_id": next_id,
+        "search_params": search_params,
+        "total_count": company_queryset.count(),
+    }
+    return render(request, "company_detail.html", context)
 
 
 
