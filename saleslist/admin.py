@@ -1,19 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from saleslist.models import Company, SalesActivity, SalesPerson
+
+from .models import Company, SalesActivity, SalesPerson, ImageLink
 
 print("🔹 admin.py が実行されました")
 
-# すべて明示的に登録
-admin.site.register(Company)
-admin.site.register(SalesActivity)
-admin.site.register(SalesPerson, UserAdmin)  # SalesPerson はカスタムユーザー
-
-
-# saleslist/admin.py
-from django.contrib import admin
-from .models import Company, ImageLink
-
+# 画像リンクを Company のインラインで編集
 class ImageLinkInline(admin.TabularInline):
     model = ImageLink
     extra = 1
@@ -21,5 +13,17 @@ class ImageLinkInline(admin.TabularInline):
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     inlines = [ImageLinkInline]
-    # 既存の設定があれば併記
+    list_display = ("id", "name", "phone", "industry", "sub_industry")
+    search_fields = ("name", "phone", "address", "corporation_name")
 
+@admin.register(SalesActivity)
+class SalesActivityAdmin(admin.ModelAdmin):
+    list_display = ("id", "company", "activity_date", "result", "sales_person", "next_action_date")
+    search_fields = ("company__name", "sales_person", "result")
+
+@admin.register(SalesPerson)
+class SalesPersonAdmin(UserAdmin):
+    # 追加フィールドを管理画面で見えるように
+    fieldsets = UserAdmin.fieldsets + (
+        ("Sales fields", {"fields": ("phone_number", "department")}),
+    )
