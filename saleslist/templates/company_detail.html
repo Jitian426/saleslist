@@ -164,13 +164,19 @@
           </div>
           
           {% if image_links %}
+            <style>
+              /* タイル表示の微調整（重なり防止） */
+              .image-link-card img { width: 120px; height: auto; }
+              .image-link-card .meta { min-width: 0; } /* flexの省略幅調整 */
+            </style>
+
             <div class="row row-cols-1 row-cols-md-2 g-3">
               {% for link in image_links %}
                 <div class="col">
-                  <div class="border rounded p-2 d-flex gap-2 align-items-start">
+                  <div class="image-link-card border rounded p-2 d-flex gap-2 align-items-start">
                     {% if link.is_google_drive and link.drive_thumbnail_url %}
                       <a href="{{ link.url }}" target="_blank" rel="noopener">
-                        <img src="{{ link.drive_thumbnail_url }}" alt="thumb" class="img-fluid rounded" style="width:120px; height:auto;">
+                        <img src="{{ link.drive_thumbnail_url }}" alt="thumb" class="img-fluid rounded">
                       </a>
                     {% else %}
                       <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width:120px;height:80px;">
@@ -178,27 +184,19 @@
                       </div>
                     {% endif %}
           
-                    <div class="flex-grow-1">
-                      <div class="fw-bold">{{ link.title|default:"（タイトルなし）" }}</div>
-                      <div class="small text-truncate" style="max-width: 100%;">
-                        <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.url }}</a>
-                      </div>
+                    <div class="meta flex-grow-1">
+                      <div class="fw-bold mb-1">{{ link.title|default:"（タイトルなし）" }}</div>
                       {% if link.note %}
-                        <div class="text-muted small">{{ link.note }}</div>
+                        <div class="text-muted small mb-1">{{ link.note }}</div>
                       {% endif %}
           
-                      {% if link.is_google_drive and link.drive_preview_url %}
-                        <div class="mt-1">
+                      <div class="d-flex flex-wrap gap-2">
+                        {% if link.is_google_drive and link.drive_preview_url %}
                           <a class="btn btn-outline-secondary btn-sm" href="{{ link.drive_preview_url }}" target="_blank" rel="noopener">プレビュー</a>
-                        </div>
-                      {% endif %}
-          
-                      <form method="post" class="mt-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete_image_link">
-                        <input type="hidden" name="link_id" value="{{ link.id }}">
-                        <button type="submit" class="btn btn-outline-danger btn-sm">削除</button>
-                      </form>
+                        {% endif %}
+                        <a class="btn btn-outline-primary btn-sm" href="{{ link.url }}" target="_blank" rel="noopener">開く</a>
+                      </div>
+                      {# ※URL文字列は表示しない（視認性改善） #}
                     </div>
                   </div>
                 </div>
