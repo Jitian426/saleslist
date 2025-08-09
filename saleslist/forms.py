@@ -174,3 +174,18 @@ class KPIFilterForm(forms.Form):
         persons = SalesActivity.objects.values_list('sales_person', flat=True).distinct()
         choices = [('', '--- 全員 ---')] + [(p, p) for p in persons if p]
         self.fields['sales_person'].choices = choices
+
+
+
+from django import forms
+from .models import ImageLink
+
+class ImageLinkForm(forms.ModelForm):
+    class Meta:
+        model = ImageLink
+        fields = ['title', 'url', 'note']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例）外観写真'}),
+            'url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'GoogleドライブURL 等'}),
+            'note': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '任意メモ'}),
+        }

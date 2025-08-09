@@ -125,6 +125,90 @@
             </div>
             <button type="submit" class="btn btn-sm btn-primary">💾 メモを保存</button>
           </form>
+
+          <!-- ▼▼ 画像リンクブロック（会社メモの直後に挿入） ▼▼ -->
+          <hr>
+
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h6 class="mb-0">画像リンク</h6>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#addImageLinkForm">
+              追加
+            </button>
+          </div>
+
+          <div id="addImageLinkForm" class="collapse mb-3">
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_image_link">
+              <div class="row g-2">
+                <div class="col-md-3">
+                  <label class="form-label mb-1">タイトル</label>
+                  {{ image_link_form.title }}
+                </div>
+                <div class="col-md-7">
+                  <label class="form-label mb-1">URL</label>
+                  {{ image_link_form.url }}
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label mb-1">メモ</label>
+                  {{ image_link_form.note }}
+                </div>
+              </div>
+              <div class="mt-2 text-end">
+                <button type="submit" class="btn btn-success btn-sm">保存</button>
+              </div>
+              <div class="form-text mt-1">
+                Googleドライブは「リンクを知っている全員（閲覧可）」にするとサムネ・プレビューが表示されます。
+              </div>
+            </form>
+          </div>
+          
+          {% if image_links %}
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+              {% for link in image_links %}
+                <div class="col">
+                  <div class="border rounded p-2 d-flex gap-2 align-items-start">
+                    {% if link.is_google_drive and link.drive_thumbnail_url %}
+                      <a href="{{ link.url }}" target="_blank" rel="noopener">
+                        <img src="{{ link.drive_thumbnail_url }}" alt="thumb" class="img-fluid rounded" style="width:120px; height:auto;">
+                      </a>
+                    {% else %}
+                      <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width:120px;height:80px;">
+                        <span class="small text-muted">No Preview</span>
+                      </div>
+                    {% endif %}
+          
+                    <div class="flex-grow-1">
+                      <div class="fw-bold">{{ link.title|default:"（タイトルなし）" }}</div>
+                      <div class="small text-truncate" style="max-width: 100%;">
+                        <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.url }}</a>
+                      </div>
+                      {% if link.note %}
+                        <div class="text-muted small">{{ link.note }}</div>
+                      {% endif %}
+          
+                      {% if link.is_google_drive and link.drive_preview_url %}
+                        <div class="mt-1">
+                          <a class="btn btn-outline-secondary btn-sm" href="{{ link.drive_preview_url }}" target="_blank" rel="noopener">プレビュー</a>
+                        </div>
+                      {% endif %}
+          
+                      <form method="post" class="mt-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_image_link">
+                        <input type="hidden" name="link_id" value="{{ link.id }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">削除</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-muted">まだ画像リンクはありません。</div>
+          {% endif %}
+          <!-- ▲▲ 画像リンクブロック ここまで ▲▲ -->
+
         </div>
       </div>
       

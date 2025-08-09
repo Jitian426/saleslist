@@ -160,3 +160,51 @@ class UserProfile(models.Model):
     progress = models.CharField(
         max_length=20, choices=PROGRESS_CHOICES, blank=True, null=True
     )
+
+
+
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+import re
+
+class ImageLink(models.Model):
+    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='image_links')
+    title = models.CharField("タイトル（任意）", max_length=255, blank=True)
+    url = models.URLField("画像リンクURL（必須）")
+    note = models.CharField("メモ（任意）", max_length=255, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title or self.url
+
+    # --- Googleドライブ用の便利プロパティ ---
+    DRIVE_FILE_ID_PATTERN = re.compile(
+        r'(?:/d/|id=)([A-Za-z0-9_-]{10,})'
+    )
+
+    def is_google_drive(self):
+        return "drive.google.com" in (self.url or "")
+
+    def drive_file_id(self):
+        if not self.is_google_drive():
+            return None
+        m = self.DRIVE_FILE_ID_PATTERN.search(self.url)
+        return m.group(1) if m else None
+
+    def drive_thumbnail_url(self):
+        fid = self.drive_file_id()
+        if not fid:
+            return None
+        # サムネイル（認証不要・共有リンク公開前提）
+        return f"https://drive.google.com/thumbnail?id={fid}"
+
+    def drive_preview_url(self):
+        fid = self.drive_file_id()
+        if not fid:
+            return None
+        # プレビュー表示用
+        return f"https://drive.google.com/file/d/{fid}/preview"

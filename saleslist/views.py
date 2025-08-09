@@ -603,20 +603,22 @@ def add_sales_activity_ajax(request, pk):
     
 
 
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q, OuterRef, Subquery, F, CharField
 from django.utils.http import urlencode
 from django.db.models.functions import Cast
-from .models import Company, SalesActivity
-from .models import Company, SalesActivity, UserProfile
-from .forms import UserProfileForm
-from django.shortcuts import redirect
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from urllib.parse import urlencode
+from .models import Company, SalesActivity, UserProfile, ImageLink
+from .forms import UserProfileForm, ImageLinkForm
 
 @login_required
 def company_detail(request, pk):
     allowed_sorts = {"latest_activity_date", "latest_result", "latest_sales_person", "latest_next_action_date"}
-
+    
+    # ✅ 不正パラメータのクリーンアップ（既存仕様を維持）
     if (
         ("sort" in request.GET and request.GET["sort"] not in allowed_sorts)
         or "activity_date" in request.GET
@@ -628,7 +630,7 @@ def company_detail(request, pk):
     
     company = get_object_or_404(Company, id=pk)
 
-    # クエリパラメータ取得
+    # 🔎 クエリパラメータ
     query = request.GET.get("query", "")
     phone = request.GET.get("phone", "")
     address = request.GET.get("address", "")
@@ -694,16 +696,51 @@ def company_detail(request, pk):
     user_profiles = UserProfile.objects.filter(company=company).order_by("-created_at")
     can_view_user_info = request.user.groups.filter(name="user_info_viewers").exists()
 
-    if request.method == "POST" and show_user_form:
-        form = UserProfileForm(request.POST)
-        if form.is_valid():
-            user_profile = form.save(commit=False)
-            user_profile.company = company
-            user_profile.save()
-            messages.success(request, "✅ ユーザー情報を保存しました。")
-            return redirect("saleslist:company_detail", pk=company.id)
-    else:
-        form = UserProfileForm() if show_user_form else None
+    # -----------------------------
+    # 🆕 画像リンクの追加/削除（最初に処理）
+    # -----------------------------
+    image_links = company.image_links.all()
+    image_link_form = ImageLinkForm()
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # 画像リンク 追加
+        if action == "add_image_link":
+            image_link_form = ImageLinkForm(request.POST)
+            if image_link_form.is_valid():
+                obj = image_link_form.save(commit=False)
+                obj.company = company
+                obj.save()
+                messages.success(request, "画像リンクを追加しました。")
+            else:
+                messages.error(request, "画像リンクの追加に失敗しました。入力内容をご確認ください。")
+            # クエリを保ったまま自分へ
+            return redirect(request.get_full_path())
+
+        # 画像リンク 削除
+        if action == "delete_image_link":
+            link_id = request.POST.get("link_id")
+            link = get_object_or_404(ImageLink, pk=link_id, company=company)
+            link.delete()
+            messages.success(request, "画像リンクを削除しました。")
+            return redirect(request.get_full_path())
+
+        # 受注ユーザー情報 登録（既存仕様を維持）
+        if show_user_form:
+            form = UserProfileForm(request.POST)
+            if form.is_valid():
+                user_profile = form.save(commit=False)
+                user_profile.company = company
+                user_profile.save()
+                messages.success(request, "✅ ユーザー情報を保存しました。")
+                return redirect("saleslist:company_detail", pk=company.id)
+            else:
+                # バリデ NG時にフォームを返す
+                pass
+
+    # 受注ユーザー情報フォーム（GET時）
+    form = UserProfileForm() if show_user_form else None
 
     # パラメータ引継ぎ
     query_params = urlencode({
@@ -731,8 +768,9 @@ def company_detail(request, pk):
         "user_form": form,
         "user_profiles": user_profiles,
         "can_view_user_info": can_view_user_info,
+        "image_links": image_links,
+        "image_link_form": image_link_form,
     })
-
 
 
 
