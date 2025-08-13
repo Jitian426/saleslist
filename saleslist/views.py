@@ -797,6 +797,7 @@ def company_list(request):
         "end_date": request.GET.get("end_date", "").strip(),  # ←追加
         "next_action_start": request.GET.get("next_action_start", "").strip(),  # ←追加
         "next_action_end": request.GET.get("next_action_end", "").strip(),  # ←追加
+        "license_number": request.GET.get("license_number", "").strip(),
     }
 
     # 🔸 ソートパラメータの取得
@@ -826,7 +827,8 @@ def company_list(request):
     ).only(
         'id', 'name', 'phone', 'mobile_phone', 'address',
         'corporation_name', 'established_date',
-        'industry', 'sub_industry'
+        'industry', 'sub_industry',
+        'license_number',                             # ★表示用に追加
     )
 
     # 🔸 フィルタ適用
@@ -837,7 +839,8 @@ def company_list(request):
             Q(name__icontains=search_params["query"]) |
             Q(phone__icontains=search_params["query"]) |
             Q(address__icontains=search_params["query"]) |
-            Q(corporation_name__icontains=search_params["query"])
+            Q(corporation_name__icontains=search_params["query"]) |
+            Q(license_number__icontains=search_params["query"])          # ←クイック検索にも含めたいなら追加（任意）
         )
     if search_params["phone"]:
         filters &= (
@@ -858,6 +861,8 @@ def company_list(request):
         filters &= Q(industry__icontains=search_params["industry"])
     if search_params["sub_industry"]:
         filters &= Q(sub_industry__icontains=search_params["sub_industry"])
+    if search_params["license_number"]:                                  # ★追加
+        filters &= Q(license_number__icontains=search_params["license_number"])
 
     if search_params["start_date"]:
         filters &= Q(latest_activity_date__date__gte=search_params["start_date"])
@@ -867,7 +872,6 @@ def company_list(request):
         filters &= Q(latest_next_action_date__date__gte=search_params["next_action_start"])
     if search_params["next_action_end"]:
         filters &= Q(latest_next_action_date__date__lte=search_params["next_action_end"])
-
 
     # 🔸 フィルター適用
     companies = companies.filter(filters)

@@ -81,7 +81,8 @@
         <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="corporation_name" placeholder="法人名" value="{{ corporation_name }}"></div>
         <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="industry" placeholder="大業種" value="{{ industry }}"></div>
         <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="sub_industry" placeholder="小業種" value="{{ sub_industry }}"></div>
-  
+        <div class="col-sm-2"><input type="text" class="form-control form-control-sm" name="license_number" placeholder="許可番号" value="{{ license_number }}"></div>
+
         <div class="col-sm-2">
           <label class="form-label mb-0 small">活動日 (開始)</label>
           <input type="date" class="form-control form-control-sm" name="start_date" value="{{ start_date }}">
@@ -184,6 +185,13 @@
           {% url_params request.GET sort="established_date" order=next_order|default:"asc" as query_established_date %}
           <a href="?{{ query_established_date }}">
             開業日 {% if sort_column == "established_date" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
+          </a>
+        </th>
+
+        <th>
+          {% url_params request.GET sort="license_number" order=next_order as query_license_number %}
+          <a href="?{{ query_license_number }}">
+            許可番号 {% if sort_column == "license_number" %}{% if sort_order == "asc" %}▲{% else %}▼{% endif %}{% endif %}
           </a>
         </th>
         <th>
