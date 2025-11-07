@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}日次KPI（担当者別）{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h3 class="m-0">日次KPI（担当者別）</h3>
+    <form class="d-flex" method="get" role="search">
+      <input type="date" class="form-control me-2" name="d" value="{{ target_date|date:'Y-m-d' }}">
+      <button type="submit" class="btn btn-primary">表示</button>
+    </form>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle m-0">
+          <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+            <tr>
+              <th style="white-space:nowrap;">営業担当者</th>
+              <th class="text-end">コール数</th>
+              <th class="text-end">ヒット数</th>
+              <th class="text-end">ヒット率</th>
+              <th class="text-end">決裁者コンタクト数</th>
+              <th class="text-end">決裁者率</th>
+              <th class="text-end">見込数</th>
+              <th class="text-end">見込率</th>
+              <th class="text-end">アポ成立数</th>
+              <th class="text-end">アポ率</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+            <tr>
+              <td style="white-space:nowrap;">{{ r.name }}</td>
+              <td class="text-end">{{ r.calls }}</td>
+              <td class="text-end">{{ r.hits }}</td>
+              <td class="text-end"><span class="badge bg-opacity-25 bg-success text-success fw-normal">{{ r.hit_rate|floatformat:1 }}%</span></td>
+              <td class="text-end">{{ r.decisions }}</td>
+              <td class="text-end">{{ r.decision_rate|floatformat:1 }}%</td>
+              <td class="text-end">{{ r.mikomi }}</td>
+              <td class="text-end">{{ r.mikomi_rate|floatformat:1 }}%</td>
+              <td class="text-end">{{ r.apo }}</td>
+              <td class="text-end"><strong>{{ r.apo_rate|floatformat:1 }}%</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="10" class="text-center text-muted py-4">対象データがありません</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-secondary">
+            <tr>
+              <th>合計</th>
+              <th class="text-end">{{ totals.calls }}</th>
+              <th class="text-end">{{ totals.hits }}</th>
+              <th class="text-end">{{ totals.hit_rate|floatformat:1 }}%</th>
+              <th class="text-end">{{ totals.decisions }}</th>
+              <th class="text-end">{{ totals.decision_rate|floatformat:1 }}%</th>
+              <th class="text-end">{{ totals.mikomi }}</th>
+              <th class="text-end">{{ totals.mikomi_rate|floatformat:1 }}%</th>
+              <th class="text-end">{{ totals.apo }}</th>
+              <th class="text-end">{{ totals.apo_rate|floatformat:1 }}%</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="text-muted small">表示日：{{ target_date|date:"Y年n月j日" }}</div>
+    <div class="d-flex gap-2">
+      <a href="/dashboard/" class="btn btn-outline-secondary btn-sm">ダッシュボード</a>
+      {# CSV出力は後日URLを作成 #}
+      {# <a href="{% url 'daily_kpi_csv' %}?d={{ target_date|date:'Y-m-d' }}" class="btn btn-outline-primary btn-sm">CSV出力</a> #}
+    </div>
+  </div>
+</div>
+{% endblock %}

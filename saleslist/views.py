@@ -1395,3 +1395,82 @@ def export_salesactivities_csv(request):
         ])
 
     return response
+
+
+from datetime import date
+from django.db.models import (
+    Count, Sum, Case, When, IntegerField, FloatField, Value, F, ExpressionWrapper
+)
+from django.db.models.functions import Coalesce
+from django.shortcuts import render
+from django.utils import timezone
+
+from .models import SalesActivity  # activity_date(DateTime/Date), sales_person(CharField), result(CharField)
+
+# KPIの分類定義（71番メモの定義に合わせる）
+HIT_RESULTS = ["再コール", "見込", "アポ成立", "追わない", "担当不在"]  # ← ユーザー定義の有効コール（不通留守を除外）
+DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立", "追わない"]
+
+def _selected_date_from_request(request):
+    qs_date = request.GET.get("d")
+    if qs_date:
+        try:
+            y, m, d = map(int, qs_date.split("-"))
+            return date(y, m, d)
+        except Exception:
+            pass
+    jst_now = timezone.localtime(timezone.now())
+    return jst_now.date()
+
+def daily_kpi(request):
+    target_date = _selected_date_from_request(request)
+
+    qs = SalesActivity.objects.filter(activity_date__date=target_date)
+    person = Coalesce("sales_person", Value(""))
+
+    calls = Count("id")
+    hits = Sum(Case(When(result__in=HIT_RESULTS, then=1), default=0, output_field=IntegerField()))
+    decisions = Sum(Case(When(result__in=DECISION_CONTACT_RESULTS, then=1), default=0, output_field=IntegerField()))
+    mikomi = Sum(Case(When(result="見込", then=1), default=0, output_field=IntegerField()))
+    apo = Sum(Case(When(result="アポ成立", then=1), default=0, output_field=IntegerField()))
+
+    agg = (
+        qs.values(name=person)
+        .annotate(calls=calls, hits=hits, decisions=decisions, mikomi=mikomi, apo=apo)
+        .order_by(F("calls").desc(nulls_last=True), F("name").asc(nulls_last=True))
+    )
+
+    rows = []
+    totals = {"calls": 0, "hits": 0, "decisions": 0, "mikomi": 0, "apo": 0}
+    for r in agg:
+        c = r["calls"] or 0
+        h = r["hits"] or 0
+        dcnt = r["decisions"] or 0
+        m = r["mikomi"] or 0
+        a = r["apo"] or 0
+        rows.append({
+            "name": r["name"] or "（未指定）",
+            "calls": c,
+            "hits": h,
+            "decisions": dcnt,
+            "mikomi": m,
+            "apo": a,
+            "hit_rate": (h / c * 100) if c else 0.0,
+            "decision_rate": (dcnt / c * 100) if c else 0.0,
+            "mikomi_rate": (m / c * 100) if c else 0.0,
+            "apo_rate": (a / c * 100) if c else 0.0,
+        })
+        totals["calls"] += c
+        totals["hits"] += h
+        totals["decisions"] += dcnt
+        totals["mikomi"] += m
+        totals["apo"] += a
+
+    t_calls = totals["calls"] or 0
+    totals["hit_rate"] = (totals["hits"] / t_calls * 100) if t_calls else 0.0
+    totals["decision_rate"] = (totals["decisions"] / t_calls * 100) if t_calls else 0.0
+    totals["mikomi_rate"] = (totals["mikomi"] / t_calls * 100) if t_calls else 0.0
+    totals["apo_rate"] = (totals["apo"] / t_calls * 100) if t_calls else 0.0
+
+    context = {"target_date": target_date, "rows": rows, "totals": totals}
+    return render(request, "kpi/daily.html", context)

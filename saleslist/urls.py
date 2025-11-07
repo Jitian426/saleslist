@@ -38,6 +38,7 @@ urlpatterns = [
     path("company/<int:pk>/", views.company_detail, name="company_detail"),
     path('user_progress/export_completed/', views.export_completed_progress_csv, name='export_completed_progress'),
     path('kpi/', views.kpi_view, name='kpi'),
+    path("kpi/daily/", views.daily_kpi, name="daily_kpi"),
 
     # ✅ ログイン・ログアウト
     path("login/", CustomLoginView.as_view(), name="login"),
