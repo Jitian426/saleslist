@@ -38,14 +38,6 @@
     </style>
 </head>
 <body>
-<!-- ▼ KPIページリンク -->
-<div class="d-flex justify-content-end mb-3">
-  <a href="{% url 'saleslist:daily_kpi' %}" class="btn btn-outline-primary btn-sm">
-    📊 日次KPI（担当者別）を見る
-  </a>
-</div>
-<!-- ▲ KPIページリンク -->
-
 <div class="d-flex justify-content-between align-items-center px-3 py-1" style="border-bottom: 1px solid #ccc;">
   <h2 class="mb-1" style="font-size: 24px;">Saleslist</h2>
   <div class="d-flex align-items-center" style="gap: 10px; font-size: 12px;">
@@ -55,6 +47,7 @@
       <a href="{% url 'saleslist:export_salesactivities_csv' %}" class="btn btn-outline-secondary btn-sm">営業履歴CSV出力</a>
     {% endif %}
     {% if user.is_authenticated %}
+      <a href="{% url 'saleslist:daily_kpi' %}" class="btn btn-outline-primary btn-sm me-3">📊 日次KPI</a>  /  
       <a href="{% url 'saleslist:dashboard' %}">ダッシュボード</a>  /  
       {% if can_view_user_info %}
         <a href="{% url 'saleslist:user_list' %}">ユーザーリスト</a>  /  
