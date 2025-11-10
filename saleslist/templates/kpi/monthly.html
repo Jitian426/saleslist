@@ -108,16 +108,25 @@
   const dataApo   = {{ chart_data.apo|safe }};
 
   // スタック棒：先頭データセットを「不通留守+追わない（グレー）」に変更
+  // 既存の datasets をこの版に置き換え
   new Chart(document.getElementById('kpiBar'), {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        {label:'不通留守+追わない', data:dataNCOW, stack:'s1', backgroundColor:'#adb5bd', borderColor:'#adb5bd'},
-        {label:'ヒット',            data:dataHits,  stack:'s1'},
-        {label:'決裁者',            data:dataDec,   stack:'s1'},
-        {label:'見込',              data:dataMikom, stack:'s1'},
-        {label:'アポ成立',          data:dataApo,   stack:'s1'},
+        // ① 不通留守＋追わない（指定どおりグレー）
+        {label:'不通留守+追わない', data:dataNCOW, stack:'s1',
+         backgroundColor:'#adb5bd', borderColor:'#adb5bd', borderWidth:1},
+
+        // ② 以降はカラー固定（以前の自動配色の代わりに明確な色を付与）
+        {label:'ヒット',   data:dataHits,  stack:'s1',
+         backgroundColor:'rgba(54,162,235,0.6)', borderColor:'rgb(54,162,235)', borderWidth:1},
+        {label:'決裁者',   data:dataDec,   stack:'s1',
+         backgroundColor:'rgba(255,159,64,0.6)', borderColor:'rgb(255,159,64)', borderWidth:1},
+        {label:'見込',     data:dataMikom, stack:'s1',
+         backgroundColor:'rgba(255,99,132,0.6)', borderColor:'rgb(255,99,132)', borderWidth:1},
+        {label:'アポ成立', data:dataApo,   stack:'s1',
+         backgroundColor:'rgba(75,192,192,0.6)', borderColor:'rgb(75,192,192)', borderWidth:1},
       ]
     },
     options: {
@@ -127,15 +136,34 @@
       scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true}}
     }
   });
+  
+  // 上部のデータ受け取り
+  const dataCalls = {{ chart_data.calls|safe }};
 
-  // 円グラフ（構成比）は現状のままでOKですが、
-  // 「コール数の構成比」→「不通留守+追わないの構成比」に変える場合は dataCalls を dataNCOW に差し替えてください。
-  const dataCalls = {{ chart_data.calls|default:"[]"|safe }}; // 既存のまま残すなら
+  // 円グラフ：コール数の構成比
   new Chart(document.getElementById('callsPie'), {
     type: 'pie',
-    data: { labels, datasets: [{ data: dataCalls }] },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    data: {
+      labels,
+      datasets: [{
+        data: dataCalls,
+        backgroundColor: [
+          'rgb(54,162,235)',  // 青
+          'rgb(255,99,132)',  // 赤
+          'rgb(255,205,86)',  // 黄
+          'rgb(75,192,192)',  // 緑
+          'rgb(153,102,255)', // 紫
+          'rgb(255,159,64)',  // オレンジ
+        ],
+        borderWidth: 1
+      }]
+    },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
   });
+
 </script>
+
+
 {% endblock %}
+
 

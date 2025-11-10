@@ -1578,6 +1578,7 @@ def monthly_kpi(request):
         "mikomi":    [r["mikomi"] for r in rows],
         "apo":       [r["apo"] for r in rows],
         "ju":        [r["ju"] for r in rows],
+        "calls":     [r["calls"] for r in rows],
     }
 
     ctx = {
