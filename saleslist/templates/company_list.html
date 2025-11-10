@@ -38,6 +38,25 @@
     </style>
 </head>
 <body>
+<!-- ▼ 日次KPI（担当者別）をトップに埋め込み表示 -->
+<div class="container-fluid px-4 mt-3">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">日次KPI（担当者別）</h5>
+      <form id="kpiDailyForm" class="d-flex align-items-center" onsubmit="event.preventDefault();const d=this.querySelector('[name=d]').value||new Date().toISOString().slice(0,10);document.getElementById('kpiDailyFrame').src='{% url 'saleslist:daily_kpi' %}?d='+d;">
+        <input type="date" name="d" class="form-control form-control-sm me-2" value="">
+        <button class="btn btn-primary btn-sm">表示</button>
+        <a class="btn btn-outline-secondary btn-sm ms-2" href="{% url 'saleslist:daily_kpi' %}" target="_blank" rel="noopener">別タブで開く</a>
+      </form>
+    </div>
+    <div class="card-body p-0">
+      <!-- 高さは好みに調整（表＋フッタまで見えるよう少し余裕を持たせています） -->
+      <iframe id="kpiDailyFrame" src="{% url 'saleslist:daily_kpi' %}" style="width:100%;height:640px;border:0;"></iframe>
+    </div>
+  </div>
+</div>
+<!-- ▲ 日次KPI 埋め込みここまで -->
+
 <div class="d-flex justify-content-between align-items-center px-3 py-1" style="border-bottom: 1px solid #ccc;">
   <h2 class="mb-1" style="font-size: 24px;">Saleslist</h2>
   <div class="d-flex align-items-center" style="gap: 10px; font-size: 12px;">

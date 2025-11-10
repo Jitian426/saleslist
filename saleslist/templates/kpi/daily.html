@@ -11,6 +11,25 @@
       <button type="submit" class="btn btn-primary">表示</button>
     </form>
   </div>
+  
+  <!-- ▼ 月次KPIの埋め込み -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">月次KPI（担当者別）</h6>
+      <form id="kpiMonthlyForm" class="d-flex align-items-center"
+            onsubmit="event.preventDefault();const ym=this.querySelector('[name=ym]').value||new Date().toISOString().slice(0,7);document.getElementById('kpiMonthlyFrame').src='{% url 'saleslist:monthly_kpi' %}?ym='+ym;">
+        <input type="month" name="ym" class="form-control form-control-sm me-2"
+               value="{{ target_date|date:'Y-m' }}">
+        <button class="btn btn-primary btn-sm">表示</button>
+        <a class="btn btn-outline-secondary btn-sm ms-2" href="{% url 'saleslist:monthly_kpi' %}" target="_blank" rel="noopener">別タブで開く</a>
+      </form>
+    </div>
+    <div class="card-body p-0">
+      <iframe id="kpiMonthlyFrame" src="{% url 'saleslist:monthly_kpi' %}?ym={{ target_date|date:'Y-m' }}"
+              style="width:100%;height:620px;border:0;"></iframe>
+    </div>
+  </div>
+  <!-- ▲ 月次KPI埋め込みここまで -->
 
   <div class="card shadow-sm">
     <div class="card-body p-0">
