@@ -1409,7 +1409,7 @@ from .models import SalesActivity  # activity_date(DateTime/Date), sales_person(
 
 # KPIの分類定義（71番メモの定義に合わせる）
 HIT_RESULTS = ["再コール", "見込", "アポ成立", "追わない", "担当不在"]  # ← ユーザー定義の有効コール（不通留守を除外）
-DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立", "追わない"]
+DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立"]
 
 def _selected_date_from_request(request):
     qs_date = request.GET.get("d")
@@ -1474,3 +1474,90 @@ def daily_kpi(request):
 
     context = {"target_date": target_date, "rows": rows, "totals": totals}
     return render(request, "kpi/daily.html", context)
+
+
+from datetime import date
+from calendar import monthrange
+from django.db.models import Count, Sum, Case, When, IntegerField, Value, F
+from django.db.models.functions import Coalesce
+from django.utils import timezone
+from django.shortcuts import render
+
+from .models import SalesActivity
+
+HIT_RESULTS = ["再コール", "見込", "アポ成立", "追わない", "担当不在"]
+DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立"]  # ← 修正後の定義
+
+def _selected_year_month(request):
+    # ?ym=YYYY-MM 形式。未指定ならJSTの今月
+    ym = request.GET.get("ym")
+    if ym:
+        try:
+            y, m = map(int, ym.split("-"))
+            return y, m
+        except Exception:
+            pass
+    jst = timezone.localtime()
+    return jst.year, jst.month
+
+def monthly_kpi(request):
+    year, month = _selected_year_month(request)
+    start = date(year, month, 1)
+    last_day = monthrange(year, month)[1]
+    end = date(year, month, last_day)
+
+    qs = SalesActivity.objects.filter(activity_date__date__range=(start, end))
+    person = Coalesce("sales_person", Value(""))
+
+    calls = Count("id")
+    hits = Sum(Case(When(result__in=HIT_RESULTS, then=1), default=0, output_field=IntegerField()))
+    decisions = Sum(Case(When(result__in=DECISION_CONTACT_RESULTS, then=1), default=0, output_field=IntegerField()))
+    mikomi = Sum(Case(When(result="見込", then=1), default=0, output_field=IntegerField()))
+    apo = Sum(Case(When(result="アポ成立", then=1), default=0, output_field=IntegerField()))
+
+    agg = (
+        qs.values(name=person)
+          .annotate(calls=calls, hits=hits, decisions=decisions, mikomi=mikomi, apo=apo)
+          .order_by(F("calls").desc(nulls_last=True), F("name").asc(nulls_last=True))
+    )
+
+    rows, totals = [], {"calls":0,"hits":0,"decisions":0,"mikomi":0,"apo":0}
+    for r in agg:
+        c, h, d, m, a = (r["calls"] or 0, r["hits"] or 0, r["decisions"] or 0, r["mikomi"] or 0, r["apo"] or 0)
+        rows.append({
+            "name": r["name"] or "（未指定）",
+            "calls": c,
+            "hits": h,
+            "decisions": d,
+            "mikomi": m,
+            "apo": a,
+            "hit_rate": (h/c*100) if c else 0.0,
+            "decision_rate": (d/c*100) if c else 0.0,
+            "mikomi_rate": (m/c*100) if c else 0.0,
+            "apo_rate": (a/c*100) if c else 0.0,
+        })
+        totals["calls"] += c; totals["hits"] += h; totals["decisions"] += d; totals["mikomi"] += m; totals["apo"] += a
+
+    t = totals["calls"] or 0
+    totals.update({
+        "hit_rate": (totals["hits"]/t*100) if t else 0.0,
+        "decision_rate": (totals["decisions"]/t*100) if t else 0.0,
+        "mikomi_rate": (totals["mikomi"]/t*100) if t else 0.0,
+        "apo_rate": (totals["apo"]/t*100) if t else 0.0,
+    })
+
+    # グラフ用配列（Chart.jsへ）
+    labels = [r["name"] for r in rows]
+    chart_data = {
+        "calls":   [r["calls"] for r in rows],
+        "hits":    [r["hits"] for r in rows],
+        "decisions":[r["decisions"] for r in rows],
+        "mikomi":  [r["mikomi"] for r in rows],
+        "apo":     [r["apo"] for r in rows],
+    }
+
+    ctx = {
+        "year": year, "month": month, "start": start, "end": end,
+        "rows": rows, "totals": totals, "labels": labels, "chart_data": chart_data,
+    }
+    return render(request, "kpi/monthly.html", ctx)
