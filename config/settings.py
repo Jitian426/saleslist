@@ -41,7 +41,7 @@ ALLOWED_HOSTS = [
 
 BASE_URL = os.getenv("BASE_URL", "https://saleslist.onrender.com")
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "userlistyoshida@gmail.com")
 
 # Application definition
 
