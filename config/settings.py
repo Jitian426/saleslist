@@ -39,6 +39,9 @@ ALLOWED_HOSTS = [
     "localhost"   # ローカル開発用
 ]
 
+BASE_URL = os.getenv("BASE_URL", "https://saleslist.onrender.com")
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Application definition
 

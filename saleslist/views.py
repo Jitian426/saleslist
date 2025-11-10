@@ -24,6 +24,8 @@ from django.utils import timezone
 from .models import UserProfile
 from django.urls import reverse
 from django.db import transaction
+from django.conf import settings
+
 
 
 @user_passes_test(lambda u: u.is_superuser or u.username == 'ryuji')
@@ -205,6 +207,10 @@ def add_sales_activity(request, company_id):
 
             sales_activity.save()
 
+            # 会社詳細の絶対URLを作成
+            detail_path = reverse("saleslist:company_detail", args=[company.id])
+            detail_url  = f"{settings.BASE_URL}{detail_path}"
+
             # ✅ メール送信スケジュール
             if sales_activity.next_action_date and sales_activity.sales_person_email:
                 EmailScheduledJob.objects.create(
@@ -215,6 +221,8 @@ def add_sales_activity(request, company_id):
                             f"営業担当者: {sales_activity.sales_person}\n"
                             f"次回営業予定日: {localtime(sales_activity.next_action_date).strftime('%Y-%m-%d %H:%M')}\n"
                             f"営業メモ: {sales_activity.memo if sales_activity.memo else 'メモなし'}\n\n"
+                            "▼該当リスト（会社詳細ページ）\n"
+                            f"{detail_url}\n\n"
                             f"この予定を忘れずに対応してください。",
                     scheduled_time=sales_activity.next_action_date
                 )
@@ -578,6 +586,9 @@ def add_sales_activity_ajax(request, pk):
             sales_person_email=sales_person_email
         )
 
+        detail_path = reverse("saleslist:company_detail", args=[company.id])
+        detail_url  = f"{settings.BASE_URL}{detail_path}"
+
         # ✅ メール送信スケジューリング
         if next_action and sales_person_email:
             EmailScheduledJob.objects.create(
@@ -588,6 +599,8 @@ def add_sales_activity_ajax(request, pk):
                         f"営業担当者: {activity.sales_person}\n"
                         f"次回営業予定日: {localtime(next_action).strftime('%Y-%m-%d %H:%M')}\n"
                         f"営業メモ: {activity.memo if activity.memo else 'メモなし'}\n\n"
+                        "▼該当リスト（会社詳細ページ）\n"
+                        f"{detail_url}\n\n"
                         f"この予定を忘れずに対応してください。",
                 scheduled_time=next_action
             )
