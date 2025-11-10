@@ -29,6 +29,8 @@
               <th class="text-end">見込率</th>
               <th class="text-end">アポ成立数</th>
               <th class="text-end">アポ率</th>
+              <th class="text-end">受注数</th>
+              <th class="text-end">受注率</th>
             </tr>
           </thead>
           <tbody>
@@ -44,6 +46,8 @@
               <td class="text-end">{{ r.mikomi_rate|floatformat:1 }}%</td>
               <td class="text-end">{{ r.apo }}</td>
               <td class="text-end">{{ r.apo_rate|floatformat:1 }}%</td>
+              <td class="text-end">{{ r.ju }}</td>
+              <td class="text-end">{{ r.ju_rate|floatformat:1 }}%</td>
             </tr>
             {% empty %}
             <tr><td colspan="10" class="text-center text-muted py-4">対象データがありません</td></tr>
@@ -61,6 +65,8 @@
               <th class="text-end">{{ totals.mikomi_rate|floatformat:1 }}%</th>
               <th class="text-end">{{ totals.apo }}</th>
               <th class="text-end">{{ totals.apo_rate|floatformat:1 }}%</th>
+              <th class="text-end">{{ totals.ju }}</th>
+              <th class="text-end">{{ totals.ju_rate|floatformat:1 }}%</th>
             </tr>
           </tfoot>
         </table>
@@ -94,23 +100,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const labels = {{ labels|safe }};
-  const dataCalls = {{ chart_data.calls|safe }};
-  const dataHits = {{ chart_data.hits|safe }};
-  const dataDecisions = {{ chart_data.decisions|safe }};
-  const dataMikomi = {{ chart_data.mikomi|safe }};
-  const dataApo = {{ chart_data.apo|safe }};
+  // ここを views.py の chart_data に合わせる
+  const dataNCOW  = {{ chart_data.nc_owanai|safe }};  // 不通留守 + 追わない（グレー棒）
+  const dataHits  = {{ chart_data.hits|safe }};
+  const dataDec   = {{ chart_data.decisions|safe }};
+  const dataMikom = {{ chart_data.mikomi|safe }};
+  const dataApo   = {{ chart_data.apo|safe }};
 
-  // スタック棒：コール/ヒット/決裁/見込/アポ
+  // スタック棒：先頭データセットを「不通留守+追わない（グレー）」に変更
   new Chart(document.getElementById('kpiBar'), {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        {label:'コール', data:dataCalls, stack:'stack1'},
-        {label:'ヒット', data:dataHits, stack:'stack1'},
-        {label:'決裁者', data:dataDecisions, stack:'stack1'},
-        {label:'見込', data:dataMikomi, stack:'stack1'},
-        {label:'アポ成立', data:dataApo, stack:'stack1'},
+        {label:'不通留守+追わない', data:dataNCOW, stack:'s1', backgroundColor:'#adb5bd', borderColor:'#adb5bd'},
+        {label:'ヒット',            data:dataHits,  stack:'s1'},
+        {label:'決裁者',            data:dataDec,   stack:'s1'},
+        {label:'見込',              data:dataMikom, stack:'s1'},
+        {label:'アポ成立',          data:dataApo,   stack:'s1'},
       ]
     },
     options: {
@@ -121,7 +128,9 @@
     }
   });
 
-  // 円グラフ：担当者別コール数の構成比
+  // 円グラフ（構成比）は現状のままでOKですが、
+  // 「コール数の構成比」→「不通留守+追わないの構成比」に変える場合は dataCalls を dataNCOW に差し替えてください。
+  const dataCalls = {{ chart_data.calls|default:"[]"|safe }}; // 既存のまま残すなら
   new Chart(document.getElementById('callsPie'), {
     type: 'pie',
     data: { labels, datasets: [{ data: dataCalls }] },

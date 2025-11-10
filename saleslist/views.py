@@ -1509,21 +1509,33 @@ def monthly_kpi(request):
     qs = SalesActivity.objects.filter(activity_date__date__range=(start, end))
     person = Coalesce("sales_person", Value(""))
 
+    # ---- 集計定義 ----
     calls = Count("id")
     hits = Sum(Case(When(result__in=HIT_RESULTS, then=1), default=0, output_field=IntegerField()))
     decisions = Sum(Case(When(result__in=DECISION_CONTACT_RESULTS, then=1), default=0, output_field=IntegerField()))
     mikomi = Sum(Case(When(result="見込", then=1), default=0, output_field=IntegerField()))
     apo = Sum(Case(When(result="アポ成立", then=1), default=0, output_field=IntegerField()))
+    ju = Sum(Case(When(result="受注", then=1), default=0, output_field=IntegerField()))
+    ftsu = Sum(Case(When(result="不通留守", then=1), default=0, output_field=IntegerField()))
+    owanai = Sum(Case(When(result="追わない", then=1), default=0, output_field=IntegerField()))
 
+    # ---- 集計 ----
     agg = (
         qs.values(name=person)
-          .annotate(calls=calls, hits=hits, decisions=decisions, mikomi=mikomi, apo=apo)
+          .annotate(calls=calls, hits=hits, decisions=decisions, mikomi=mikomi, apo=apo, ju=ju, ftsu=ftsu, owanai=owanai)
           .order_by(F("calls").desc(nulls_last=True), F("name").asc(nulls_last=True))
     )
 
-    rows, totals = [], {"calls":0,"hits":0,"decisions":0,"mikomi":0,"apo":0}
+    rows, totals = [], {"calls":0,"hits":0,"decisions":0,"mikomi":0,"apo":0,"ju":0,"nc_owanai":0}
     for r in agg:
-        c, h, d, m, a = (r["calls"] or 0, r["hits"] or 0, r["decisions"] or 0, r["mikomi"] or 0, r["apo"] or 0)
+        c  = r["calls"] or 0
+        h  = r["hits"] or 0
+        d  = r["decisions"] or 0
+        m  = r["mikomi"] or 0
+        a  = r["apo"] or 0
+        ju = r["ju"] or 0
+        nc_ow = (r["ftsu"] or 0) + (r["owanai"] or 0)
+
         rows.append({
             "name": r["name"] or "（未指定）",
             "calls": c,
@@ -1531,12 +1543,22 @@ def monthly_kpi(request):
             "decisions": d,
             "mikomi": m,
             "apo": a,
+            "ju": ju,
+            "ju_rate": (ju / a * 100) if a else 0.0,  # 受注率 = 受注 / アポ成立
+            "nc_owanai": nc_ow,
             "hit_rate": (h/c*100) if c else 0.0,
             "decision_rate": (d/c*100) if c else 0.0,
             "mikomi_rate": (m/c*100) if c else 0.0,
             "apo_rate": (a/c*100) if c else 0.0,
         })
-        totals["calls"] += c; totals["hits"] += h; totals["decisions"] += d; totals["mikomi"] += m; totals["apo"] += a
+
+        totals["calls"]     += c
+        totals["hits"]      += h
+        totals["decisions"] += d
+        totals["mikomi"]    += m
+        totals["apo"]       += a
+        totals["ju"]        += ju
+        totals["nc_owanai"] += nc_ow
 
     t = totals["calls"] or 0
     totals.update({
@@ -1544,20 +1566,24 @@ def monthly_kpi(request):
         "decision_rate": (totals["decisions"]/t*100) if t else 0.0,
         "mikomi_rate": (totals["mikomi"]/t*100) if t else 0.0,
         "apo_rate": (totals["apo"]/t*100) if t else 0.0,
+        "ju_rate": (totals["ju"]/totals["apo"]*100) if totals["apo"] else 0.0,
     })
 
-    # グラフ用配列（Chart.jsへ）
+    # ---- グラフ用 ----
     labels = [r["name"] for r in rows]
     chart_data = {
-        "calls":   [r["calls"] for r in rows],
-        "hits":    [r["hits"] for r in rows],
-        "decisions":[r["decisions"] for r in rows],
-        "mikomi":  [r["mikomi"] for r in rows],
-        "apo":     [r["apo"] for r in rows],
+        "nc_owanai": [r["nc_owanai"] for r in rows],  # 不通留守＋追わない（棒：灰色）
+        "hits":      [r["hits"] for r in rows],
+        "decisions": [r["decisions"] for r in rows],
+        "mikomi":    [r["mikomi"] for r in rows],
+        "apo":       [r["apo"] for r in rows],
+        "ju":        [r["ju"] for r in rows],
     }
 
     ctx = {
         "year": year, "month": month, "start": start, "end": end,
-        "rows": rows, "totals": totals, "labels": labels, "chart_data": chart_data,
+        "rows": rows, "totals": totals,
+        "labels": labels, "chart_data": chart_data,
     }
     return render(request, "kpi/monthly.html", ctx)
+
