@@ -54,6 +54,11 @@ class SalesActivity(models.Model):
     ], default="見込", verbose_name="営業結果")  # ✅ CSVの営業結果を保存する
     memo = models.TextField(blank=True, null=True, verbose_name="メモ")  # ✅ CSVのコメントを保存する
     next_action_date = models.DateTimeField(blank=True, null=True, verbose_name="次回営業予定日")  
+    is_decision_maker = models.BooleanField(
+        '決裁者と会話',
+        default=False,
+        db_index=True,
+    )
 
     def __str__(self):
         return f"{self.sales_person} - {self.company.name} ({self.activity_date})"

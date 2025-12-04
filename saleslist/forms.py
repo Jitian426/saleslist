@@ -55,11 +55,14 @@ class SalesActivityForm(forms.ModelForm):
     
     class Meta:
         model = SalesActivity
-        fields = ["result", "memo", "next_action_date"]
+        fields = ["result", "memo", "next_action_date", 'is_decision_maker']
         widgets = {
             "next_action_date": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             'result': forms.Select(choices=SalesActivity.RESULT_CHOICES),  # ✅ 選択肢を適用
             'step': '600',
+        }
+        labels = {
+            'is_decision_maker': '決裁者',
         }
 
 class SalesPersonRegistrationForm(UserCreationForm):

@@ -1313,7 +1313,7 @@ def kpi_view(request):
 
     total_calls = activities.count()
     valid_calls = activities.filter(result__in=["再コール", "見込", "アポ成立", "追わない", "担当者不在", "不通留守"]).count()
-    decision_makers = activities.filter(result__in=["再コール", "見込", "アポ成立", "追わない"]).count()
+    decision_makers = activities.filter(is_decision_maker=True).count()
     prospect_count = activities.filter(result="見込").count()
     appointment_count = activities.filter(result="アポ成立").count()
 
@@ -1328,7 +1328,8 @@ def kpi_view(request):
     prospect_now_count = latest_results.filter(result="見込").count()
 
     # 割合
-    decision_rate = round(decision_makers / total_calls * 100, 1) if total_calls else 0
+    decision_rate = round(decision_makers / valid_calls * 100, 1) if valid_calls else 0
+
     appointment_rate = round(appointment_count / valid_calls * 100, 1) if valid_calls else 0
 
     context = {
@@ -1418,11 +1419,10 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import render
 from django.utils import timezone
 
-from .models import SalesActivity  # activity_date(DateTime/Date), sales_person(CharField), result(CharField)
+from .models import SalesActivity
 
-# KPIの分類定義（71番メモの定義に合わせる）
-HIT_RESULTS = ["再コール", "見込", "アポ成立", "追わない", "担当不在"]  # ← ユーザー定義の有効コール（不通留守を除外）
-DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立"]
+HIT_RESULTS = ["再コール", "見込", "アポ成立", "追わない", "担当不在"]
+# DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立"]  # ← もう使わないならコメントアウト or 削除
 
 def _selected_date_from_request(request):
     qs_date = request.GET.get("d")
@@ -1442,10 +1442,28 @@ def daily_kpi(request):
     person = Coalesce("sales_person", Value(""))
 
     calls = Count("id")
-    hits = Sum(Case(When(result__in=HIT_RESULTS, then=1), default=0, output_field=IntegerField()))
-    decisions = Sum(Case(When(result__in=DECISION_CONTACT_RESULTS, then=1), default=0, output_field=IntegerField()))
-    mikomi = Sum(Case(When(result="見込", then=1), default=0, output_field=IntegerField()))
-    apo = Sum(Case(When(result="アポ成立", then=1), default=0, output_field=IntegerField()))
+    hits = Sum(Case(
+        When(result__in=HIT_RESULTS, then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+
+    decisions = Sum(Case(
+        When(is_decision_maker=True, then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+
+    mikomi = Sum(Case(
+        When(result="見込", then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+    apo = Sum(Case(
+        When(result="アポ成立", then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
 
     agg = (
         qs.values(name=person)
@@ -1469,7 +1487,7 @@ def daily_kpi(request):
             "mikomi": m,
             "apo": a,
             "hit_rate": (h / c * 100) if c else 0.0,
-            "decision_rate": (dcnt / c * 100) if c else 0.0,
+            "decision_rate": (dcnt / h * 100) if h else 0.0,
             "mikomi_rate": (m / c * 100) if c else 0.0,
             "apo_rate": (a / c * 100) if c else 0.0,
         })
@@ -1480,8 +1498,10 @@ def daily_kpi(request):
         totals["apo"] += a
 
     t_calls = totals["calls"] or 0
+    t_hits = totals["hits"] or 0
+
     totals["hit_rate"] = (totals["hits"] / t_calls * 100) if t_calls else 0.0
-    totals["decision_rate"] = (totals["decisions"] / t_calls * 100) if t_calls else 0.0
+    totals["decision_rate"] = (totals["decisions"] / t_hits * 100) if t_hits else 0.0
     totals["mikomi_rate"] = (totals["mikomi"] / t_calls * 100) if t_calls else 0.0
     totals["apo_rate"] = (totals["apo"] / t_calls * 100) if t_calls else 0.0
 
@@ -1499,10 +1519,9 @@ from django.shortcuts import render
 from .models import SalesActivity
 
 HIT_RESULTS = ["再コール", "見込", "アポ成立", "追わない", "担当不在"]
-DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立"]  # ← 修正後の定義
+# DECISION_CONTACT_RESULTS = ["再コール", "見込", "アポ成立"]  # ← 使わないなら削除
 
 def _selected_year_month(request):
-    # ?ym=YYYY-MM 形式。未指定ならJSTの今月
     ym = request.GET.get("ym")
     if ym:
         try:
@@ -1522,20 +1541,52 @@ def monthly_kpi(request):
     qs = SalesActivity.objects.filter(activity_date__date__range=(start, end))
     person = Coalesce("sales_person", Value(""))
 
-    # ---- 集計定義 ----
     calls = Count("id")
-    hits = Sum(Case(When(result__in=HIT_RESULTS, then=1), default=0, output_field=IntegerField()))
-    decisions = Sum(Case(When(result__in=DECISION_CONTACT_RESULTS, then=1), default=0, output_field=IntegerField()))
-    mikomi = Sum(Case(When(result="見込", then=1), default=0, output_field=IntegerField()))
-    apo = Sum(Case(When(result="アポ成立", then=1), default=0, output_field=IntegerField()))
-    ju = Sum(Case(When(result="受注", then=1), default=0, output_field=IntegerField()))
-    ftsu = Sum(Case(When(result="不通留守", then=1), default=0, output_field=IntegerField()))
-    owanai = Sum(Case(When(result="追わない", then=1), default=0, output_field=IntegerField()))
+    hits = Sum(Case(
+        When(result__in=HIT_RESULTS, then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
 
-    # ---- 集計 ----
+    # ★ここをフラグベースに変更
+    decisions = Sum(Case(
+        When(is_decision_maker=True, then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+
+    mikomi = Sum(Case(
+        When(result="見込", then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+    apo = Sum(Case(
+        When(result="アポ成立", then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+    ju = Sum(Case(
+        When(result="受注", then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+    ftsu = Sum(Case(
+        When(result="不通留守", then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+    owanai = Sum(Case(
+        When(result="追わない", then=1),
+        default=0,
+        output_field=IntegerField()
+    ))
+
     agg = (
         qs.values(name=person)
-          .annotate(calls=calls, hits=hits, decisions=decisions, mikomi=mikomi, apo=apo, ju=ju, ftsu=ftsu, owanai=owanai)
+          .annotate(
+              calls=calls, hits=hits, decisions=decisions,
+              mikomi=mikomi, apo=apo, ju=ju, ftsu=ftsu, owanai=owanai
+          )
           .order_by(F("calls").desc(nulls_last=True), F("name").asc(nulls_last=True))
     )
 
@@ -1546,7 +1597,7 @@ def monthly_kpi(request):
         d  = r["decisions"] or 0
         m  = r["mikomi"] or 0
         a  = r["apo"] or 0
-        ju = r["ju"] or 0
+        ju_val = r["ju"] or 0
         nc_ow = (r["ftsu"] or 0) + (r["owanai"] or 0)
 
         rows.append({
@@ -1556,11 +1607,11 @@ def monthly_kpi(request):
             "decisions": d,
             "mikomi": m,
             "apo": a,
-            "ju": ju,
-            "ju_rate": (ju / a * 100) if a else 0.0,  # 受注率 = 受注 / アポ成立
+            "ju": ju_val,
+            "ju_rate": (ju_val / a * 100) if a else 0.0,
             "nc_owanai": nc_ow,
             "hit_rate": (h/c*100) if c else 0.0,
-            "decision_rate": (d/c*100) if c else 0.0,
+            "decision_rate": (d/h*100) if h else 0.0,
             "mikomi_rate": (m/c*100) if c else 0.0,
             "apo_rate": (a/c*100) if c else 0.0,
         })
@@ -1570,22 +1621,24 @@ def monthly_kpi(request):
         totals["decisions"] += d
         totals["mikomi"]    += m
         totals["apo"]       += a
-        totals["ju"]        += ju
+        totals["ju"]        += ju_val
         totals["nc_owanai"] += nc_ow
 
-    t = totals["calls"] or 0
+    t_calls = totals["calls"] or 0
+    t_hits = totals["hits"] or 0
+
     totals.update({
-        "hit_rate": (totals["hits"]/t*100) if t else 0.0,
-        "decision_rate": (totals["decisions"]/t*100) if t else 0.0,
-        "mikomi_rate": (totals["mikomi"]/t*100) if t else 0.0,
-        "apo_rate": (totals["apo"]/t*100) if t else 0.0,
+        "hit_rate": (totals["hits"]/t_calls*100) if t_calls else 0.0,
+        "decision_rate": (totals["decisions"]/t_hits*100) if t_hits else 0.0,
+        "mikomi_rate": (totals["mikomi"]/t_calls*100) if t_calls else 0.0,
+        "apo_rate": (totals["apo"]/t_calls*100) if t_calls else 0.0,
         "ju_rate": (totals["ju"]/totals["apo"]*100) if totals["apo"] else 0.0,
     })
 
-    # ---- グラフ用 ----
+
     labels = [r["name"] for r in rows]
     chart_data = {
-        "nc_owanai": [r["nc_owanai"] for r in rows],  # 不通留守＋追わない（棒：灰色）
+        "nc_owanai": [r["nc_owanai"] for r in rows],
         "hits":      [r["hits"] for r in rows],
         "decisions": [r["decisions"] for r in rows],
         "mikomi":    [r["mikomi"] for r in rows],
@@ -1600,4 +1653,5 @@ def monthly_kpi(request):
         "labels": labels, "chart_data": chart_data,
     }
     return render(request, "kpi/monthly.html", ctx)
+
 
