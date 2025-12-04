@@ -60,6 +60,9 @@ class SalesActivityForm(forms.ModelForm):
             "next_action_date": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             'result': forms.Select(choices=SalesActivity.RESULT_CHOICES),  # ✅ 選択肢を適用
             'step': '600',
+            'is_decision_maker': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
         }
         labels = {
             'is_decision_maker': '決裁者',

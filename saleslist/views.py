@@ -562,6 +562,11 @@ def add_sales_activity_ajax(request, pk):
 
         print("✅ Ajax受信データ:", data)
 
+        # ✅ 決裁者フラグを取得
+        raw_flag = data.get("is_decision_maker")
+        # JS から true/false や "on" が来るケースを想定して吸収
+        is_decision_maker = str(raw_flag).lower() in ("1", "true", "on", "yes")
+
         # ✅ 日時変換（文字列 → datetime → aware）
         raw_next = data.get("next_scheduled_date")
         next_action = None
@@ -583,7 +588,8 @@ def add_sales_activity_ajax(request, pk):
             activity_date=now(),
             next_action_date=next_action,
             memo=data.get("memo"),
-            sales_person_email=sales_person_email
+            sales_person_email=sales_person_email,
+            is_decision_maker=is_decision_maker, 
         )
 
         detail_path = reverse("saleslist:company_detail", args=[company.id])

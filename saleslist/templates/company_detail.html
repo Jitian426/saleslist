@@ -361,18 +361,19 @@
           <h5 class="modal-title" id="salesActivityModalLabel">営業履歴の追加</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="form-group form-check mt-2">
-          <input type="checkbox"
-                 name="is_decision_maker"
-                 id="id_is_decision_maker"
-                 class="form-check-input"
-                 {% if form.is_decision_maker.value %}checked{% endif %}>
-          <label for="id_is_decision_maker" class="form-check-label">
-            決裁者ボタン（今回の対話相手は決裁者）
-          </label>
-        </div>
+
         <div class="modal-body">
           <input type="hidden" name="sales_result" id="sales_result">
+          <div class="form-group form-check mt-2">
+            <input type="checkbox"
+                   name="is_decision_maker"
+                   id="id_is_decision_maker"
+                   class="form-check-input"
+                   {% if form.is_decision_maker.value %}checked{% endif %}>
+            <label for="id_is_decision_maker" class="form-check-label">
+              決裁者チェック（今回の対話相手は決裁者）
+            </label>
+          </div>
           <div class="mb-3">
             <label for="next_scheduled_date" class="form-label">次回営業予定日時</label>
             <input type="text"
@@ -416,11 +417,15 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
+    // ✅ 決裁者チェックの状態を取得
+    const isDecisionMaker = document.getElementById('id_is_decision_maker').checked;
+
     const data = {
       sales_result: form.sales_result.value,
       next_scheduled_date: form.next_scheduled_date.value,
       memo: form.memo.value,
-      sales_person_email: form.sales_person_email.value  // ← 追加された項目
+      sales_person_email: form.sales_person_email.value,
+      is_decision_maker: isDecisionMaker,   // ← ★これを追加
     };
 
     const endpoint = document.getElementById('ajax_endpoint').value;
@@ -428,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken  // ✅ これで解決
+        'X-CSRFToken': csrftoken
       },
       body: JSON.stringify(data)
     });
@@ -444,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 });
+
 </script>
 
 <script>
