@@ -93,6 +93,7 @@
                 <th style="width: 120px;">日付</th>
                 <th style="width: 120px;">営業担当</th>
                 <th style="width: 80px;">結果</th>
+                <th style="width: 70px;">決裁者</th>
                 <th style="width: 120px;">次回予定日</th>
                 <th>メモ</th>
               </tr>
@@ -103,6 +104,15 @@
                 <td>{{ activity.activity_date|date:"Y-m-d H:i" }}</td>
                 <td>{{ activity.sales_person }}</td>
                 <td>{{ activity.result }}</td>
+                <!-- ★決裁者列 -->
+                <td class="text-center">
+                  {% if activity.is_decision_maker %}
+                    ✅
+                    {# もっと見やすくするなら：
+                    <span class="badge bg-success">✓</span>
+                    などでもOK #}
+                   {% endif %}
+                </td>
                 <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
 
                 <td>{{ activity.memo|default:"" }}</td>
