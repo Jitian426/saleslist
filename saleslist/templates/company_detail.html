@@ -108,10 +108,7 @@
                 <td class="text-center">
                   {% if activity.is_decision_maker %}
                     ✅
-                    {# もっと見やすくするなら：
-                    <span class="badge bg-success">✓</span>
-                    などでもOK #}
-                   {% endif %}
+                  {% endif %}
                 </td>
                 <td>{{ activity.next_action_date|date:"Y-m-d H:i" }}</td>
 
