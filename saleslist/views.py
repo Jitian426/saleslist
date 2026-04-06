@@ -896,13 +896,21 @@ def company_list(request):
     companies = companies.filter(filters)
 
     # 🔸 並び順を定義（スライス前に順序決定）
-    if sort in ["established_date", "name", "address", "corporation_name"]:
+    if sort == "established_date":
+        if order == "desc":
+            companies = companies.order_by(F("established_date").desc(nulls_last=True), "-id")
+        else:
+            companies = companies.order_by(F("established_date").asc(nulls_last=True), "id")
+
+    elif sort in ["name", "address", "corporation_name"]:
         if order == "desc":
             companies = companies.order_by(f"-{sort}", "-id")
         else:
             companies = companies.order_by(sort, "id")
+
     else:
         companies = companies.order_by(sort_column)
+
 
     # ✅ 初期表示だけ最大1000件に制限（検索条件が空のとき）
     if not any(search_params.values()):
